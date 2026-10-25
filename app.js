@@ -225,28 +225,40 @@ class SantiyeApp {
     this.data = updatedData;
     localStorage.setItem(this.fallbackKey, JSON.stringify(this.data));
 
-    // 1. Save to Firebase Firestore (Netlify real-time broadcast)
-    if (this.isCloudActive && this.db) {
+    let savedToCloud = false;
+
+    // 1. Save to Firebase Firestore (Netlify real-time broadcast to all devices)
+    if (this.db) {
       try {
         await this.db.collection('santiye_elektrik_test').doc('main_data').set(this.data);
+        this.isCloudActive = true;
         this.updateSyncUI('bulut');
+        savedToCloud = true;
+        this.showToast('Buluta kaydedildi ve tüm cihazlara anında yansıtıldı! ✅', 'success');
       } catch (e) {
         console.warn('Buluta kaydedilemedi:', e);
+        if (e.code === 'permission-denied') {
+          this.showToast('⚠️ Firebase izin kuralı bekleniyor: Değişiklik telefonun hafızasına kaydedildi ancak diğer cihazlara yansıması için Firebase kuralı açılmalıdır.', 'warning');
+        } else {
+          this.showToast('Değişiklik bu cihaza kaydedildi.', 'info');
+        }
       }
     }
 
-    // 2. Save to Python server API
-    try {
-      await fetch(`${this.apiUrl}/api/data`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${this.adminToken}`
-        },
-        body: JSON.stringify(this.data)
-      });
-    } catch (e) {
-      // Python server not active
+    // 2. Save to Python server API if running locally
+    if (!savedToCloud && (window.location.origin.includes('localhost') || window.location.origin.includes('127.0.0.1'))) {
+      try {
+        await fetch(`${this.apiUrl}/api/data`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${this.adminToken}`
+          },
+          body: JSON.stringify(this.data)
+        });
+      } catch (e) {
+        // Python server not active
+      }
     }
   }
 
@@ -1027,48 +1039,28 @@ class SantiyeApp {
         tester: document.getElementById('editElkTester').value,
         reportNo: document.getElementById('editElkReport').value,
         note: document.getElementById('editElkNote').value
-      }
+      },
+      updatedAt: new Date().toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' }),
+      updatedBy: 'Admin'
     };
 
-    try {
-      const res = await fetch(`${this.apiUrl}/api/unit`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          unitId: unitId,
-          unitData: updatedUnit,
-          adminUser: 'Admin',
-          actionDesc: `${u.blockName} ${u.floorName} Güncellendi`
-        })
-      });
+    this.data.units[unitId] = updatedUnit;
+    this.data.logs.unshift({
+      id: `log-${Date.now()}`,
+      timestamp: new Date().toLocaleString('tr-TR'),
+      user: 'Admin',
+      unitId: unitId,
+      blockName: u.blockName,
+      floorName: u.floorName,
+      action: 'Kat Güncellendi',
+      details: `Mekanik: ${mekStatus}, Klima: ${kliStatus}, MESA: ${mesaStatus}, Test: ${elkStatus}`,
+      badgeType: 'success'
+    });
 
-      const resData = await res.json();
-      if (res.ok && resData.success) {
-        this.showToast(`${u.blockName} ${u.floorName} başarıyla kaydedildi!`, 'success');
-        this.closeModal('modalEditUnit');
-        await this.loadData();
-      } else {
-        this.showToast(resData.message || 'Kayıt sırasında hata oluştu.', 'error');
-      }
-    } catch (e) {
-      // Fallback local save
-      this.data.units[unitId] = updatedUnit;
-      this.data.logs.unshift({
-        id: `log-${Date.now()}`,
-        timestamp: new Date().toLocaleString('tr-TR'),
-        user: 'Admin',
-        unitId: unitId,
-        blockName: u.blockName,
-        floorName: u.floorName,
-        action: 'Kat Güncellendi',
-        details: `Mekanik: ${mekStatus}, Klima: ${kliStatus}, MESA: ${mesaStatus}, Test: ${elkStatus}`,
-        badgeType: 'success'
-      });
-      await this.saveData(this.data);
-      this.showToast(`${u.blockName} ${u.floorName} yerel olarak kaydedildi!`, 'success');
-      this.closeModal('modalEditUnit');
-      this.renderAll();
-    }
+    // Save to Firestore and Local
+    await this.saveData(this.data);
+    this.closeModal('modalEditUnit');
+    this.renderAll();
   }
 
   // --- BULK OPERATIONS ---
@@ -1122,30 +1114,52 @@ class SantiyeApp {
       return;
     }
 
-    try {
-      const res = await fetch(`${this.apiUrl}/api/bulk`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          unitIds: targetUnitIds,
-          field: field,
-          status: status,
-          note: note,
-          adminUser: 'Admin'
-        })
-      });
+    let updatedCount = 0;
+    const nowStr = new Date().toISOString().split('T')[0];
+    const timeStr = new Date().toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' });
 
-      const resData = await res.json();
-      if (res.ok && resData.success) {
-        this.showToast(resData.message, 'success');
-        this.closeModal('modalBulk');
-        await this.loadData();
-      } else {
-        this.showToast(resData.message || 'Toplu işlem hatası', 'error');
+    targetUnitIds.forEach(uid => {
+      const u = this.data.units[uid];
+      if (!u) return;
+
+      if (field === 'mesa' && status === 'onaylandi') {
+        if (u.mekanik?.status !== 'tamamlandi' || u.klima?.status !== 'tamamlandi') return;
       }
-    } catch (e) {
-      this.showToast('Sunucu bağlantı hatası', 'error');
-    }
+      if (field === 'elektrikTest' && ['hazir', 'suruyor', 'tamamlandi'].includes(status)) {
+        if (u.mesa?.status !== 'onaylandi') return;
+      }
+
+      u[field].status = status;
+      u[field].date = nowStr;
+      if (note) u[field].note = note;
+
+      if (u.mesa?.status === 'onaylandi' && u.elektrikTest?.status === 'kilitli') {
+        u.elektrikTest.status = 'hazir';
+      } else if (u.mesa?.status !== 'onaylandi') {
+        u.elektrikTest.status = 'kilitli';
+      }
+
+      u.updatedAt = timeStr;
+      u.updatedBy = 'Admin';
+      updatedCount++;
+    });
+
+    this.data.logs.unshift({
+      id: `log-${Date.now()}`,
+      timestamp: new Date().toLocaleString('tr-TR'),
+      user: 'Admin',
+      unitId: 'bulk',
+      blockName: `${updatedCount} Kat`,
+      floorName: 'Toplu İşlem',
+      action: `Toplu Güncelleme`,
+      details: `${updatedCount} kat için ${field} durumu '${status}' yapıldı.`,
+      badgeType: 'warning'
+    });
+
+    await this.saveData(this.data);
+    this.showToast(`${updatedCount} kat başarıyla güncellendi!`, 'success');
+    this.closeModal('modalBulk');
+    this.renderAll();
   }
 
   async quickCompleteBlockMekanik() {
