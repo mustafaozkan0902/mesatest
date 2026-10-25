@@ -13,12 +13,15 @@ class SantiyeApp {
     this.adminToken = localStorage.getItem('santiye_admin_token') || null;
     this.apiUrl = window.location.origin.startsWith('http') ? window.location.origin : 'http://localhost:8088';
     
+    this.fallbackKey = 'santiye_data_v2';
+    localStorage.removeItem('santiye_offline_backup_data');
+
     // Cloud / Firebase state
     this.isCloudActive = false;
     this.db = null;
     this.syncMode = 'yerel_hafiza';
 
-    // Instant local data setup so page NEVER renders empty or broken
+    // Instant local data setup from clean initial state
     const cached = localStorage.getItem(this.fallbackKey);
     if (cached) {
       try { this.data = JSON.parse(cached); } catch(e) {}

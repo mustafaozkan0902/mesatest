@@ -4,8 +4,9 @@
     "totalBlocks": 10,
     "floorsPerBlock": 8,
     "totalUnits": 80,
-    "siteAddress": "MESA Şantiye Alanı, Kadıköy / İstanbul",
-    "lastSync": "2026-10-24T20:17:01.343205"
+    "siteAddress": "MESA Şantiye Sahası",
+    "lastSync": "2026-10-26T01:48:00Z",
+    "version": "2.0.0"
   },
   "settings": {
     "adminPasswordHash": "240be518fabd2724ddb6f04eeb1da5967448d7e831c08c8fa822809f74c720a9",
@@ -127,33 +128,33 @@
       "floorShort": "ÇATI",
       "floorOrder": 8,
       "mekanik": {
-        "status": "tamamlandi",
-        "date": "2026-10-18",
+        "status": "bekliyor",
+        "date": "",
         "company": "Mekanik Tesisat A.Ş.",
-        "note": "Mekanik test ve montajlar tamamlandı."
+        "note": ""
       },
       "klima": {
-        "status": "tamamlandi",
-        "date": "2026-10-19",
+        "status": "bekliyor",
+        "date": "",
         "company": "VRF Klima Sistemleri",
-        "note": "Klima montajı ve drenaj testleri bitti."
+        "note": ""
       },
       "mesa": {
-        "status": "onaylandi",
-        "date": "2026-10-21",
-        "officer": "Serkan Demir (MESA Kontrol)",
-        "docNo": "MESA-KBL-01-8",
-        "note": "MESA tarafından teslim alındı. Elektrik testi için uygun."
+        "status": "bekliyor",
+        "date": "",
+        "officer": "",
+        "docNo": "",
+        "note": ""
       },
       "elektrikTest": {
-        "status": "hazir",
+        "status": "kilitli",
         "date": "",
         "tester": "",
         "reportNo": "",
-        "note": "MESA onayı tamam. Test ekibi sahaya bekleniyor."
+        "note": "Ön şartlar (Mekanik, Klima ve MESA Onayı) bekleniyor."
       },
-      "updatedAt": "2026-10-23",
-      "updatedBy": "Saha Koordinatörü"
+      "updatedAt": "-",
+      "updatedBy": "Sistem"
     },
     "1_kat4": {
       "id": "1_kat4",
@@ -164,33 +165,33 @@
       "floorShort": "4. KAT",
       "floorOrder": 7,
       "mekanik": {
-        "status": "tamamlandi",
-        "date": "2026-10-14",
+        "status": "bekliyor",
+        "date": "",
         "company": "Mekanik Tesisat A.Ş.",
-        "note": "Kazan ve borulama montajı eksiksiz tamamlandı."
+        "note": ""
       },
       "klima": {
-        "status": "tamamlandi",
-        "date": "2026-10-15",
+        "status": "bekliyor",
+        "date": "",
         "company": "VRF Klima Sistemleri",
-        "note": "Kanal ve VRF iç ünite bağlantıları bitti."
+        "note": ""
       },
       "mesa": {
-        "status": "onaylandi",
-        "date": "2026-10-17",
-        "officer": "Cemil Arslan (MESA Saha Şefi)",
-        "docNo": "MESA-KBL-01-7",
-        "note": "Mahaller teslim alındı, elektrik testine onay verildi."
+        "status": "bekliyor",
+        "date": "",
+        "officer": "",
+        "docNo": "",
+        "note": ""
       },
       "elektrikTest": {
-        "status": "tamamlandi",
-        "date": "2026-10-20",
-        "tester": "Murat Özkan (Elektrik Şefi)",
-        "reportNo": "ELK-TR-01-7",
-        "note": "Yalıtım, meger ve fonksiyon testleri başarıyla tamamlandı. Enerjilendirilebilir."
+        "status": "kilitli",
+        "date": "",
+        "tester": "",
+        "reportNo": "",
+        "note": "Ön şartlar (Mekanik, Klima ve MESA Onayı) bekleniyor."
       },
-      "updatedAt": "2026-10-23",
-      "updatedBy": "Saha Koordinatörü"
+      "updatedAt": "-",
+      "updatedBy": "Sistem"
     },
     "1_kat3": {
       "id": "1_kat3",
@@ -201,33 +202,33 @@
       "floorShort": "3. KAT",
       "floorOrder": 6,
       "mekanik": {
-        "status": "tamamlandi",
-        "date": "2026-10-14",
+        "status": "bekliyor",
+        "date": "",
         "company": "Mekanik Tesisat A.Ş.",
-        "note": "Kazan ve borulama montajı eksiksiz tamamlandı."
+        "note": ""
       },
       "klima": {
-        "status": "tamamlandi",
-        "date": "2026-10-15",
+        "status": "bekliyor",
+        "date": "",
         "company": "VRF Klima Sistemleri",
-        "note": "Kanal ve VRF iç ünite bağlantıları bitti."
+        "note": ""
       },
       "mesa": {
-        "status": "onaylandi",
-        "date": "2026-10-17",
-        "officer": "Cemil Arslan (MESA Saha Şefi)",
-        "docNo": "MESA-KBL-01-6",
-        "note": "Mahaller teslim alındı, elektrik testine onay verildi."
+        "status": "bekliyor",
+        "date": "",
+        "officer": "",
+        "docNo": "",
+        "note": ""
       },
       "elektrikTest": {
-        "status": "tamamlandi",
-        "date": "2026-10-20",
-        "tester": "Murat Özkan (Elektrik Şefi)",
-        "reportNo": "ELK-TR-01-6",
-        "note": "Yalıtım, meger ve fonksiyon testleri başarıyla tamamlandı. Enerjilendirilebilir."
+        "status": "kilitli",
+        "date": "",
+        "tester": "",
+        "reportNo": "",
+        "note": "Ön şartlar (Mekanik, Klima ve MESA Onayı) bekleniyor."
       },
-      "updatedAt": "2026-10-23",
-      "updatedBy": "Saha Koordinatörü"
+      "updatedAt": "-",
+      "updatedBy": "Sistem"
     },
     "1_kat2": {
       "id": "1_kat2",
@@ -238,33 +239,33 @@
       "floorShort": "2. KAT",
       "floorOrder": 5,
       "mekanik": {
-        "status": "tamamlandi",
-        "date": "2026-10-14",
+        "status": "bekliyor",
+        "date": "",
         "company": "Mekanik Tesisat A.Ş.",
-        "note": "Kazan ve borulama montajı eksiksiz tamamlandı."
+        "note": ""
       },
       "klima": {
-        "status": "tamamlandi",
-        "date": "2026-10-15",
+        "status": "bekliyor",
+        "date": "",
         "company": "VRF Klima Sistemleri",
-        "note": "Kanal ve VRF iç ünite bağlantıları bitti."
+        "note": ""
       },
       "mesa": {
-        "status": "onaylandi",
-        "date": "2026-10-17",
-        "officer": "Cemil Arslan (MESA Saha Şefi)",
-        "docNo": "MESA-KBL-01-5",
-        "note": "Mahaller teslim alındı, elektrik testine onay verildi."
+        "status": "bekliyor",
+        "date": "",
+        "officer": "",
+        "docNo": "",
+        "note": ""
       },
       "elektrikTest": {
-        "status": "tamamlandi",
-        "date": "2026-10-20",
-        "tester": "Murat Özkan (Elektrik Şefi)",
-        "reportNo": "ELK-TR-01-5",
-        "note": "Yalıtım, meger ve fonksiyon testleri başarıyla tamamlandı. Enerjilendirilebilir."
+        "status": "kilitli",
+        "date": "",
+        "tester": "",
+        "reportNo": "",
+        "note": "Ön şartlar (Mekanik, Klima ve MESA Onayı) bekleniyor."
       },
-      "updatedAt": "2026-10-23",
-      "updatedBy": "Saha Koordinatörü"
+      "updatedAt": "-",
+      "updatedBy": "Sistem"
     },
     "1_kat1": {
       "id": "1_kat1",
@@ -275,33 +276,33 @@
       "floorShort": "1. KAT",
       "floorOrder": 4,
       "mekanik": {
-        "status": "tamamlandi",
-        "date": "2026-10-14",
+        "status": "bekliyor",
+        "date": "",
         "company": "Mekanik Tesisat A.Ş.",
-        "note": "Kazan ve borulama montajı eksiksiz tamamlandı."
+        "note": ""
       },
       "klima": {
-        "status": "tamamlandi",
-        "date": "2026-10-15",
+        "status": "bekliyor",
+        "date": "",
         "company": "VRF Klima Sistemleri",
-        "note": "Kanal ve VRF iç ünite bağlantıları bitti."
+        "note": ""
       },
       "mesa": {
-        "status": "onaylandi",
-        "date": "2026-10-17",
-        "officer": "Cemil Arslan (MESA Saha Şefi)",
-        "docNo": "MESA-KBL-01-4",
-        "note": "Mahaller teslim alındı, elektrik testine onay verildi."
+        "status": "bekliyor",
+        "date": "",
+        "officer": "",
+        "docNo": "",
+        "note": ""
       },
       "elektrikTest": {
-        "status": "tamamlandi",
-        "date": "2026-10-20",
-        "tester": "Murat Özkan (Elektrik Şefi)",
-        "reportNo": "ELK-TR-01-4",
-        "note": "Yalıtım, meger ve fonksiyon testleri başarıyla tamamlandı. Enerjilendirilebilir."
+        "status": "kilitli",
+        "date": "",
+        "tester": "",
+        "reportNo": "",
+        "note": "Ön şartlar (Mekanik, Klima ve MESA Onayı) bekleniyor."
       },
-      "updatedAt": "2026-10-23",
-      "updatedBy": "Saha Koordinatörü"
+      "updatedAt": "-",
+      "updatedBy": "Sistem"
     },
     "1_zemin": {
       "id": "1_zemin",
@@ -312,33 +313,33 @@
       "floorShort": "ZEMİN",
       "floorOrder": 3,
       "mekanik": {
-        "status": "tamamlandi",
-        "date": "2026-10-14",
+        "status": "bekliyor",
+        "date": "",
         "company": "Mekanik Tesisat A.Ş.",
-        "note": "Kazan ve borulama montajı eksiksiz tamamlandı."
+        "note": ""
       },
       "klima": {
-        "status": "tamamlandi",
-        "date": "2026-10-15",
+        "status": "bekliyor",
+        "date": "",
         "company": "VRF Klima Sistemleri",
-        "note": "Kanal ve VRF iç ünite bağlantıları bitti."
+        "note": ""
       },
       "mesa": {
-        "status": "onaylandi",
-        "date": "2026-10-17",
-        "officer": "Cemil Arslan (MESA Saha Şefi)",
-        "docNo": "MESA-KBL-01-3",
-        "note": "Mahaller teslim alındı, elektrik testine onay verildi."
+        "status": "bekliyor",
+        "date": "",
+        "officer": "",
+        "docNo": "",
+        "note": ""
       },
       "elektrikTest": {
-        "status": "tamamlandi",
-        "date": "2026-10-20",
-        "tester": "Murat Özkan (Elektrik Şefi)",
-        "reportNo": "ELK-TR-01-3",
-        "note": "Yalıtım, meger ve fonksiyon testleri başarıyla tamamlandı. Enerjilendirilebilir."
+        "status": "kilitli",
+        "date": "",
+        "tester": "",
+        "reportNo": "",
+        "note": "Ön şartlar (Mekanik, Klima ve MESA Onayı) bekleniyor."
       },
-      "updatedAt": "2026-10-23",
-      "updatedBy": "Saha Koordinatörü"
+      "updatedAt": "-",
+      "updatedBy": "Sistem"
     },
     "1_b1": {
       "id": "1_b1",
@@ -349,33 +350,33 @@
       "floorShort": "B1",
       "floorOrder": 2,
       "mekanik": {
-        "status": "tamamlandi",
-        "date": "2026-10-14",
+        "status": "bekliyor",
+        "date": "",
         "company": "Mekanik Tesisat A.Ş.",
-        "note": "Kazan ve borulama montajı eksiksiz tamamlandı."
+        "note": ""
       },
       "klima": {
-        "status": "tamamlandi",
-        "date": "2026-10-15",
+        "status": "bekliyor",
+        "date": "",
         "company": "VRF Klima Sistemleri",
-        "note": "Kanal ve VRF iç ünite bağlantıları bitti."
+        "note": ""
       },
       "mesa": {
-        "status": "onaylandi",
-        "date": "2026-10-17",
-        "officer": "Cemil Arslan (MESA Saha Şefi)",
-        "docNo": "MESA-KBL-01-2",
-        "note": "Mahaller teslim alındı, elektrik testine onay verildi."
+        "status": "bekliyor",
+        "date": "",
+        "officer": "",
+        "docNo": "",
+        "note": ""
       },
       "elektrikTest": {
-        "status": "tamamlandi",
-        "date": "2026-10-20",
-        "tester": "Murat Özkan (Elektrik Şefi)",
-        "reportNo": "ELK-TR-01-2",
-        "note": "Yalıtım, meger ve fonksiyon testleri başarıyla tamamlandı. Enerjilendirilebilir."
+        "status": "kilitli",
+        "date": "",
+        "tester": "",
+        "reportNo": "",
+        "note": "Ön şartlar (Mekanik, Klima ve MESA Onayı) bekleniyor."
       },
-      "updatedAt": "2026-10-23",
-      "updatedBy": "Saha Koordinatörü"
+      "updatedAt": "-",
+      "updatedBy": "Sistem"
     },
     "1_b2": {
       "id": "1_b2",
@@ -386,33 +387,33 @@
       "floorShort": "B2",
       "floorOrder": 1,
       "mekanik": {
-        "status": "tamamlandi",
-        "date": "2026-10-14",
+        "status": "bekliyor",
+        "date": "",
         "company": "Mekanik Tesisat A.Ş.",
-        "note": "Kazan ve borulama montajı eksiksiz tamamlandı."
+        "note": ""
       },
       "klima": {
-        "status": "tamamlandi",
-        "date": "2026-10-15",
+        "status": "bekliyor",
+        "date": "",
         "company": "VRF Klima Sistemleri",
-        "note": "Kanal ve VRF iç ünite bağlantıları bitti."
+        "note": ""
       },
       "mesa": {
-        "status": "onaylandi",
-        "date": "2026-10-17",
-        "officer": "Cemil Arslan (MESA Saha Şefi)",
-        "docNo": "MESA-KBL-01-1",
-        "note": "Mahaller teslim alındı, elektrik testine onay verildi."
+        "status": "bekliyor",
+        "date": "",
+        "officer": "",
+        "docNo": "",
+        "note": ""
       },
       "elektrikTest": {
-        "status": "tamamlandi",
-        "date": "2026-10-20",
-        "tester": "Murat Özkan (Elektrik Şefi)",
-        "reportNo": "ELK-TR-01-1",
-        "note": "Yalıtım, meger ve fonksiyon testleri başarıyla tamamlandı. Enerjilendirilebilir."
+        "status": "kilitli",
+        "date": "",
+        "tester": "",
+        "reportNo": "",
+        "note": "Ön şartlar (Mekanik, Klima ve MESA Onayı) bekleniyor."
       },
-      "updatedAt": "2026-10-23",
-      "updatedBy": "Saha Koordinatörü"
+      "updatedAt": "-",
+      "updatedBy": "Sistem"
     },
     "2_cati": {
       "id": "2_cati",
@@ -423,33 +424,33 @@
       "floorShort": "ÇATI",
       "floorOrder": 8,
       "mekanik": {
-        "status": "tamamlandi",
-        "date": "2026-10-18",
+        "status": "bekliyor",
+        "date": "",
         "company": "Mekanik Tesisat A.Ş.",
-        "note": "Mekanik test ve montajlar tamamlandı."
+        "note": ""
       },
       "klima": {
-        "status": "tamamlandi",
-        "date": "2026-10-19",
+        "status": "bekliyor",
+        "date": "",
         "company": "VRF Klima Sistemleri",
-        "note": "Klima montajı ve drenaj testleri bitti."
+        "note": ""
       },
       "mesa": {
-        "status": "onaylandi",
-        "date": "2026-10-21",
-        "officer": "Serkan Demir (MESA Kontrol)",
-        "docNo": "MESA-KBL-02-8",
-        "note": "MESA tarafından teslim alındı. Elektrik testi için uygun."
+        "status": "bekliyor",
+        "date": "",
+        "officer": "",
+        "docNo": "",
+        "note": ""
       },
       "elektrikTest": {
-        "status": "hazir",
+        "status": "kilitli",
         "date": "",
         "tester": "",
         "reportNo": "",
-        "note": "MESA onayı tamam. Test ekibi sahaya bekleniyor."
+        "note": "Ön şartlar (Mekanik, Klima ve MESA Onayı) bekleniyor."
       },
-      "updatedAt": "2026-10-23",
-      "updatedBy": "Saha Koordinatörü"
+      "updatedAt": "-",
+      "updatedBy": "Sistem"
     },
     "2_kat4": {
       "id": "2_kat4",
@@ -460,33 +461,33 @@
       "floorShort": "4. KAT",
       "floorOrder": 7,
       "mekanik": {
-        "status": "tamamlandi",
-        "date": "2026-10-18",
+        "status": "bekliyor",
+        "date": "",
         "company": "Mekanik Tesisat A.Ş.",
-        "note": "Mekanik test ve montajlar tamamlandı."
+        "note": ""
       },
       "klima": {
-        "status": "tamamlandi",
-        "date": "2026-10-19",
+        "status": "bekliyor",
+        "date": "",
         "company": "VRF Klima Sistemleri",
-        "note": "Klima montajı ve drenaj testleri bitti."
+        "note": ""
       },
       "mesa": {
-        "status": "onaylandi",
-        "date": "2026-10-21",
-        "officer": "Serkan Demir (MESA Kontrol)",
-        "docNo": "MESA-KBL-02-7",
-        "note": "MESA tarafından teslim alındı. Elektrik testi için uygun."
+        "status": "bekliyor",
+        "date": "",
+        "officer": "",
+        "docNo": "",
+        "note": ""
       },
       "elektrikTest": {
-        "status": "hazir",
+        "status": "kilitli",
         "date": "",
         "tester": "",
         "reportNo": "",
-        "note": "MESA onayı tamam. Test ekibi sahaya bekleniyor."
+        "note": "Ön şartlar (Mekanik, Klima ve MESA Onayı) bekleniyor."
       },
-      "updatedAt": "2026-10-23",
-      "updatedBy": "Saha Koordinatörü"
+      "updatedAt": "-",
+      "updatedBy": "Sistem"
     },
     "2_kat3": {
       "id": "2_kat3",
@@ -497,33 +498,33 @@
       "floorShort": "3. KAT",
       "floorOrder": 6,
       "mekanik": {
-        "status": "tamamlandi",
-        "date": "2026-10-18",
+        "status": "bekliyor",
+        "date": "",
         "company": "Mekanik Tesisat A.Ş.",
-        "note": "Mekanik test ve montajlar tamamlandı."
+        "note": ""
       },
       "klima": {
-        "status": "tamamlandi",
-        "date": "2026-10-19",
+        "status": "bekliyor",
+        "date": "",
         "company": "VRF Klima Sistemleri",
-        "note": "Klima montajı ve drenaj testleri bitti."
+        "note": ""
       },
       "mesa": {
-        "status": "onaylandi",
-        "date": "2026-10-21",
-        "officer": "Serkan Demir (MESA Kontrol)",
-        "docNo": "MESA-KBL-02-6",
-        "note": "MESA tarafından teslim alındı. Elektrik testi için uygun."
+        "status": "bekliyor",
+        "date": "",
+        "officer": "",
+        "docNo": "",
+        "note": ""
       },
       "elektrikTest": {
-        "status": "hazir",
+        "status": "kilitli",
         "date": "",
         "tester": "",
         "reportNo": "",
-        "note": "MESA onayı tamam. Test ekibi sahaya bekleniyor."
+        "note": "Ön şartlar (Mekanik, Klima ve MESA Onayı) bekleniyor."
       },
-      "updatedAt": "2026-10-23",
-      "updatedBy": "Saha Koordinatörü"
+      "updatedAt": "-",
+      "updatedBy": "Sistem"
     },
     "2_kat2": {
       "id": "2_kat2",
@@ -534,33 +535,33 @@
       "floorShort": "2. KAT",
       "floorOrder": 5,
       "mekanik": {
-        "status": "tamamlandi",
-        "date": "2026-10-18",
+        "status": "bekliyor",
+        "date": "",
         "company": "Mekanik Tesisat A.Ş.",
-        "note": "Mekanik test ve montajlar tamamlandı."
+        "note": ""
       },
       "klima": {
-        "status": "tamamlandi",
-        "date": "2026-10-19",
+        "status": "bekliyor",
+        "date": "",
         "company": "VRF Klima Sistemleri",
-        "note": "Klima montajı ve drenaj testleri bitti."
+        "note": ""
       },
       "mesa": {
-        "status": "onaylandi",
-        "date": "2026-10-21",
-        "officer": "Serkan Demir (MESA Kontrol)",
-        "docNo": "MESA-KBL-02-5",
-        "note": "MESA tarafından teslim alındı. Elektrik testi için uygun."
+        "status": "bekliyor",
+        "date": "",
+        "officer": "",
+        "docNo": "",
+        "note": ""
       },
       "elektrikTest": {
-        "status": "hazir",
+        "status": "kilitli",
         "date": "",
         "tester": "",
         "reportNo": "",
-        "note": "MESA onayı tamam. Test ekibi sahaya bekleniyor."
+        "note": "Ön şartlar (Mekanik, Klima ve MESA Onayı) bekleniyor."
       },
-      "updatedAt": "2026-10-23",
-      "updatedBy": "Saha Koordinatörü"
+      "updatedAt": "-",
+      "updatedBy": "Sistem"
     },
     "2_kat1": {
       "id": "2_kat1",
@@ -571,33 +572,33 @@
       "floorShort": "1. KAT",
       "floorOrder": 4,
       "mekanik": {
-        "status": "tamamlandi",
-        "date": "2026-10-14",
+        "status": "bekliyor",
+        "date": "",
         "company": "Mekanik Tesisat A.Ş.",
-        "note": "Kazan ve borulama montajı eksiksiz tamamlandı."
+        "note": ""
       },
       "klima": {
-        "status": "tamamlandi",
-        "date": "2026-10-15",
+        "status": "bekliyor",
+        "date": "",
         "company": "VRF Klima Sistemleri",
-        "note": "Kanal ve VRF iç ünite bağlantıları bitti."
+        "note": ""
       },
       "mesa": {
-        "status": "onaylandi",
-        "date": "2026-10-17",
-        "officer": "Cemil Arslan (MESA Saha Şefi)",
-        "docNo": "MESA-KBL-02-4",
-        "note": "Mahaller teslim alındı, elektrik testine onay verildi."
+        "status": "bekliyor",
+        "date": "",
+        "officer": "",
+        "docNo": "",
+        "note": ""
       },
       "elektrikTest": {
-        "status": "tamamlandi",
-        "date": "2026-10-20",
-        "tester": "Murat Özkan (Elektrik Şefi)",
-        "reportNo": "ELK-TR-02-4",
-        "note": "Yalıtım, meger ve fonksiyon testleri başarıyla tamamlandı. Enerjilendirilebilir."
+        "status": "kilitli",
+        "date": "",
+        "tester": "",
+        "reportNo": "",
+        "note": "Ön şartlar (Mekanik, Klima ve MESA Onayı) bekleniyor."
       },
-      "updatedAt": "2026-10-23",
-      "updatedBy": "Saha Koordinatörü"
+      "updatedAt": "-",
+      "updatedBy": "Sistem"
     },
     "2_zemin": {
       "id": "2_zemin",
@@ -608,33 +609,33 @@
       "floorShort": "ZEMİN",
       "floorOrder": 3,
       "mekanik": {
-        "status": "tamamlandi",
-        "date": "2026-10-14",
+        "status": "bekliyor",
+        "date": "",
         "company": "Mekanik Tesisat A.Ş.",
-        "note": "Kazan ve borulama montajı eksiksiz tamamlandı."
+        "note": ""
       },
       "klima": {
-        "status": "tamamlandi",
-        "date": "2026-10-15",
+        "status": "bekliyor",
+        "date": "",
         "company": "VRF Klima Sistemleri",
-        "note": "Kanal ve VRF iç ünite bağlantıları bitti."
+        "note": ""
       },
       "mesa": {
-        "status": "onaylandi",
-        "date": "2026-10-17",
-        "officer": "Cemil Arslan (MESA Saha Şefi)",
-        "docNo": "MESA-KBL-02-3",
-        "note": "Mahaller teslim alındı, elektrik testine onay verildi."
+        "status": "bekliyor",
+        "date": "",
+        "officer": "",
+        "docNo": "",
+        "note": ""
       },
       "elektrikTest": {
-        "status": "tamamlandi",
-        "date": "2026-10-20",
-        "tester": "Murat Özkan (Elektrik Şefi)",
-        "reportNo": "ELK-TR-02-3",
-        "note": "Yalıtım, meger ve fonksiyon testleri başarıyla tamamlandı. Enerjilendirilebilir."
+        "status": "kilitli",
+        "date": "",
+        "tester": "",
+        "reportNo": "",
+        "note": "Ön şartlar (Mekanik, Klima ve MESA Onayı) bekleniyor."
       },
-      "updatedAt": "2026-10-23",
-      "updatedBy": "Saha Koordinatörü"
+      "updatedAt": "-",
+      "updatedBy": "Sistem"
     },
     "2_b1": {
       "id": "2_b1",
@@ -645,33 +646,33 @@
       "floorShort": "B1",
       "floorOrder": 2,
       "mekanik": {
-        "status": "tamamlandi",
-        "date": "2026-10-14",
+        "status": "bekliyor",
+        "date": "",
         "company": "Mekanik Tesisat A.Ş.",
-        "note": "Kazan ve borulama montajı eksiksiz tamamlandı."
+        "note": ""
       },
       "klima": {
-        "status": "tamamlandi",
-        "date": "2026-10-15",
+        "status": "bekliyor",
+        "date": "",
         "company": "VRF Klima Sistemleri",
-        "note": "Kanal ve VRF iç ünite bağlantıları bitti."
+        "note": ""
       },
       "mesa": {
-        "status": "onaylandi",
-        "date": "2026-10-17",
-        "officer": "Cemil Arslan (MESA Saha Şefi)",
-        "docNo": "MESA-KBL-02-2",
-        "note": "Mahaller teslim alındı, elektrik testine onay verildi."
+        "status": "bekliyor",
+        "date": "",
+        "officer": "",
+        "docNo": "",
+        "note": ""
       },
       "elektrikTest": {
-        "status": "tamamlandi",
-        "date": "2026-10-20",
-        "tester": "Murat Özkan (Elektrik Şefi)",
-        "reportNo": "ELK-TR-02-2",
-        "note": "Yalıtım, meger ve fonksiyon testleri başarıyla tamamlandı. Enerjilendirilebilir."
+        "status": "kilitli",
+        "date": "",
+        "tester": "",
+        "reportNo": "",
+        "note": "Ön şartlar (Mekanik, Klima ve MESA Onayı) bekleniyor."
       },
-      "updatedAt": "2026-10-23",
-      "updatedBy": "Saha Koordinatörü"
+      "updatedAt": "-",
+      "updatedBy": "Sistem"
     },
     "2_b2": {
       "id": "2_b2",
@@ -682,33 +683,33 @@
       "floorShort": "B2",
       "floorOrder": 1,
       "mekanik": {
-        "status": "tamamlandi",
-        "date": "2026-10-14",
+        "status": "bekliyor",
+        "date": "",
         "company": "Mekanik Tesisat A.Ş.",
-        "note": "Kazan ve borulama montajı eksiksiz tamamlandı."
+        "note": ""
       },
       "klima": {
-        "status": "tamamlandi",
-        "date": "2026-10-15",
+        "status": "bekliyor",
+        "date": "",
         "company": "VRF Klima Sistemleri",
-        "note": "Kanal ve VRF iç ünite bağlantıları bitti."
+        "note": ""
       },
       "mesa": {
-        "status": "onaylandi",
-        "date": "2026-10-17",
-        "officer": "Cemil Arslan (MESA Saha Şefi)",
-        "docNo": "MESA-KBL-02-1",
-        "note": "Mahaller teslim alındı, elektrik testine onay verildi."
+        "status": "bekliyor",
+        "date": "",
+        "officer": "",
+        "docNo": "",
+        "note": ""
       },
       "elektrikTest": {
-        "status": "tamamlandi",
-        "date": "2026-10-20",
-        "tester": "Murat Özkan (Elektrik Şefi)",
-        "reportNo": "ELK-TR-02-1",
-        "note": "Yalıtım, meger ve fonksiyon testleri başarıyla tamamlandı. Enerjilendirilebilir."
+        "status": "kilitli",
+        "date": "",
+        "tester": "",
+        "reportNo": "",
+        "note": "Ön şartlar (Mekanik, Klima ve MESA Onayı) bekleniyor."
       },
-      "updatedAt": "2026-10-23",
-      "updatedBy": "Saha Koordinatörü"
+      "updatedAt": "-",
+      "updatedBy": "Sistem"
     },
     "3_cati": {
       "id": "3_cati",
@@ -719,33 +720,33 @@
       "floorShort": "ÇATI",
       "floorOrder": 8,
       "mekanik": {
-        "status": "tamamlandi",
-        "date": "2026-10-20",
+        "status": "bekliyor",
+        "date": "",
         "company": "Mekanik Tesisat A.Ş.",
-        "note": "Mekanik işler bitirildi, teslime hazır."
+        "note": ""
       },
       "klima": {
-        "status": "tamamlandi",
-        "date": "2026-10-21",
+        "status": "bekliyor",
+        "date": "",
         "company": "VRF Klima Sistemleri",
-        "note": "Klima işleri bitirildi, teslime hazır."
+        "note": ""
       },
       "mesa": {
         "status": "bekliyor",
         "date": "",
         "officer": "",
         "docNo": "",
-        "note": "Mekanik ve klima bitti. MESA teslim kontrolü için çağrıldı."
+        "note": ""
       },
       "elektrikTest": {
         "status": "kilitli",
         "date": "",
         "tester": "",
         "reportNo": "",
-        "note": "MESA teslim onayı bekleniyor."
+        "note": "Ön şartlar (Mekanik, Klima ve MESA Onayı) bekleniyor."
       },
-      "updatedAt": "2026-10-23",
-      "updatedBy": "Saha Koordinatörü"
+      "updatedAt": "-",
+      "updatedBy": "Sistem"
     },
     "3_kat4": {
       "id": "3_kat4",
@@ -756,33 +757,33 @@
       "floorShort": "4. KAT",
       "floorOrder": 7,
       "mekanik": {
-        "status": "tamamlandi",
-        "date": "2026-10-20",
+        "status": "bekliyor",
+        "date": "",
         "company": "Mekanik Tesisat A.Ş.",
-        "note": "Mekanik işler bitirildi, teslime hazır."
+        "note": ""
       },
       "klima": {
-        "status": "tamamlandi",
-        "date": "2026-10-21",
+        "status": "bekliyor",
+        "date": "",
         "company": "VRF Klima Sistemleri",
-        "note": "Klima işleri bitirildi, teslime hazır."
+        "note": ""
       },
       "mesa": {
         "status": "bekliyor",
         "date": "",
         "officer": "",
         "docNo": "",
-        "note": "Mekanik ve klima bitti. MESA teslim kontrolü için çağrıldı."
+        "note": ""
       },
       "elektrikTest": {
         "status": "kilitli",
         "date": "",
         "tester": "",
         "reportNo": "",
-        "note": "MESA teslim onayı bekleniyor."
+        "note": "Ön şartlar (Mekanik, Klima ve MESA Onayı) bekleniyor."
       },
-      "updatedAt": "2026-10-23",
-      "updatedBy": "Saha Koordinatörü"
+      "updatedAt": "-",
+      "updatedBy": "Sistem"
     },
     "3_kat3": {
       "id": "3_kat3",
@@ -793,33 +794,33 @@
       "floorShort": "3. KAT",
       "floorOrder": 6,
       "mekanik": {
-        "status": "tamamlandi",
-        "date": "2026-10-18",
+        "status": "bekliyor",
+        "date": "",
         "company": "Mekanik Tesisat A.Ş.",
-        "note": "Mekanik test ve montajlar tamamlandı."
+        "note": ""
       },
       "klima": {
-        "status": "tamamlandi",
-        "date": "2026-10-19",
+        "status": "bekliyor",
+        "date": "",
         "company": "VRF Klima Sistemleri",
-        "note": "Klima montajı ve drenaj testleri bitti."
+        "note": ""
       },
       "mesa": {
-        "status": "onaylandi",
-        "date": "2026-10-21",
-        "officer": "Serkan Demir (MESA Kontrol)",
-        "docNo": "MESA-KBL-03-6",
-        "note": "MESA tarafından teslim alındı. Elektrik testi için uygun."
+        "status": "bekliyor",
+        "date": "",
+        "officer": "",
+        "docNo": "",
+        "note": ""
       },
       "elektrikTest": {
-        "status": "hazir",
+        "status": "kilitli",
         "date": "",
         "tester": "",
         "reportNo": "",
-        "note": "MESA onayı tamam. Test ekibi sahaya bekleniyor."
+        "note": "Ön şartlar (Mekanik, Klima ve MESA Onayı) bekleniyor."
       },
-      "updatedAt": "2026-10-23",
-      "updatedBy": "Saha Koordinatörü"
+      "updatedAt": "-",
+      "updatedBy": "Sistem"
     },
     "3_kat2": {
       "id": "3_kat2",
@@ -830,33 +831,33 @@
       "floorShort": "2. KAT",
       "floorOrder": 5,
       "mekanik": {
-        "status": "tamamlandi",
-        "date": "2026-10-18",
+        "status": "bekliyor",
+        "date": "",
         "company": "Mekanik Tesisat A.Ş.",
-        "note": "Mekanik test ve montajlar tamamlandı."
+        "note": ""
       },
       "klima": {
-        "status": "tamamlandi",
-        "date": "2026-10-19",
+        "status": "bekliyor",
+        "date": "",
         "company": "VRF Klima Sistemleri",
-        "note": "Klima montajı ve drenaj testleri bitti."
+        "note": ""
       },
       "mesa": {
-        "status": "onaylandi",
-        "date": "2026-10-21",
-        "officer": "Serkan Demir (MESA Kontrol)",
-        "docNo": "MESA-KBL-03-5",
-        "note": "MESA tarafından teslim alındı. Elektrik testi için uygun."
+        "status": "bekliyor",
+        "date": "",
+        "officer": "",
+        "docNo": "",
+        "note": ""
       },
       "elektrikTest": {
-        "status": "hazir",
+        "status": "kilitli",
         "date": "",
         "tester": "",
         "reportNo": "",
-        "note": "MESA onayı tamam. Test ekibi sahaya bekleniyor."
+        "note": "Ön şartlar (Mekanik, Klima ve MESA Onayı) bekleniyor."
       },
-      "updatedAt": "2026-10-23",
-      "updatedBy": "Saha Koordinatörü"
+      "updatedAt": "-",
+      "updatedBy": "Sistem"
     },
     "3_kat1": {
       "id": "3_kat1",
@@ -867,33 +868,33 @@
       "floorShort": "1. KAT",
       "floorOrder": 4,
       "mekanik": {
-        "status": "tamamlandi",
-        "date": "2026-10-18",
+        "status": "bekliyor",
+        "date": "",
         "company": "Mekanik Tesisat A.Ş.",
-        "note": "Mekanik test ve montajlar tamamlandı."
+        "note": ""
       },
       "klima": {
-        "status": "tamamlandi",
-        "date": "2026-10-19",
+        "status": "bekliyor",
+        "date": "",
         "company": "VRF Klima Sistemleri",
-        "note": "Klima montajı ve drenaj testleri bitti."
+        "note": ""
       },
       "mesa": {
-        "status": "onaylandi",
-        "date": "2026-10-21",
-        "officer": "Serkan Demir (MESA Kontrol)",
-        "docNo": "MESA-KBL-03-4",
-        "note": "MESA tarafından teslim alındı. Elektrik testi için uygun."
+        "status": "bekliyor",
+        "date": "",
+        "officer": "",
+        "docNo": "",
+        "note": ""
       },
       "elektrikTest": {
-        "status": "hazir",
+        "status": "kilitli",
         "date": "",
         "tester": "",
         "reportNo": "",
-        "note": "MESA onayı tamam. Test ekibi sahaya bekleniyor."
+        "note": "Ön şartlar (Mekanik, Klima ve MESA Onayı) bekleniyor."
       },
-      "updatedAt": "2026-10-23",
-      "updatedBy": "Saha Koordinatörü"
+      "updatedAt": "-",
+      "updatedBy": "Sistem"
     },
     "3_zemin": {
       "id": "3_zemin",
@@ -904,33 +905,33 @@
       "floorShort": "ZEMİN",
       "floorOrder": 3,
       "mekanik": {
-        "status": "tamamlandi",
-        "date": "2026-10-18",
+        "status": "bekliyor",
+        "date": "",
         "company": "Mekanik Tesisat A.Ş.",
-        "note": "Mekanik test ve montajlar tamamlandı."
+        "note": ""
       },
       "klima": {
-        "status": "tamamlandi",
-        "date": "2026-10-19",
+        "status": "bekliyor",
+        "date": "",
         "company": "VRF Klima Sistemleri",
-        "note": "Klima montajı ve drenaj testleri bitti."
+        "note": ""
       },
       "mesa": {
-        "status": "onaylandi",
-        "date": "2026-10-21",
-        "officer": "Serkan Demir (MESA Kontrol)",
-        "docNo": "MESA-KBL-03-3",
-        "note": "MESA tarafından teslim alındı. Elektrik testi için uygun."
+        "status": "bekliyor",
+        "date": "",
+        "officer": "",
+        "docNo": "",
+        "note": ""
       },
       "elektrikTest": {
-        "status": "hazir",
+        "status": "kilitli",
         "date": "",
         "tester": "",
         "reportNo": "",
-        "note": "MESA onayı tamam. Test ekibi sahaya bekleniyor."
+        "note": "Ön şartlar (Mekanik, Klima ve MESA Onayı) bekleniyor."
       },
-      "updatedAt": "2026-10-23",
-      "updatedBy": "Saha Koordinatörü"
+      "updatedAt": "-",
+      "updatedBy": "Sistem"
     },
     "3_b1": {
       "id": "3_b1",
@@ -941,33 +942,33 @@
       "floorShort": "B1",
       "floorOrder": 2,
       "mekanik": {
-        "status": "tamamlandi",
-        "date": "2026-10-18",
+        "status": "bekliyor",
+        "date": "",
         "company": "Mekanik Tesisat A.Ş.",
-        "note": "Mekanik test ve montajlar tamamlandı."
+        "note": ""
       },
       "klima": {
-        "status": "tamamlandi",
-        "date": "2026-10-19",
+        "status": "bekliyor",
+        "date": "",
         "company": "VRF Klima Sistemleri",
-        "note": "Klima montajı ve drenaj testleri bitti."
+        "note": ""
       },
       "mesa": {
-        "status": "onaylandi",
-        "date": "2026-10-21",
-        "officer": "Serkan Demir (MESA Kontrol)",
-        "docNo": "MESA-KBL-03-2",
-        "note": "MESA tarafından teslim alındı. Elektrik testi için uygun."
+        "status": "bekliyor",
+        "date": "",
+        "officer": "",
+        "docNo": "",
+        "note": ""
       },
       "elektrikTest": {
-        "status": "hazir",
+        "status": "kilitli",
         "date": "",
         "tester": "",
         "reportNo": "",
-        "note": "MESA onayı tamam. Test ekibi sahaya bekleniyor."
+        "note": "Ön şartlar (Mekanik, Klima ve MESA Onayı) bekleniyor."
       },
-      "updatedAt": "2026-10-23",
-      "updatedBy": "Saha Koordinatörü"
+      "updatedAt": "-",
+      "updatedBy": "Sistem"
     },
     "3_b2": {
       "id": "3_b2",
@@ -978,33 +979,33 @@
       "floorShort": "B2",
       "floorOrder": 1,
       "mekanik": {
-        "status": "tamamlandi",
-        "date": "2026-10-14",
+        "status": "bekliyor",
+        "date": "",
         "company": "Mekanik Tesisat A.Ş.",
-        "note": "Kazan ve borulama montajı eksiksiz tamamlandı."
+        "note": ""
       },
       "klima": {
-        "status": "tamamlandi",
-        "date": "2026-10-15",
+        "status": "bekliyor",
+        "date": "",
         "company": "VRF Klima Sistemleri",
-        "note": "Kanal ve VRF iç ünite bağlantıları bitti."
+        "note": ""
       },
       "mesa": {
-        "status": "onaylandi",
-        "date": "2026-10-17",
-        "officer": "Cemil Arslan (MESA Saha Şefi)",
-        "docNo": "MESA-KBL-03-1",
-        "note": "Mahaller teslim alındı, elektrik testine onay verildi."
+        "status": "bekliyor",
+        "date": "",
+        "officer": "",
+        "docNo": "",
+        "note": ""
       },
       "elektrikTest": {
-        "status": "tamamlandi",
-        "date": "2026-10-20",
-        "tester": "Murat Özkan (Elektrik Şefi)",
-        "reportNo": "ELK-TR-03-1",
-        "note": "Yalıtım, meger ve fonksiyon testleri başarıyla tamamlandı. Enerjilendirilebilir."
+        "status": "kilitli",
+        "date": "",
+        "tester": "",
+        "reportNo": "",
+        "note": "Ön şartlar (Mekanik, Klima ve MESA Onayı) bekleniyor."
       },
-      "updatedAt": "2026-10-23",
-      "updatedBy": "Saha Koordinatörü"
+      "updatedAt": "-",
+      "updatedBy": "Sistem"
     },
     "4_cati": {
       "id": "4_cati",
@@ -1015,33 +1016,33 @@
       "floorShort": "ÇATI",
       "floorOrder": 8,
       "mekanik": {
-        "status": "tamamlandi",
-        "date": "2026-10-21",
+        "status": "bekliyor",
+        "date": "",
         "company": "Mekanik Tesisat A.Ş.",
-        "note": "Mekanik borulama bitti."
+        "note": ""
       },
       "klima": {
-        "status": "devam",
+        "status": "bekliyor",
         "date": "",
         "company": "VRF Klima Sistemleri",
-        "note": "Klima santrali ve kanal imalatı %70 seviyesinde sürüyor."
+        "note": ""
       },
       "mesa": {
         "status": "bekliyor",
         "date": "",
         "officer": "",
         "docNo": "",
-        "note": "Klima işi bitmeden MESA onayı alınamaz."
+        "note": ""
       },
       "elektrikTest": {
         "status": "kilitli",
         "date": "",
         "tester": "",
         "reportNo": "",
-        "note": ""
+        "note": "Ön şartlar (Mekanik, Klima ve MESA Onayı) bekleniyor."
       },
-      "updatedAt": "2026-10-23",
-      "updatedBy": "Saha Koordinatörü"
+      "updatedAt": "-",
+      "updatedBy": "Sistem"
     },
     "4_kat4": {
       "id": "4_kat4",
@@ -1052,33 +1053,33 @@
       "floorShort": "4. KAT",
       "floorOrder": 7,
       "mekanik": {
-        "status": "tamamlandi",
-        "date": "2026-10-20",
+        "status": "bekliyor",
+        "date": "",
         "company": "Mekanik Tesisat A.Ş.",
-        "note": "Mekanik işler bitirildi, teslime hazır."
+        "note": ""
       },
       "klima": {
-        "status": "tamamlandi",
-        "date": "2026-10-21",
+        "status": "bekliyor",
+        "date": "",
         "company": "VRF Klima Sistemleri",
-        "note": "Klima işleri bitirildi, teslime hazır."
+        "note": ""
       },
       "mesa": {
         "status": "bekliyor",
         "date": "",
         "officer": "",
         "docNo": "",
-        "note": "Mekanik ve klima bitti. MESA teslim kontrolü için çağrıldı."
+        "note": ""
       },
       "elektrikTest": {
         "status": "kilitli",
         "date": "",
         "tester": "",
         "reportNo": "",
-        "note": "MESA teslim onayı bekleniyor."
+        "note": "Ön şartlar (Mekanik, Klima ve MESA Onayı) bekleniyor."
       },
-      "updatedAt": "2026-10-23",
-      "updatedBy": "Saha Koordinatörü"
+      "updatedAt": "-",
+      "updatedBy": "Sistem"
     },
     "4_kat3": {
       "id": "4_kat3",
@@ -1089,33 +1090,33 @@
       "floorShort": "3. KAT",
       "floorOrder": 6,
       "mekanik": {
-        "status": "tamamlandi",
-        "date": "2026-10-20",
+        "status": "bekliyor",
+        "date": "",
         "company": "Mekanik Tesisat A.Ş.",
-        "note": "Mekanik işler bitirildi, teslime hazır."
+        "note": ""
       },
       "klima": {
-        "status": "tamamlandi",
-        "date": "2026-10-21",
+        "status": "bekliyor",
+        "date": "",
         "company": "VRF Klima Sistemleri",
-        "note": "Klima işleri bitirildi, teslime hazır."
+        "note": ""
       },
       "mesa": {
         "status": "bekliyor",
         "date": "",
         "officer": "",
         "docNo": "",
-        "note": "Mekanik ve klima bitti. MESA teslim kontrolü için çağrıldı."
+        "note": ""
       },
       "elektrikTest": {
         "status": "kilitli",
         "date": "",
         "tester": "",
         "reportNo": "",
-        "note": "MESA teslim onayı bekleniyor."
+        "note": "Ön şartlar (Mekanik, Klima ve MESA Onayı) bekleniyor."
       },
-      "updatedAt": "2026-10-23",
-      "updatedBy": "Saha Koordinatörü"
+      "updatedAt": "-",
+      "updatedBy": "Sistem"
     },
     "4_kat2": {
       "id": "4_kat2",
@@ -1126,33 +1127,33 @@
       "floorShort": "2. KAT",
       "floorOrder": 5,
       "mekanik": {
-        "status": "tamamlandi",
-        "date": "2026-10-20",
+        "status": "bekliyor",
+        "date": "",
         "company": "Mekanik Tesisat A.Ş.",
-        "note": "Mekanik işler bitirildi, teslime hazır."
+        "note": ""
       },
       "klima": {
-        "status": "tamamlandi",
-        "date": "2026-10-21",
+        "status": "bekliyor",
+        "date": "",
         "company": "VRF Klima Sistemleri",
-        "note": "Klima işleri bitirildi, teslime hazır."
+        "note": ""
       },
       "mesa": {
         "status": "bekliyor",
         "date": "",
         "officer": "",
         "docNo": "",
-        "note": "Mekanik ve klima bitti. MESA teslim kontrolü için çağrıldı."
+        "note": ""
       },
       "elektrikTest": {
         "status": "kilitli",
         "date": "",
         "tester": "",
         "reportNo": "",
-        "note": "MESA teslim onayı bekleniyor."
+        "note": "Ön şartlar (Mekanik, Klima ve MESA Onayı) bekleniyor."
       },
-      "updatedAt": "2026-10-23",
-      "updatedBy": "Saha Koordinatörü"
+      "updatedAt": "-",
+      "updatedBy": "Sistem"
     },
     "4_kat1": {
       "id": "4_kat1",
@@ -1163,33 +1164,33 @@
       "floorShort": "1. KAT",
       "floorOrder": 4,
       "mekanik": {
-        "status": "tamamlandi",
-        "date": "2026-10-20",
+        "status": "bekliyor",
+        "date": "",
         "company": "Mekanik Tesisat A.Ş.",
-        "note": "Mekanik işler bitirildi, teslime hazır."
+        "note": ""
       },
       "klima": {
-        "status": "tamamlandi",
-        "date": "2026-10-21",
+        "status": "bekliyor",
+        "date": "",
         "company": "VRF Klima Sistemleri",
-        "note": "Klima işleri bitirildi, teslime hazır."
+        "note": ""
       },
       "mesa": {
         "status": "bekliyor",
         "date": "",
         "officer": "",
         "docNo": "",
-        "note": "Mekanik ve klima bitti. MESA teslim kontrolü için çağrıldı."
+        "note": ""
       },
       "elektrikTest": {
         "status": "kilitli",
         "date": "",
         "tester": "",
         "reportNo": "",
-        "note": "MESA teslim onayı bekleniyor."
+        "note": "Ön şartlar (Mekanik, Klima ve MESA Onayı) bekleniyor."
       },
-      "updatedAt": "2026-10-23",
-      "updatedBy": "Saha Koordinatörü"
+      "updatedAt": "-",
+      "updatedBy": "Sistem"
     },
     "4_zemin": {
       "id": "4_zemin",
@@ -1200,33 +1201,33 @@
       "floorShort": "ZEMİN",
       "floorOrder": 3,
       "mekanik": {
-        "status": "tamamlandi",
-        "date": "2026-10-18",
+        "status": "bekliyor",
+        "date": "",
         "company": "Mekanik Tesisat A.Ş.",
-        "note": "Mekanik test ve montajlar tamamlandı."
+        "note": ""
       },
       "klima": {
-        "status": "tamamlandi",
-        "date": "2026-10-19",
+        "status": "bekliyor",
+        "date": "",
         "company": "VRF Klima Sistemleri",
-        "note": "Klima montajı ve drenaj testleri bitti."
+        "note": ""
       },
       "mesa": {
-        "status": "onaylandi",
-        "date": "2026-10-21",
-        "officer": "Serkan Demir (MESA Kontrol)",
-        "docNo": "MESA-KBL-04-3",
-        "note": "MESA tarafından teslim alındı. Elektrik testi için uygun."
+        "status": "bekliyor",
+        "date": "",
+        "officer": "",
+        "docNo": "",
+        "note": ""
       },
       "elektrikTest": {
-        "status": "hazir",
+        "status": "kilitli",
         "date": "",
         "tester": "",
         "reportNo": "",
-        "note": "MESA onayı tamam. Test ekibi sahaya bekleniyor."
+        "note": "Ön şartlar (Mekanik, Klima ve MESA Onayı) bekleniyor."
       },
-      "updatedAt": "2026-10-23",
-      "updatedBy": "Saha Koordinatörü"
+      "updatedAt": "-",
+      "updatedBy": "Sistem"
     },
     "4_b1": {
       "id": "4_b1",
@@ -1237,33 +1238,33 @@
       "floorShort": "B1",
       "floorOrder": 2,
       "mekanik": {
-        "status": "tamamlandi",
-        "date": "2026-10-18",
+        "status": "bekliyor",
+        "date": "",
         "company": "Mekanik Tesisat A.Ş.",
-        "note": "Mekanik test ve montajlar tamamlandı."
+        "note": ""
       },
       "klima": {
-        "status": "tamamlandi",
-        "date": "2026-10-19",
+        "status": "bekliyor",
+        "date": "",
         "company": "VRF Klima Sistemleri",
-        "note": "Klima montajı ve drenaj testleri bitti."
+        "note": ""
       },
       "mesa": {
-        "status": "onaylandi",
-        "date": "2026-10-21",
-        "officer": "Serkan Demir (MESA Kontrol)",
-        "docNo": "MESA-KBL-04-2",
-        "note": "MESA tarafından teslim alındı. Elektrik testi için uygun."
+        "status": "bekliyor",
+        "date": "",
+        "officer": "",
+        "docNo": "",
+        "note": ""
       },
       "elektrikTest": {
-        "status": "hazir",
+        "status": "kilitli",
         "date": "",
         "tester": "",
         "reportNo": "",
-        "note": "MESA onayı tamam. Test ekibi sahaya bekleniyor."
+        "note": "Ön şartlar (Mekanik, Klima ve MESA Onayı) bekleniyor."
       },
-      "updatedAt": "2026-10-23",
-      "updatedBy": "Saha Koordinatörü"
+      "updatedAt": "-",
+      "updatedBy": "Sistem"
     },
     "4_b2": {
       "id": "4_b2",
@@ -1274,33 +1275,33 @@
       "floorShort": "B2",
       "floorOrder": 1,
       "mekanik": {
-        "status": "tamamlandi",
-        "date": "2026-10-18",
+        "status": "bekliyor",
+        "date": "",
         "company": "Mekanik Tesisat A.Ş.",
-        "note": "Mekanik test ve montajlar tamamlandı."
+        "note": ""
       },
       "klima": {
-        "status": "tamamlandi",
-        "date": "2026-10-19",
+        "status": "bekliyor",
+        "date": "",
         "company": "VRF Klima Sistemleri",
-        "note": "Klima montajı ve drenaj testleri bitti."
+        "note": ""
       },
       "mesa": {
-        "status": "onaylandi",
-        "date": "2026-10-21",
-        "officer": "Serkan Demir (MESA Kontrol)",
-        "docNo": "MESA-KBL-04-1",
-        "note": "MESA tarafından teslim alındı. Elektrik testi için uygun."
+        "status": "bekliyor",
+        "date": "",
+        "officer": "",
+        "docNo": "",
+        "note": ""
       },
       "elektrikTest": {
-        "status": "hazir",
+        "status": "kilitli",
         "date": "",
         "tester": "",
         "reportNo": "",
-        "note": "MESA onayı tamam. Test ekibi sahaya bekleniyor."
+        "note": "Ön şartlar (Mekanik, Klima ve MESA Onayı) bekleniyor."
       },
-      "updatedAt": "2026-10-23",
-      "updatedBy": "Saha Koordinatörü"
+      "updatedAt": "-",
+      "updatedBy": "Sistem"
     },
     "5_cati": {
       "id": "5_cati",
@@ -1311,33 +1312,33 @@
       "floorShort": "ÇATI",
       "floorOrder": 8,
       "mekanik": {
-        "status": "tamamlandi",
-        "date": "2026-10-21",
+        "status": "bekliyor",
+        "date": "",
         "company": "Mekanik Tesisat A.Ş.",
-        "note": "Mekanik borulama bitti."
+        "note": ""
       },
       "klima": {
-        "status": "devam",
+        "status": "bekliyor",
         "date": "",
         "company": "VRF Klima Sistemleri",
-        "note": "Klima santrali ve kanal imalatı %70 seviyesinde sürüyor."
+        "note": ""
       },
       "mesa": {
         "status": "bekliyor",
         "date": "",
         "officer": "",
         "docNo": "",
-        "note": "Klima işi bitmeden MESA onayı alınamaz."
+        "note": ""
       },
       "elektrikTest": {
         "status": "kilitli",
         "date": "",
         "tester": "",
         "reportNo": "",
-        "note": ""
+        "note": "Ön şartlar (Mekanik, Klima ve MESA Onayı) bekleniyor."
       },
-      "updatedAt": "2026-10-23",
-      "updatedBy": "Saha Koordinatörü"
+      "updatedAt": "-",
+      "updatedBy": "Sistem"
     },
     "5_kat4": {
       "id": "5_kat4",
@@ -1348,33 +1349,33 @@
       "floorShort": "4. KAT",
       "floorOrder": 7,
       "mekanik": {
-        "status": "tamamlandi",
-        "date": "2026-10-21",
+        "status": "bekliyor",
+        "date": "",
         "company": "Mekanik Tesisat A.Ş.",
-        "note": "Mekanik borulama bitti."
+        "note": ""
       },
       "klima": {
-        "status": "devam",
+        "status": "bekliyor",
         "date": "",
         "company": "VRF Klima Sistemleri",
-        "note": "Klima santrali ve kanal imalatı %70 seviyesinde sürüyor."
+        "note": ""
       },
       "mesa": {
         "status": "bekliyor",
         "date": "",
         "officer": "",
         "docNo": "",
-        "note": "Klima işi bitmeden MESA onayı alınamaz."
+        "note": ""
       },
       "elektrikTest": {
         "status": "kilitli",
         "date": "",
         "tester": "",
         "reportNo": "",
-        "note": ""
+        "note": "Ön şartlar (Mekanik, Klima ve MESA Onayı) bekleniyor."
       },
-      "updatedAt": "2026-10-23",
-      "updatedBy": "Saha Koordinatörü"
+      "updatedAt": "-",
+      "updatedBy": "Sistem"
     },
     "5_kat3": {
       "id": "5_kat3",
@@ -1385,33 +1386,33 @@
       "floorShort": "3. KAT",
       "floorOrder": 6,
       "mekanik": {
-        "status": "tamamlandi",
-        "date": "2026-10-21",
+        "status": "bekliyor",
+        "date": "",
         "company": "Mekanik Tesisat A.Ş.",
-        "note": "Mekanik borulama bitti."
+        "note": ""
       },
       "klima": {
-        "status": "devam",
+        "status": "bekliyor",
         "date": "",
         "company": "VRF Klima Sistemleri",
-        "note": "Klima santrali ve kanal imalatı %70 seviyesinde sürüyor."
+        "note": ""
       },
       "mesa": {
         "status": "bekliyor",
         "date": "",
         "officer": "",
         "docNo": "",
-        "note": "Klima işi bitmeden MESA onayı alınamaz."
+        "note": ""
       },
       "elektrikTest": {
         "status": "kilitli",
         "date": "",
         "tester": "",
         "reportNo": "",
-        "note": ""
+        "note": "Ön şartlar (Mekanik, Klima ve MESA Onayı) bekleniyor."
       },
-      "updatedAt": "2026-10-23",
-      "updatedBy": "Saha Koordinatörü"
+      "updatedAt": "-",
+      "updatedBy": "Sistem"
     },
     "5_kat2": {
       "id": "5_kat2",
@@ -1422,33 +1423,33 @@
       "floorShort": "2. KAT",
       "floorOrder": 5,
       "mekanik": {
-        "status": "tamamlandi",
-        "date": "2026-10-21",
+        "status": "bekliyor",
+        "date": "",
         "company": "Mekanik Tesisat A.Ş.",
-        "note": "Mekanik borulama bitti."
+        "note": ""
       },
       "klima": {
-        "status": "devam",
+        "status": "bekliyor",
         "date": "",
         "company": "VRF Klima Sistemleri",
-        "note": "Klima santrali ve kanal imalatı %70 seviyesinde sürüyor."
+        "note": ""
       },
       "mesa": {
         "status": "bekliyor",
         "date": "",
         "officer": "",
         "docNo": "",
-        "note": "Klima işi bitmeden MESA onayı alınamaz."
+        "note": ""
       },
       "elektrikTest": {
         "status": "kilitli",
         "date": "",
         "tester": "",
         "reportNo": "",
-        "note": ""
+        "note": "Ön şartlar (Mekanik, Klima ve MESA Onayı) bekleniyor."
       },
-      "updatedAt": "2026-10-23",
-      "updatedBy": "Saha Koordinatörü"
+      "updatedAt": "-",
+      "updatedBy": "Sistem"
     },
     "5_kat1": {
       "id": "5_kat1",
@@ -1459,33 +1460,33 @@
       "floorShort": "1. KAT",
       "floorOrder": 4,
       "mekanik": {
-        "status": "tamamlandi",
-        "date": "2026-10-20",
+        "status": "bekliyor",
+        "date": "",
         "company": "Mekanik Tesisat A.Ş.",
-        "note": "Mekanik işler bitirildi, teslime hazır."
+        "note": ""
       },
       "klima": {
-        "status": "tamamlandi",
-        "date": "2026-10-21",
+        "status": "bekliyor",
+        "date": "",
         "company": "VRF Klima Sistemleri",
-        "note": "Klima işleri bitirildi, teslime hazır."
+        "note": ""
       },
       "mesa": {
         "status": "bekliyor",
         "date": "",
         "officer": "",
         "docNo": "",
-        "note": "Mekanik ve klima bitti. MESA teslim kontrolü için çağrıldı."
+        "note": ""
       },
       "elektrikTest": {
         "status": "kilitli",
         "date": "",
         "tester": "",
         "reportNo": "",
-        "note": "MESA teslim onayı bekleniyor."
+        "note": "Ön şartlar (Mekanik, Klima ve MESA Onayı) bekleniyor."
       },
-      "updatedAt": "2026-10-23",
-      "updatedBy": "Saha Koordinatörü"
+      "updatedAt": "-",
+      "updatedBy": "Sistem"
     },
     "5_zemin": {
       "id": "5_zemin",
@@ -1496,33 +1497,33 @@
       "floorShort": "ZEMİN",
       "floorOrder": 3,
       "mekanik": {
-        "status": "tamamlandi",
-        "date": "2026-10-20",
+        "status": "bekliyor",
+        "date": "",
         "company": "Mekanik Tesisat A.Ş.",
-        "note": "Mekanik işler bitirildi, teslime hazır."
+        "note": ""
       },
       "klima": {
-        "status": "tamamlandi",
-        "date": "2026-10-21",
+        "status": "bekliyor",
+        "date": "",
         "company": "VRF Klima Sistemleri",
-        "note": "Klima işleri bitirildi, teslime hazır."
+        "note": ""
       },
       "mesa": {
         "status": "bekliyor",
         "date": "",
         "officer": "",
         "docNo": "",
-        "note": "Mekanik ve klima bitti. MESA teslim kontrolü için çağrıldı."
+        "note": ""
       },
       "elektrikTest": {
         "status": "kilitli",
         "date": "",
         "tester": "",
         "reportNo": "",
-        "note": "MESA teslim onayı bekleniyor."
+        "note": "Ön şartlar (Mekanik, Klima ve MESA Onayı) bekleniyor."
       },
-      "updatedAt": "2026-10-23",
-      "updatedBy": "Saha Koordinatörü"
+      "updatedAt": "-",
+      "updatedBy": "Sistem"
     },
     "5_b1": {
       "id": "5_b1",
@@ -1533,33 +1534,33 @@
       "floorShort": "B1",
       "floorOrder": 2,
       "mekanik": {
-        "status": "tamamlandi",
-        "date": "2026-10-20",
+        "status": "bekliyor",
+        "date": "",
         "company": "Mekanik Tesisat A.Ş.",
-        "note": "Mekanik işler bitirildi, teslime hazır."
+        "note": ""
       },
       "klima": {
-        "status": "tamamlandi",
-        "date": "2026-10-21",
+        "status": "bekliyor",
+        "date": "",
         "company": "VRF Klima Sistemleri",
-        "note": "Klima işleri bitirildi, teslime hazır."
+        "note": ""
       },
       "mesa": {
         "status": "bekliyor",
         "date": "",
         "officer": "",
         "docNo": "",
-        "note": "Mekanik ve klima bitti. MESA teslim kontrolü için çağrıldı."
+        "note": ""
       },
       "elektrikTest": {
         "status": "kilitli",
         "date": "",
         "tester": "",
         "reportNo": "",
-        "note": "MESA teslim onayı bekleniyor."
+        "note": "Ön şartlar (Mekanik, Klima ve MESA Onayı) bekleniyor."
       },
-      "updatedAt": "2026-10-23",
-      "updatedBy": "Saha Koordinatörü"
+      "updatedAt": "-",
+      "updatedBy": "Sistem"
     },
     "5_b2": {
       "id": "5_b2",
@@ -1570,33 +1571,33 @@
       "floorShort": "B2",
       "floorOrder": 1,
       "mekanik": {
-        "status": "tamamlandi",
-        "date": "2026-10-20",
+        "status": "bekliyor",
+        "date": "",
         "company": "Mekanik Tesisat A.Ş.",
-        "note": "Mekanik işler bitirildi, teslime hazır."
+        "note": ""
       },
       "klima": {
-        "status": "tamamlandi",
-        "date": "2026-10-21",
+        "status": "bekliyor",
+        "date": "",
         "company": "VRF Klima Sistemleri",
-        "note": "Klima işleri bitirildi, teslime hazır."
+        "note": ""
       },
       "mesa": {
         "status": "bekliyor",
         "date": "",
         "officer": "",
         "docNo": "",
-        "note": "Mekanik ve klima bitti. MESA teslim kontrolü için çağrıldı."
+        "note": ""
       },
       "elektrikTest": {
         "status": "kilitli",
         "date": "",
         "tester": "",
         "reportNo": "",
-        "note": "MESA teslim onayı bekleniyor."
+        "note": "Ön şartlar (Mekanik, Klima ve MESA Onayı) bekleniyor."
       },
-      "updatedAt": "2026-10-23",
-      "updatedBy": "Saha Koordinatörü"
+      "updatedAt": "-",
+      "updatedBy": "Sistem"
     },
     "6_cati": {
       "id": "6_cati",
@@ -1607,16 +1608,16 @@
       "floorShort": "ÇATI",
       "floorOrder": 8,
       "mekanik": {
-        "status": "devam",
+        "status": "bekliyor",
         "date": "",
         "company": "Mekanik Tesisat A.Ş.",
-        "note": "Sıhhi ve yangın tesisatı devam ediyor."
+        "note": ""
       },
       "klima": {
         "status": "bekliyor",
         "date": "",
         "company": "VRF Klima Sistemleri",
-        "note": "Menfez ve ünite montajı bekleniyor."
+        "note": ""
       },
       "mesa": {
         "status": "bekliyor",
@@ -1630,10 +1631,10 @@
         "date": "",
         "tester": "",
         "reportNo": "",
-        "note": ""
+        "note": "Ön şartlar (Mekanik, Klima ve MESA Onayı) bekleniyor."
       },
-      "updatedAt": "2026-10-23",
-      "updatedBy": "Saha Koordinatörü"
+      "updatedAt": "-",
+      "updatedBy": "Sistem"
     },
     "6_kat4": {
       "id": "6_kat4",
@@ -1644,16 +1645,16 @@
       "floorShort": "4. KAT",
       "floorOrder": 7,
       "mekanik": {
-        "status": "devam",
+        "status": "bekliyor",
         "date": "",
         "company": "Mekanik Tesisat A.Ş.",
-        "note": "Sıhhi ve yangın tesisatı devam ediyor."
+        "note": ""
       },
       "klima": {
         "status": "bekliyor",
         "date": "",
         "company": "VRF Klima Sistemleri",
-        "note": "Menfez ve ünite montajı bekleniyor."
+        "note": ""
       },
       "mesa": {
         "status": "bekliyor",
@@ -1667,10 +1668,10 @@
         "date": "",
         "tester": "",
         "reportNo": "",
-        "note": ""
+        "note": "Ön şartlar (Mekanik, Klima ve MESA Onayı) bekleniyor."
       },
-      "updatedAt": "2026-10-23",
-      "updatedBy": "Saha Koordinatörü"
+      "updatedAt": "-",
+      "updatedBy": "Sistem"
     },
     "6_kat3": {
       "id": "6_kat3",
@@ -1681,33 +1682,33 @@
       "floorShort": "3. KAT",
       "floorOrder": 6,
       "mekanik": {
-        "status": "tamamlandi",
-        "date": "2026-10-21",
+        "status": "bekliyor",
+        "date": "",
         "company": "Mekanik Tesisat A.Ş.",
-        "note": "Mekanik borulama bitti."
+        "note": ""
       },
       "klima": {
-        "status": "devam",
+        "status": "bekliyor",
         "date": "",
         "company": "VRF Klima Sistemleri",
-        "note": "Klima santrali ve kanal imalatı %70 seviyesinde sürüyor."
+        "note": ""
       },
       "mesa": {
         "status": "bekliyor",
         "date": "",
         "officer": "",
         "docNo": "",
-        "note": "Klima işi bitmeden MESA onayı alınamaz."
+        "note": ""
       },
       "elektrikTest": {
         "status": "kilitli",
         "date": "",
         "tester": "",
         "reportNo": "",
-        "note": ""
+        "note": "Ön şartlar (Mekanik, Klima ve MESA Onayı) bekleniyor."
       },
-      "updatedAt": "2026-10-23",
-      "updatedBy": "Saha Koordinatörü"
+      "updatedAt": "-",
+      "updatedBy": "Sistem"
     },
     "6_kat2": {
       "id": "6_kat2",
@@ -1718,33 +1719,33 @@
       "floorShort": "2. KAT",
       "floorOrder": 5,
       "mekanik": {
-        "status": "tamamlandi",
-        "date": "2026-10-21",
+        "status": "bekliyor",
+        "date": "",
         "company": "Mekanik Tesisat A.Ş.",
-        "note": "Mekanik borulama bitti."
+        "note": ""
       },
       "klima": {
-        "status": "devam",
+        "status": "bekliyor",
         "date": "",
         "company": "VRF Klima Sistemleri",
-        "note": "Klima santrali ve kanal imalatı %70 seviyesinde sürüyor."
+        "note": ""
       },
       "mesa": {
         "status": "bekliyor",
         "date": "",
         "officer": "",
         "docNo": "",
-        "note": "Klima işi bitmeden MESA onayı alınamaz."
+        "note": ""
       },
       "elektrikTest": {
         "status": "kilitli",
         "date": "",
         "tester": "",
         "reportNo": "",
-        "note": ""
+        "note": "Ön şartlar (Mekanik, Klima ve MESA Onayı) bekleniyor."
       },
-      "updatedAt": "2026-10-23",
-      "updatedBy": "Saha Koordinatörü"
+      "updatedAt": "-",
+      "updatedBy": "Sistem"
     },
     "6_kat1": {
       "id": "6_kat1",
@@ -1755,33 +1756,33 @@
       "floorShort": "1. KAT",
       "floorOrder": 4,
       "mekanik": {
-        "status": "tamamlandi",
-        "date": "2026-10-21",
+        "status": "bekliyor",
+        "date": "",
         "company": "Mekanik Tesisat A.Ş.",
-        "note": "Mekanik borulama bitti."
+        "note": ""
       },
       "klima": {
-        "status": "devam",
+        "status": "bekliyor",
         "date": "",
         "company": "VRF Klima Sistemleri",
-        "note": "Klima santrali ve kanal imalatı %70 seviyesinde sürüyor."
+        "note": ""
       },
       "mesa": {
         "status": "bekliyor",
         "date": "",
         "officer": "",
         "docNo": "",
-        "note": "Klima işi bitmeden MESA onayı alınamaz."
+        "note": ""
       },
       "elektrikTest": {
         "status": "kilitli",
         "date": "",
         "tester": "",
         "reportNo": "",
-        "note": ""
+        "note": "Ön şartlar (Mekanik, Klima ve MESA Onayı) bekleniyor."
       },
-      "updatedAt": "2026-10-23",
-      "updatedBy": "Saha Koordinatörü"
+      "updatedAt": "-",
+      "updatedBy": "Sistem"
     },
     "6_zemin": {
       "id": "6_zemin",
@@ -1792,33 +1793,33 @@
       "floorShort": "ZEMİN",
       "floorOrder": 3,
       "mekanik": {
-        "status": "tamamlandi",
-        "date": "2026-10-21",
+        "status": "bekliyor",
+        "date": "",
         "company": "Mekanik Tesisat A.Ş.",
-        "note": "Mekanik borulama bitti."
+        "note": ""
       },
       "klima": {
-        "status": "devam",
+        "status": "bekliyor",
         "date": "",
         "company": "VRF Klima Sistemleri",
-        "note": "Klima santrali ve kanal imalatı %70 seviyesinde sürüyor."
+        "note": ""
       },
       "mesa": {
         "status": "bekliyor",
         "date": "",
         "officer": "",
         "docNo": "",
-        "note": "Klima işi bitmeden MESA onayı alınamaz."
+        "note": ""
       },
       "elektrikTest": {
         "status": "kilitli",
         "date": "",
         "tester": "",
         "reportNo": "",
-        "note": ""
+        "note": "Ön şartlar (Mekanik, Klima ve MESA Onayı) bekleniyor."
       },
-      "updatedAt": "2026-10-23",
-      "updatedBy": "Saha Koordinatörü"
+      "updatedAt": "-",
+      "updatedBy": "Sistem"
     },
     "6_b1": {
       "id": "6_b1",
@@ -1829,33 +1830,33 @@
       "floorShort": "B1",
       "floorOrder": 2,
       "mekanik": {
-        "status": "tamamlandi",
-        "date": "2026-10-21",
+        "status": "bekliyor",
+        "date": "",
         "company": "Mekanik Tesisat A.Ş.",
-        "note": "Mekanik borulama bitti."
+        "note": ""
       },
       "klima": {
-        "status": "devam",
+        "status": "bekliyor",
         "date": "",
         "company": "VRF Klima Sistemleri",
-        "note": "Klima santrali ve kanal imalatı %70 seviyesinde sürüyor."
+        "note": ""
       },
       "mesa": {
         "status": "bekliyor",
         "date": "",
         "officer": "",
         "docNo": "",
-        "note": "Klima işi bitmeden MESA onayı alınamaz."
+        "note": ""
       },
       "elektrikTest": {
         "status": "kilitli",
         "date": "",
         "tester": "",
         "reportNo": "",
-        "note": ""
+        "note": "Ön şartlar (Mekanik, Klima ve MESA Onayı) bekleniyor."
       },
-      "updatedAt": "2026-10-23",
-      "updatedBy": "Saha Koordinatörü"
+      "updatedAt": "-",
+      "updatedBy": "Sistem"
     },
     "6_b2": {
       "id": "6_b2",
@@ -1866,33 +1867,33 @@
       "floorShort": "B2",
       "floorOrder": 1,
       "mekanik": {
-        "status": "tamamlandi",
-        "date": "2026-10-20",
+        "status": "bekliyor",
+        "date": "",
         "company": "Mekanik Tesisat A.Ş.",
-        "note": "Mekanik işler bitirildi, teslime hazır."
+        "note": ""
       },
       "klima": {
-        "status": "tamamlandi",
-        "date": "2026-10-21",
+        "status": "bekliyor",
+        "date": "",
         "company": "VRF Klima Sistemleri",
-        "note": "Klima işleri bitirildi, teslime hazır."
+        "note": ""
       },
       "mesa": {
         "status": "bekliyor",
         "date": "",
         "officer": "",
         "docNo": "",
-        "note": "Mekanik ve klima bitti. MESA teslim kontrolü için çağrıldı."
+        "note": ""
       },
       "elektrikTest": {
         "status": "kilitli",
         "date": "",
         "tester": "",
         "reportNo": "",
-        "note": "MESA teslim onayı bekleniyor."
+        "note": "Ön şartlar (Mekanik, Klima ve MESA Onayı) bekleniyor."
       },
-      "updatedAt": "2026-10-23",
-      "updatedBy": "Saha Koordinatörü"
+      "updatedAt": "-",
+      "updatedBy": "Sistem"
     },
     "7_cati": {
       "id": "7_cati",
@@ -1903,16 +1904,16 @@
       "floorShort": "ÇATI",
       "floorOrder": 8,
       "mekanik": {
-        "status": "devam",
+        "status": "bekliyor",
         "date": "",
         "company": "Mekanik Tesisat A.Ş.",
-        "note": "Sıhhi ve yangın tesisatı devam ediyor."
+        "note": ""
       },
       "klima": {
         "status": "bekliyor",
         "date": "",
         "company": "VRF Klima Sistemleri",
-        "note": "Menfez ve ünite montajı bekleniyor."
+        "note": ""
       },
       "mesa": {
         "status": "bekliyor",
@@ -1926,10 +1927,10 @@
         "date": "",
         "tester": "",
         "reportNo": "",
-        "note": ""
+        "note": "Ön şartlar (Mekanik, Klima ve MESA Onayı) bekleniyor."
       },
-      "updatedAt": "2026-10-23",
-      "updatedBy": "Saha Koordinatörü"
+      "updatedAt": "-",
+      "updatedBy": "Sistem"
     },
     "7_kat4": {
       "id": "7_kat4",
@@ -1940,16 +1941,16 @@
       "floorShort": "4. KAT",
       "floorOrder": 7,
       "mekanik": {
-        "status": "devam",
+        "status": "bekliyor",
         "date": "",
         "company": "Mekanik Tesisat A.Ş.",
-        "note": "Sıhhi ve yangın tesisatı devam ediyor."
+        "note": ""
       },
       "klima": {
         "status": "bekliyor",
         "date": "",
         "company": "VRF Klima Sistemleri",
-        "note": "Menfez ve ünite montajı bekleniyor."
+        "note": ""
       },
       "mesa": {
         "status": "bekliyor",
@@ -1963,10 +1964,10 @@
         "date": "",
         "tester": "",
         "reportNo": "",
-        "note": ""
+        "note": "Ön şartlar (Mekanik, Klima ve MESA Onayı) bekleniyor."
       },
-      "updatedAt": "2026-10-23",
-      "updatedBy": "Saha Koordinatörü"
+      "updatedAt": "-",
+      "updatedBy": "Sistem"
     },
     "7_kat3": {
       "id": "7_kat3",
@@ -1977,16 +1978,16 @@
       "floorShort": "3. KAT",
       "floorOrder": 6,
       "mekanik": {
-        "status": "devam",
+        "status": "bekliyor",
         "date": "",
         "company": "Mekanik Tesisat A.Ş.",
-        "note": "Sıhhi ve yangın tesisatı devam ediyor."
+        "note": ""
       },
       "klima": {
         "status": "bekliyor",
         "date": "",
         "company": "VRF Klima Sistemleri",
-        "note": "Menfez ve ünite montajı bekleniyor."
+        "note": ""
       },
       "mesa": {
         "status": "bekliyor",
@@ -2000,10 +2001,10 @@
         "date": "",
         "tester": "",
         "reportNo": "",
-        "note": ""
+        "note": "Ön şartlar (Mekanik, Klima ve MESA Onayı) bekleniyor."
       },
-      "updatedAt": "2026-10-23",
-      "updatedBy": "Saha Koordinatörü"
+      "updatedAt": "-",
+      "updatedBy": "Sistem"
     },
     "7_kat2": {
       "id": "7_kat2",
@@ -2014,16 +2015,16 @@
       "floorShort": "2. KAT",
       "floorOrder": 5,
       "mekanik": {
-        "status": "devam",
+        "status": "bekliyor",
         "date": "",
         "company": "Mekanik Tesisat A.Ş.",
-        "note": "Sıhhi ve yangın tesisatı devam ediyor."
+        "note": ""
       },
       "klima": {
         "status": "bekliyor",
         "date": "",
         "company": "VRF Klima Sistemleri",
-        "note": "Menfez ve ünite montajı bekleniyor."
+        "note": ""
       },
       "mesa": {
         "status": "bekliyor",
@@ -2037,10 +2038,10 @@
         "date": "",
         "tester": "",
         "reportNo": "",
-        "note": ""
+        "note": "Ön şartlar (Mekanik, Klima ve MESA Onayı) bekleniyor."
       },
-      "updatedAt": "2026-10-23",
-      "updatedBy": "Saha Koordinatörü"
+      "updatedAt": "-",
+      "updatedBy": "Sistem"
     },
     "7_kat1": {
       "id": "7_kat1",
@@ -2051,16 +2052,16 @@
       "floorShort": "1. KAT",
       "floorOrder": 4,
       "mekanik": {
-        "status": "devam",
+        "status": "bekliyor",
         "date": "",
         "company": "Mekanik Tesisat A.Ş.",
-        "note": "Sıhhi ve yangın tesisatı devam ediyor."
+        "note": ""
       },
       "klima": {
         "status": "bekliyor",
         "date": "",
         "company": "VRF Klima Sistemleri",
-        "note": "Menfez ve ünite montajı bekleniyor."
+        "note": ""
       },
       "mesa": {
         "status": "bekliyor",
@@ -2074,10 +2075,10 @@
         "date": "",
         "tester": "",
         "reportNo": "",
-        "note": ""
+        "note": "Ön şartlar (Mekanik, Klima ve MESA Onayı) bekleniyor."
       },
-      "updatedAt": "2026-10-23",
-      "updatedBy": "Saha Koordinatörü"
+      "updatedAt": "-",
+      "updatedBy": "Sistem"
     },
     "7_zemin": {
       "id": "7_zemin",
@@ -2088,33 +2089,33 @@
       "floorShort": "ZEMİN",
       "floorOrder": 3,
       "mekanik": {
-        "status": "tamamlandi",
-        "date": "2026-10-21",
+        "status": "bekliyor",
+        "date": "",
         "company": "Mekanik Tesisat A.Ş.",
-        "note": "Mekanik borulama bitti."
+        "note": ""
       },
       "klima": {
-        "status": "devam",
+        "status": "bekliyor",
         "date": "",
         "company": "VRF Klima Sistemleri",
-        "note": "Klima santrali ve kanal imalatı %70 seviyesinde sürüyor."
+        "note": ""
       },
       "mesa": {
         "status": "bekliyor",
         "date": "",
         "officer": "",
         "docNo": "",
-        "note": "Klima işi bitmeden MESA onayı alınamaz."
+        "note": ""
       },
       "elektrikTest": {
         "status": "kilitli",
         "date": "",
         "tester": "",
         "reportNo": "",
-        "note": ""
+        "note": "Ön şartlar (Mekanik, Klima ve MESA Onayı) bekleniyor."
       },
-      "updatedAt": "2026-10-23",
-      "updatedBy": "Saha Koordinatörü"
+      "updatedAt": "-",
+      "updatedBy": "Sistem"
     },
     "7_b1": {
       "id": "7_b1",
@@ -2125,33 +2126,33 @@
       "floorShort": "B1",
       "floorOrder": 2,
       "mekanik": {
-        "status": "tamamlandi",
-        "date": "2026-10-21",
+        "status": "bekliyor",
+        "date": "",
         "company": "Mekanik Tesisat A.Ş.",
-        "note": "Mekanik borulama bitti."
+        "note": ""
       },
       "klima": {
-        "status": "devam",
+        "status": "bekliyor",
         "date": "",
         "company": "VRF Klima Sistemleri",
-        "note": "Klima santrali ve kanal imalatı %70 seviyesinde sürüyor."
+        "note": ""
       },
       "mesa": {
         "status": "bekliyor",
         "date": "",
         "officer": "",
         "docNo": "",
-        "note": "Klima işi bitmeden MESA onayı alınamaz."
+        "note": ""
       },
       "elektrikTest": {
         "status": "kilitli",
         "date": "",
         "tester": "",
         "reportNo": "",
-        "note": ""
+        "note": "Ön şartlar (Mekanik, Klima ve MESA Onayı) bekleniyor."
       },
-      "updatedAt": "2026-10-23",
-      "updatedBy": "Saha Koordinatörü"
+      "updatedAt": "-",
+      "updatedBy": "Sistem"
     },
     "7_b2": {
       "id": "7_b2",
@@ -2162,33 +2163,33 @@
       "floorShort": "B2",
       "floorOrder": 1,
       "mekanik": {
-        "status": "tamamlandi",
-        "date": "2026-10-21",
+        "status": "bekliyor",
+        "date": "",
         "company": "Mekanik Tesisat A.Ş.",
-        "note": "Mekanik borulama bitti."
+        "note": ""
       },
       "klima": {
-        "status": "devam",
+        "status": "bekliyor",
         "date": "",
         "company": "VRF Klima Sistemleri",
-        "note": "Klima santrali ve kanal imalatı %70 seviyesinde sürüyor."
+        "note": ""
       },
       "mesa": {
         "status": "bekliyor",
         "date": "",
         "officer": "",
         "docNo": "",
-        "note": "Klima işi bitmeden MESA onayı alınamaz."
+        "note": ""
       },
       "elektrikTest": {
         "status": "kilitli",
         "date": "",
         "tester": "",
         "reportNo": "",
-        "note": ""
+        "note": "Ön şartlar (Mekanik, Klima ve MESA Onayı) bekleniyor."
       },
-      "updatedAt": "2026-10-23",
-      "updatedBy": "Saha Koordinatörü"
+      "updatedAt": "-",
+      "updatedBy": "Sistem"
     },
     "8_cati": {
       "id": "8_cati",
@@ -2222,10 +2223,10 @@
         "date": "",
         "tester": "",
         "reportNo": "",
-        "note": ""
+        "note": "Ön şartlar (Mekanik, Klima ve MESA Onayı) bekleniyor."
       },
-      "updatedAt": "2026-10-23",
-      "updatedBy": "Saha Koordinatörü"
+      "updatedAt": "-",
+      "updatedBy": "Sistem"
     },
     "8_kat4": {
       "id": "8_kat4",
@@ -2259,10 +2260,10 @@
         "date": "",
         "tester": "",
         "reportNo": "",
-        "note": ""
+        "note": "Ön şartlar (Mekanik, Klima ve MESA Onayı) bekleniyor."
       },
-      "updatedAt": "2026-10-23",
-      "updatedBy": "Saha Koordinatörü"
+      "updatedAt": "-",
+      "updatedBy": "Sistem"
     },
     "8_kat3": {
       "id": "8_kat3",
@@ -2273,16 +2274,16 @@
       "floorShort": "3. KAT",
       "floorOrder": 6,
       "mekanik": {
-        "status": "devam",
+        "status": "bekliyor",
         "date": "",
         "company": "Mekanik Tesisat A.Ş.",
-        "note": "Sıhhi ve yangın tesisatı devam ediyor."
+        "note": ""
       },
       "klima": {
         "status": "bekliyor",
         "date": "",
         "company": "VRF Klima Sistemleri",
-        "note": "Menfez ve ünite montajı bekleniyor."
+        "note": ""
       },
       "mesa": {
         "status": "bekliyor",
@@ -2296,10 +2297,10 @@
         "date": "",
         "tester": "",
         "reportNo": "",
-        "note": ""
+        "note": "Ön şartlar (Mekanik, Klima ve MESA Onayı) bekleniyor."
       },
-      "updatedAt": "2026-10-23",
-      "updatedBy": "Saha Koordinatörü"
+      "updatedAt": "-",
+      "updatedBy": "Sistem"
     },
     "8_kat2": {
       "id": "8_kat2",
@@ -2310,16 +2311,16 @@
       "floorShort": "2. KAT",
       "floorOrder": 5,
       "mekanik": {
-        "status": "devam",
+        "status": "bekliyor",
         "date": "",
         "company": "Mekanik Tesisat A.Ş.",
-        "note": "Sıhhi ve yangın tesisatı devam ediyor."
+        "note": ""
       },
       "klima": {
         "status": "bekliyor",
         "date": "",
         "company": "VRF Klima Sistemleri",
-        "note": "Menfez ve ünite montajı bekleniyor."
+        "note": ""
       },
       "mesa": {
         "status": "bekliyor",
@@ -2333,10 +2334,10 @@
         "date": "",
         "tester": "",
         "reportNo": "",
-        "note": ""
+        "note": "Ön şartlar (Mekanik, Klima ve MESA Onayı) bekleniyor."
       },
-      "updatedAt": "2026-10-23",
-      "updatedBy": "Saha Koordinatörü"
+      "updatedAt": "-",
+      "updatedBy": "Sistem"
     },
     "8_kat1": {
       "id": "8_kat1",
@@ -2347,16 +2348,16 @@
       "floorShort": "1. KAT",
       "floorOrder": 4,
       "mekanik": {
-        "status": "devam",
+        "status": "bekliyor",
         "date": "",
         "company": "Mekanik Tesisat A.Ş.",
-        "note": "Sıhhi ve yangın tesisatı devam ediyor."
+        "note": ""
       },
       "klima": {
         "status": "bekliyor",
         "date": "",
         "company": "VRF Klima Sistemleri",
-        "note": "Menfez ve ünite montajı bekleniyor."
+        "note": ""
       },
       "mesa": {
         "status": "bekliyor",
@@ -2370,10 +2371,10 @@
         "date": "",
         "tester": "",
         "reportNo": "",
-        "note": ""
+        "note": "Ön şartlar (Mekanik, Klima ve MESA Onayı) bekleniyor."
       },
-      "updatedAt": "2026-10-23",
-      "updatedBy": "Saha Koordinatörü"
+      "updatedAt": "-",
+      "updatedBy": "Sistem"
     },
     "8_zemin": {
       "id": "8_zemin",
@@ -2384,16 +2385,16 @@
       "floorShort": "ZEMİN",
       "floorOrder": 3,
       "mekanik": {
-        "status": "devam",
+        "status": "bekliyor",
         "date": "",
         "company": "Mekanik Tesisat A.Ş.",
-        "note": "Sıhhi ve yangın tesisatı devam ediyor."
+        "note": ""
       },
       "klima": {
         "status": "bekliyor",
         "date": "",
         "company": "VRF Klima Sistemleri",
-        "note": "Menfez ve ünite montajı bekleniyor."
+        "note": ""
       },
       "mesa": {
         "status": "bekliyor",
@@ -2407,10 +2408,10 @@
         "date": "",
         "tester": "",
         "reportNo": "",
-        "note": ""
+        "note": "Ön şartlar (Mekanik, Klima ve MESA Onayı) bekleniyor."
       },
-      "updatedAt": "2026-10-23",
-      "updatedBy": "Saha Koordinatörü"
+      "updatedAt": "-",
+      "updatedBy": "Sistem"
     },
     "8_b1": {
       "id": "8_b1",
@@ -2421,16 +2422,16 @@
       "floorShort": "B1",
       "floorOrder": 2,
       "mekanik": {
-        "status": "devam",
+        "status": "bekliyor",
         "date": "",
         "company": "Mekanik Tesisat A.Ş.",
-        "note": "Sıhhi ve yangın tesisatı devam ediyor."
+        "note": ""
       },
       "klima": {
         "status": "bekliyor",
         "date": "",
         "company": "VRF Klima Sistemleri",
-        "note": "Menfez ve ünite montajı bekleniyor."
+        "note": ""
       },
       "mesa": {
         "status": "bekliyor",
@@ -2444,10 +2445,10 @@
         "date": "",
         "tester": "",
         "reportNo": "",
-        "note": ""
+        "note": "Ön şartlar (Mekanik, Klima ve MESA Onayı) bekleniyor."
       },
-      "updatedAt": "2026-10-23",
-      "updatedBy": "Saha Koordinatörü"
+      "updatedAt": "-",
+      "updatedBy": "Sistem"
     },
     "8_b2": {
       "id": "8_b2",
@@ -2458,16 +2459,16 @@
       "floorShort": "B2",
       "floorOrder": 1,
       "mekanik": {
-        "status": "devam",
+        "status": "bekliyor",
         "date": "",
         "company": "Mekanik Tesisat A.Ş.",
-        "note": "Sıhhi ve yangın tesisatı devam ediyor."
+        "note": ""
       },
       "klima": {
         "status": "bekliyor",
         "date": "",
         "company": "VRF Klima Sistemleri",
-        "note": "Menfez ve ünite montajı bekleniyor."
+        "note": ""
       },
       "mesa": {
         "status": "bekliyor",
@@ -2481,10 +2482,10 @@
         "date": "",
         "tester": "",
         "reportNo": "",
-        "note": ""
+        "note": "Ön şartlar (Mekanik, Klima ve MESA Onayı) bekleniyor."
       },
-      "updatedAt": "2026-10-23",
-      "updatedBy": "Saha Koordinatörü"
+      "updatedAt": "-",
+      "updatedBy": "Sistem"
     },
     "9_cati": {
       "id": "9_cati",
@@ -2518,10 +2519,10 @@
         "date": "",
         "tester": "",
         "reportNo": "",
-        "note": ""
+        "note": "Ön şartlar (Mekanik, Klima ve MESA Onayı) bekleniyor."
       },
-      "updatedAt": "2026-10-23",
-      "updatedBy": "Saha Koordinatörü"
+      "updatedAt": "-",
+      "updatedBy": "Sistem"
     },
     "9_kat4": {
       "id": "9_kat4",
@@ -2555,10 +2556,10 @@
         "date": "",
         "tester": "",
         "reportNo": "",
-        "note": ""
+        "note": "Ön şartlar (Mekanik, Klima ve MESA Onayı) bekleniyor."
       },
-      "updatedAt": "2026-10-23",
-      "updatedBy": "Saha Koordinatörü"
+      "updatedAt": "-",
+      "updatedBy": "Sistem"
     },
     "9_kat3": {
       "id": "9_kat3",
@@ -2592,10 +2593,10 @@
         "date": "",
         "tester": "",
         "reportNo": "",
-        "note": ""
+        "note": "Ön şartlar (Mekanik, Klima ve MESA Onayı) bekleniyor."
       },
-      "updatedAt": "2026-10-23",
-      "updatedBy": "Saha Koordinatörü"
+      "updatedAt": "-",
+      "updatedBy": "Sistem"
     },
     "9_kat2": {
       "id": "9_kat2",
@@ -2629,10 +2630,10 @@
         "date": "",
         "tester": "",
         "reportNo": "",
-        "note": ""
+        "note": "Ön şartlar (Mekanik, Klima ve MESA Onayı) bekleniyor."
       },
-      "updatedAt": "2026-10-23",
-      "updatedBy": "Saha Koordinatörü"
+      "updatedAt": "-",
+      "updatedBy": "Sistem"
     },
     "9_kat1": {
       "id": "9_kat1",
@@ -2666,10 +2667,10 @@
         "date": "",
         "tester": "",
         "reportNo": "",
-        "note": ""
+        "note": "Ön şartlar (Mekanik, Klima ve MESA Onayı) bekleniyor."
       },
-      "updatedAt": "2026-10-23",
-      "updatedBy": "Saha Koordinatörü"
+      "updatedAt": "-",
+      "updatedBy": "Sistem"
     },
     "9_zemin": {
       "id": "9_zemin",
@@ -2680,16 +2681,16 @@
       "floorShort": "ZEMİN",
       "floorOrder": 3,
       "mekanik": {
-        "status": "devam",
+        "status": "bekliyor",
         "date": "",
         "company": "Mekanik Tesisat A.Ş.",
-        "note": "Sıhhi ve yangın tesisatı devam ediyor."
+        "note": ""
       },
       "klima": {
         "status": "bekliyor",
         "date": "",
         "company": "VRF Klima Sistemleri",
-        "note": "Menfez ve ünite montajı bekleniyor."
+        "note": ""
       },
       "mesa": {
         "status": "bekliyor",
@@ -2703,10 +2704,10 @@
         "date": "",
         "tester": "",
         "reportNo": "",
-        "note": ""
+        "note": "Ön şartlar (Mekanik, Klima ve MESA Onayı) bekleniyor."
       },
-      "updatedAt": "2026-10-23",
-      "updatedBy": "Saha Koordinatörü"
+      "updatedAt": "-",
+      "updatedBy": "Sistem"
     },
     "9_b1": {
       "id": "9_b1",
@@ -2717,16 +2718,16 @@
       "floorShort": "B1",
       "floorOrder": 2,
       "mekanik": {
-        "status": "devam",
+        "status": "bekliyor",
         "date": "",
         "company": "Mekanik Tesisat A.Ş.",
-        "note": "Sıhhi ve yangın tesisatı devam ediyor."
+        "note": ""
       },
       "klima": {
         "status": "bekliyor",
         "date": "",
         "company": "VRF Klima Sistemleri",
-        "note": "Menfez ve ünite montajı bekleniyor."
+        "note": ""
       },
       "mesa": {
         "status": "bekliyor",
@@ -2740,10 +2741,10 @@
         "date": "",
         "tester": "",
         "reportNo": "",
-        "note": ""
+        "note": "Ön şartlar (Mekanik, Klima ve MESA Onayı) bekleniyor."
       },
-      "updatedAt": "2026-10-23",
-      "updatedBy": "Saha Koordinatörü"
+      "updatedAt": "-",
+      "updatedBy": "Sistem"
     },
     "9_b2": {
       "id": "9_b2",
@@ -2754,16 +2755,16 @@
       "floorShort": "B2",
       "floorOrder": 1,
       "mekanik": {
-        "status": "devam",
+        "status": "bekliyor",
         "date": "",
         "company": "Mekanik Tesisat A.Ş.",
-        "note": "Sıhhi ve yangın tesisatı devam ediyor."
+        "note": ""
       },
       "klima": {
         "status": "bekliyor",
         "date": "",
         "company": "VRF Klima Sistemleri",
-        "note": "Menfez ve ünite montajı bekleniyor."
+        "note": ""
       },
       "mesa": {
         "status": "bekliyor",
@@ -2777,10 +2778,10 @@
         "date": "",
         "tester": "",
         "reportNo": "",
-        "note": ""
+        "note": "Ön şartlar (Mekanik, Klima ve MESA Onayı) bekleniyor."
       },
-      "updatedAt": "2026-10-23",
-      "updatedBy": "Saha Koordinatörü"
+      "updatedAt": "-",
+      "updatedBy": "Sistem"
     },
     "10_cati": {
       "id": "10_cati",
@@ -2814,10 +2815,10 @@
         "date": "",
         "tester": "",
         "reportNo": "",
-        "note": ""
+        "note": "Ön şartlar (Mekanik, Klima ve MESA Onayı) bekleniyor."
       },
-      "updatedAt": "2026-10-23",
-      "updatedBy": "Saha Koordinatörü"
+      "updatedAt": "-",
+      "updatedBy": "Sistem"
     },
     "10_kat4": {
       "id": "10_kat4",
@@ -2851,10 +2852,10 @@
         "date": "",
         "tester": "",
         "reportNo": "",
-        "note": ""
+        "note": "Ön şartlar (Mekanik, Klima ve MESA Onayı) bekleniyor."
       },
-      "updatedAt": "2026-10-23",
-      "updatedBy": "Saha Koordinatörü"
+      "updatedAt": "-",
+      "updatedBy": "Sistem"
     },
     "10_kat3": {
       "id": "10_kat3",
@@ -2888,10 +2889,10 @@
         "date": "",
         "tester": "",
         "reportNo": "",
-        "note": ""
+        "note": "Ön şartlar (Mekanik, Klima ve MESA Onayı) bekleniyor."
       },
-      "updatedAt": "2026-10-23",
-      "updatedBy": "Saha Koordinatörü"
+      "updatedAt": "-",
+      "updatedBy": "Sistem"
     },
     "10_kat2": {
       "id": "10_kat2",
@@ -2925,10 +2926,10 @@
         "date": "",
         "tester": "",
         "reportNo": "",
-        "note": ""
+        "note": "Ön şartlar (Mekanik, Klima ve MESA Onayı) bekleniyor."
       },
-      "updatedAt": "2026-10-23",
-      "updatedBy": "Saha Koordinatörü"
+      "updatedAt": "-",
+      "updatedBy": "Sistem"
     },
     "10_kat1": {
       "id": "10_kat1",
@@ -2962,10 +2963,10 @@
         "date": "",
         "tester": "",
         "reportNo": "",
-        "note": ""
+        "note": "Ön şartlar (Mekanik, Klima ve MESA Onayı) bekleniyor."
       },
-      "updatedAt": "2026-10-23",
-      "updatedBy": "Saha Koordinatörü"
+      "updatedAt": "-",
+      "updatedBy": "Sistem"
     },
     "10_zemin": {
       "id": "10_zemin",
@@ -2999,10 +3000,10 @@
         "date": "",
         "tester": "",
         "reportNo": "",
-        "note": ""
+        "note": "Ön şartlar (Mekanik, Klima ve MESA Onayı) bekleniyor."
       },
-      "updatedAt": "2026-10-23",
-      "updatedBy": "Saha Koordinatörü"
+      "updatedAt": "-",
+      "updatedBy": "Sistem"
     },
     "10_b1": {
       "id": "10_b1",
@@ -3036,10 +3037,10 @@
         "date": "",
         "tester": "",
         "reportNo": "",
-        "note": ""
+        "note": "Ön şartlar (Mekanik, Klima ve MESA Onayı) bekleniyor."
       },
-      "updatedAt": "2026-10-23",
-      "updatedBy": "Saha Koordinatörü"
+      "updatedAt": "-",
+      "updatedBy": "Sistem"
     },
     "10_b2": {
       "id": "10_b2",
@@ -3073,44 +3074,22 @@
         "date": "",
         "tester": "",
         "reportNo": "",
-        "note": ""
+        "note": "Ön şartlar (Mekanik, Klima ve MESA Onayı) bekleniyor."
       },
-      "updatedAt": "2026-10-23",
-      "updatedBy": "Saha Koordinatörü"
+      "updatedAt": "-",
+      "updatedBy": "Sistem"
     }
   },
   "logs": [
     {
-      "id": "log-1",
-      "timestamp": "2026-10-23 16:45",
-      "user": "Admin",
-      "unitId": "1_kat1",
-      "blockName": "Blok 1",
-      "floorName": "1. Kat",
-      "action": "MESA Onayı Kaydedildi",
-      "details": "MESA yetkilisi Serkan Demir tarafından teslim alındı. Kat elektrik testine hazır duruma getirildi.",
-      "badgeType": "success"
-    },
-    {
-      "id": "log-2",
-      "timestamp": "2026-10-22 11:20",
-      "user": "Admin",
-      "unitId": "2_zemin",
-      "blockName": "Blok 2",
-      "floorName": "Zemin Kat",
-      "action": "Klima İşi Tamamlandı",
-      "details": "Klima ve VRF tesisatı testleri tamamlandı olarak güncellendi.",
-      "badgeType": "info"
-    },
-    {
-      "id": "log-3",
-      "timestamp": "2026-10-21 09:15",
-      "user": "Admin",
-      "unitId": "1_b1",
-      "blockName": "Blok 1",
-      "floorName": "Bodrum 1 (B1)",
-      "action": "Elektrik Testi Tamamlandı",
-      "details": "ELK-TR-01-2 nolu test raporu ile yalıtım testi başarılı olarak onaylandı.",
+      "id": "log-init",
+      "timestamp": "2026-10-26 01:48",
+      "user": "Sistem",
+      "unitId": "all",
+      "blockName": "10 Blok (80 Kat)",
+      "floorName": "Tüm Sahalar",
+      "action": "Saha Takip Sistemi Başlatıldı",
+      "details": "Tüm blok ve katlar başlangıç durumuna (Test yapılmadı / Ön şartlar bekleniyor) getirildi.",
       "badgeType": "primary"
     }
   ]
