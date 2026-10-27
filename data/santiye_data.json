@@ -3186,7 +3186,7 @@
       "isPinned": true,
       "createdAt": "2026-10-25 10:15",
       "updatedAt": "2026-10-26 14:20",
-      "author": "Mustafa Özkan (Proje Müdürü)"
+      "author": "Yönetici (Ben)"
     },
     {
       "id": "note_2",
@@ -3197,7 +3197,7 @@
       "isPinned": true,
       "createdAt": "2026-10-26 09:30",
       "updatedAt": "2026-10-26 09:30",
-      "author": "Mustafa Özkan (Proje Müdürü)"
+      "author": "Yönetici (Ben)"
     },
     {
       "id": "note_3",
@@ -3208,7 +3208,7 @@
       "isPinned": false,
       "createdAt": "2026-10-27 11:00",
       "updatedAt": "2026-10-27 11:00",
-      "author": "Mustafa Özkan (Proje Müdürü)"
+      "author": "Yönetici (Ben)"
     }
   ],
   "internalWorkPlan": [
@@ -3420,7 +3420,7 @@
   ],
   "rolePermissions": {
     "admin": {
-      "name": "Yönetici (Proje Müdürü / Şantiye Şefi)",
+      "name": "Yönetici (Ben)",
       "badge": "🛡️ Yönetici",
       "canViewUnits": true,
       "canEditUnits": true,
@@ -3433,8 +3433,8 @@
       "canManageUsers": true
     },
     "internal_team": {
-      "name": "İç Şantiye Ekibi (Elektrik Saha & Mühendislik)",
-      "badge": "👷 İç Ekip",
+      "name": "Üçay Elektrik Ekibi",
+      "badge": "⚡ Üçay Elektrik",
       "canViewUnits": true,
       "canEditUnits": true,
       "canViewMeetings": true,
@@ -3446,8 +3446,8 @@
       "canManageUsers": false
     },
     "ana_firma": {
-      "name": "Ana Firma (MESA Kontrol & İşveren Sunum Modu)",
-      "badge": "🏢 Ana Firma (MESA)",
+      "name": "MESA Ekibi",
+      "badge": "🏢 MESA Ekibi",
       "canViewUnits": true,
       "canEditUnits": false,
       "canViewMeetings": true,
@@ -3459,7 +3459,7 @@
       "canManageUsers": false
     },
     "viewer": {
-      "name": "İzleyici / Taşeron Firmalar",
+      "name": "Taşeronlar / İzleyici",
       "badge": "👁️ İzleyici",
       "canViewUnits": true,
       "canEditUnits": false,
@@ -3475,32 +3475,32 @@
   "users": [
     {
       "id": "u1",
-      "username": "proje_muduru",
-      "name": "Mustafa Özkan (Proje Müdürü)",
+      "username": "yonetici",
+      "name": "Yönetici (Ben)",
       "role": "admin",
-      "desc": "Tam yetkili şantiye yöneticisi",
+      "desc": "Tam yetkili yönetici",
       "password": "admin123"
     },
     {
       "id": "u2",
-      "username": "saha_ekibi",
-      "name": "Elektrik Saha Ekibi & Mühendisler",
+      "username": "ucay_elektrik",
+      "name": "Üçay Elektrik Ekibi",
       "role": "internal_team",
-      "desc": "İç planlama ve test icra ekibi",
+      "desc": "Üçay Elektrik şantiye ve test ekibi",
       "password": "saha123"
     },
     {
       "id": "u3",
-      "username": "mesa_kontrol",
-      "name": "MESA Kontrol & Kabul Heyeti",
+      "username": "mesa_ekibi",
+      "name": "MESA Ekibi",
       "role": "ana_firma",
-      "desc": "Ana yüklenici kontrol ve sunum görünümü",
+      "desc": "MESA şantiye ve kontrol heyeti",
       "password": "mesa123"
     },
     {
       "id": "u4",
       "username": "taseronlar",
-      "name": "Mekanik & Klima Taşeronları",
+      "name": "Taşeronlar / İzleyici",
       "role": "viewer",
       "desc": "Saha ilerleme izleme",
       "password": "izleyici123"

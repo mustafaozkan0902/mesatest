@@ -22,12 +22,19 @@ class SantiyeApp {
     this.adminToken = localStorage.getItem('santiye_admin_token') || null;
 
     if (this.currentUser) {
+      if (this.currentUser.role === 'admin' && (this.currentUser.name?.includes('Proje') || !this.currentUser.name)) {
+        this.currentUser.name = 'Yönetici (Ben)';
+      } else if (this.currentUser.role === 'internal_team' && (this.currentUser.name?.includes('Saha') || !this.currentUser.name)) {
+        this.currentUser.name = 'Üçay Elektrik Ekibi';
+      } else if (this.currentUser.role === 'ana_firma' && (this.currentUser.name?.includes('Heyeti') || !this.currentUser.name)) {
+        this.currentUser.name = 'MESA Ekibi';
+      }
       this.currentRole = this.currentUser.role || 'viewer';
       this.isAdmin = (this.currentRole === 'admin');
     } else if (this.adminToken) {
       this.currentRole = 'admin';
       this.isAdmin = true;
-      this.currentUser = { id: 'u1', name: 'Mustafa Özkan (Proje Müdürü)', username: 'proje_muduru', role: 'admin' };
+      this.currentUser = { id: 'u1', name: 'Yönetici (Ben)', username: 'yonetici', role: 'admin' };
     } else {
       // Default: Strictly viewer/read-only when not logged in
       this.currentRole = 'viewer';
@@ -185,23 +192,44 @@ class SantiyeApp {
     if (!this.data.rolePermissions || typeof this.data.rolePermissions !== 'object') {
       this.data.rolePermissions = window.DEFAULT_SANTIYE_DATA?.rolePermissions || {};
     }
+    const defaultUsers = [
+      { id: 'u1', username: 'yonetici', name: 'Yönetici (Ben)', role: 'admin', password: 'admin123', desc: 'Tam yetkili yönetici' },
+      { id: 'u2', username: 'ucay_elektrik', name: 'Üçay Elektrik Ekibi', role: 'internal_team', password: 'saha123', desc: 'Üçay Elektrik şantiye ve test ekibi' },
+      { id: 'u3', username: 'mesa_ekibi', name: 'MESA Ekibi', role: 'ana_firma', password: 'mesa123', desc: 'MESA şantiye ve kontrol heyeti' },
+      { id: 'u4', username: 'taseronlar', name: 'Taşeronlar / İzleyici', role: 'viewer', password: 'izleyici123', desc: 'Saha ilerleme izleme' }
+    ];
+
     if (!this.data.users || !Array.isArray(this.data.users) || this.data.users.length === 0) {
-      this.data.users = [
-        { id: 'u1', username: 'proje_muduru', name: 'Mustafa Özkan (Proje Müdürü)', role: 'admin', password: 'admin123', desc: 'Tam yetkili şantiye yöneticisi' },
-        { id: 'u2', username: 'saha_ekibi', name: 'Elektrik Saha Ekibi & Mühendisler', role: 'internal_team', password: 'saha123', desc: 'İç planlama ve test icra ekibi' },
-        { id: 'u3', username: 'mesa_kontrol', name: 'MESA Kontrol & Kabul Heyeti', role: 'ana_firma', password: 'mesa123', desc: 'Ana yüklenici kontrol ve sunum görünümü' },
-        { id: 'u4', username: 'taseronlar', name: 'Mekanik & Klima Taşeronları', role: 'viewer', password: 'izleyici123', desc: 'Saha ilerleme izleme' }
-      ];
+      this.data.users = defaultUsers;
     } else {
+      // Always sanitize existing / cached users to user requested labels
       this.data.users.forEach(u => {
-        if (!u.password) {
-          if (u.role === 'admin') u.password = 'admin123';
-          else if (u.role === 'internal_team') u.password = 'saha123';
-          else if (u.role === 'ana_firma') u.password = 'mesa123';
-          else u.password = 'izleyici123';
+        if (u.id === 'u1' || u.role === 'admin') {
+          u.name = 'Yönetici (Ben)';
+          u.username = (u.username === 'proje_muduru' || !u.username) ? 'yonetici' : u.username;
+          u.desc = 'Tam yetkili yönetici';
+          if (!u.password) u.password = 'admin123';
+        } else if (u.id === 'u2' || u.role === 'internal_team') {
+          u.name = 'Üçay Elektrik Ekibi';
+          u.username = (u.username === 'saha_ekibi' || !u.username) ? 'ucay_elektrik' : u.username;
+          u.desc = 'Üçay Elektrik şantiye ve test ekibi';
+          if (!u.password) u.password = 'saha123';
+        } else if (u.id === 'u3' || u.role === 'ana_firma') {
+          u.name = 'MESA Ekibi';
+          u.username = (u.username === 'mesa_kontrol' || !u.username) ? 'mesa_ekibi' : u.username;
+          u.desc = 'MESA şantiye ve kontrol heyeti';
+          if (!u.password) u.password = 'mesa123';
+        } else {
+          if (!u.password) u.password = 'izleyici123';
+          if (!u.username) u.username = u.id;
         }
-        if (!u.username) {
-          u.username = u.id;
+      });
+    }
+
+    if (this.data.privateNotes && Array.isArray(this.data.privateNotes)) {
+      this.data.privateNotes.forEach(n => {
+        if (n.author && n.author.includes('Proje')) {
+          n.author = 'Yönetici (Ben)';
         }
       });
     }
@@ -223,12 +251,19 @@ class SantiyeApp {
     this.adminToken = savedToken || null;
 
     if (this.currentUser) {
+      if (this.currentUser.role === 'admin' && (this.currentUser.name?.includes('Proje') || !this.currentUser.name)) {
+        this.currentUser.name = 'Yönetici (Ben)';
+      } else if (this.currentUser.role === 'internal_team' && (this.currentUser.name?.includes('Saha') || !this.currentUser.name)) {
+        this.currentUser.name = 'Üçay Elektrik Ekibi';
+      } else if (this.currentUser.role === 'ana_firma' && (this.currentUser.name?.includes('Heyeti') || !this.currentUser.name)) {
+        this.currentUser.name = 'MESA Ekibi';
+      }
       this.currentRole = this.currentUser.role || 'viewer';
       this.isAdmin = (this.currentRole === 'admin');
     } else if (this.adminToken) {
       this.currentRole = 'admin';
       this.isAdmin = true;
-      this.currentUser = { id: 'u1', name: 'Mustafa Özkan (Proje Müdürü)', username: 'proje_muduru', role: 'admin' };
+      this.currentUser = { id: 'u1', name: 'Yönetici (Ben)', username: 'yonetici', role: 'admin' };
     } else {
       // Giriş yapılmamışsa: KESİNLİKLE salt okunur izleyici modu
       this.currentRole = 'viewer';
@@ -300,15 +335,15 @@ class SantiyeApp {
         roleBadge.innerHTML = '<span>👁️</span><span>Giriş Yapılmadı (Salt Okunur)</span>';
       } else if (role === 'admin') {
         roleBadge.className = 'role-badge admin';
-        const name = this.currentUser?.name || 'Mustafa Özkan (Yönetici)';
+        const name = this.currentUser?.name || 'Yönetici (Ben)';
         roleBadge.innerHTML = `<span>🛡️</span><span>${this.escapeHtml(name)}</span>`;
       } else if (role === 'internal_team') {
         roleBadge.className = 'role-badge internal';
-        const name = this.currentUser?.name || 'İç Şantiye Ekibi';
-        roleBadge.innerHTML = `<span>👷</span><span>${this.escapeHtml(name)}</span>`;
+        const name = this.currentUser?.name || 'Üçay Elektrik Ekibi';
+        roleBadge.innerHTML = `<span>⚡</span><span>${this.escapeHtml(name)}</span>`;
       } else if (role === 'ana_firma') {
         roleBadge.className = 'role-badge ana-firma';
-        const name = this.currentUser?.name || 'Ana Firma (MESA)';
+        const name = this.currentUser?.name || 'MESA Ekibi';
         roleBadge.innerHTML = `<span>🏢</span><span>${this.escapeHtml(name)}</span>`;
       } else {
         roleBadge.className = 'role-badge viewer';
@@ -1662,12 +1697,12 @@ class SantiyeApp {
 
     if (userSelect) {
       const users = this.data?.users || [];
-      let options = `<option value="quick_admin">⚡ Hızlı Yönetici Girişi (admin123)</option>`;
+      let options = `<option value="quick_admin">⚡ Yönetici (Ben) - Hızlı Giriş (admin123)</option>`;
       users.forEach(u => {
         let roleName = 'İzleyici';
-        if (u.role === 'admin') roleName = 'Yönetici';
-        else if (u.role === 'internal_team') roleName = 'İç Ekip';
-        else if (u.role === 'ana_firma') roleName = 'Ana Firma (MESA)';
+        if (u.role === 'admin') roleName = 'Yönetici (Ben)';
+        else if (u.role === 'internal_team') roleName = 'Üçay Elektrik';
+        else if (u.role === 'ana_firma') roleName = 'MESA Ekibi';
         options += `<option value="${u.id}">${this.escapeHtml(u.name)} [${roleName}]</option>`;
       });
       userSelect.innerHTML = options;
@@ -1702,8 +1737,8 @@ class SantiyeApp {
 
     const val = userSelect.value;
     if (val === 'quick_admin') {
-      if (pwLabel) pwLabel.innerText = 'Yönetici Ana Şifresi:';
-      hintBox.innerHTML = '<span>💡 Yönetici ana şifresi: <code>admin123</code></span>';
+      if (pwLabel) pwLabel.innerText = 'Yönetici Şifresi:';
+      hintBox.innerHTML = '<span>💡 Yönetici şifresi: <code>admin123</code></span>';
     } else {
       const u = (this.data?.users || []).find(x => x.id === val);
       if (u) {
@@ -1734,7 +1769,7 @@ class SantiyeApp {
       const u = users.find(x => x.id === selectedUserId);
       if (u) {
         const expectedPw = u.password || (u.role === 'admin' ? 'admin123' : u.role === 'internal_team' ? 'saha123' : u.role === 'ana_firma' ? 'mesa123' : 'izleyici123');
-        if (pw === expectedPw || (u.role === 'admin' && pw === 'admin123')) {
+        if (pw === expectedPw || (u.role === 'admin' && pw === 'admin123') || (u.role === 'internal_team' && pw === 'ucay123')) {
           loggedInUser = u;
         }
       }
@@ -1744,8 +1779,8 @@ class SantiyeApp {
     if (!loggedInUser) {
       const adminUser = users.find(u => u.role === 'admin') || {
         id: 'u1',
-        name: 'Mustafa Özkan (Proje Müdürü)',
-        username: 'proje_muduru',
+        name: 'Yönetici (Ben)',
+        username: 'yonetici',
         role: 'admin',
         password: 'admin123'
       };
@@ -1755,14 +1790,32 @@ class SantiyeApp {
       }
     }
 
-    // 3. Match against any user's password
+    // 3. Match against known team passwords directly
     if (!loggedInUser) {
-      const matched = users.find(u => {
-        const expected = u.password || (u.role === 'admin' ? 'admin123' : u.role === 'internal_team' ? 'saha123' : u.role === 'ana_firma' ? 'mesa123' : 'izleyici123');
-        return u.password === pw || expected === pw;
-      });
-      if (matched) {
-        loggedInUser = matched;
+      if (pw === 'saha123' || pw === 'ucay123') {
+        loggedInUser = users.find(u => u.role === 'internal_team' || u.id === 'u2') || {
+          id: 'u2',
+          name: 'Üçay Elektrik Ekibi',
+          username: 'ucay_elektrik',
+          role: 'internal_team',
+          password: 'saha123'
+        };
+      } else if (pw === 'mesa123') {
+        loggedInUser = users.find(u => u.role === 'ana_firma' || u.id === 'u3') || {
+          id: 'u3',
+          name: 'MESA Ekibi',
+          username: 'mesa_ekibi',
+          role: 'ana_firma',
+          password: 'mesa123'
+        };
+      } else {
+        const matched = users.find(u => {
+          const expected = u.password || (u.role === 'admin' ? 'admin123' : u.role === 'internal_team' ? 'saha123' : u.role === 'ana_firma' ? 'mesa123' : 'izleyici123');
+          return u.password === pw || expected === pw;
+        });
+        if (matched) {
+          loggedInUser = matched;
+        }
       }
     }
 
@@ -1815,9 +1868,9 @@ class SantiyeApp {
     this.updateRoleUI();
 
     let roleTitle = 'İzleyici';
-    if (loggedInUser.role === 'admin') roleTitle = 'Yönetici (Tüm Yetkiler Aktif)';
-    else if (loggedInUser.role === 'internal_team') roleTitle = 'İç Şantiye Ekibi';
-    else if (loggedInUser.role === 'ana_firma') roleTitle = 'Ana Firma (MESA)';
+    if (loggedInUser.role === 'admin') roleTitle = 'Yönetici (Ben)';
+    else if (loggedInUser.role === 'internal_team') roleTitle = 'Üçay Elektrik Ekibi';
+    else if (loggedInUser.role === 'ana_firma') roleTitle = 'MESA Ekibi';
 
     this.showToast(`Hoş geldiniz, ${loggedInUser.name}! (${roleTitle}) ✅`, 'success');
     this.renderAll();
@@ -3447,7 +3500,7 @@ class SantiyeApp {
         content: content,
         createdAt: nowStr,
         updatedAt: nowStr,
-        author: 'Mustafa Özkan (Proje Müdürü)'
+        author: 'Yönetici (Ben)'
       };
       this.data.privateNotes.unshift(newNote);
     }
@@ -4229,9 +4282,9 @@ class SantiyeApp {
     ];
 
     const roles = [
-      { key: 'admin', label: '🛡️ Yönetici' },
-      { key: 'internal_team', label: '👷 İç Şantiye Ekibi' },
-      { key: 'ana_firma', label: '🏢 Ana Firma (MESA)' },
+      { key: 'admin', label: '🛡️ Yönetici (Ben)' },
+      { key: 'internal_team', label: '⚡ Üçay Elektrik Ekibi' },
+      { key: 'ana_firma', label: '🏢 MESA Ekibi' },
       { key: 'viewer', label: '👁️ İzleyici' }
     ];
 
@@ -4276,9 +4329,9 @@ class SantiyeApp {
     const users = this.data?.users || [];
     userGrid.innerHTML = users.map(u => {
       let roleBadge = '';
-      if (u.role === 'admin') roleBadge = '<span class="badge" style="background:#fee2e2; color:#b91c1c; font-weight:700;">🛡️ Yönetici</span>';
-      else if (u.role === 'internal_team') roleBadge = '<span class="badge" style="background:#e0e7ff; color:#3730a3; font-weight:700;">👷 İç Ekip</span>';
-      else if (u.role === 'ana_firma') roleBadge = '<span class="badge" style="background:#dcfce7; color:#15803d; font-weight:700;">🏢 Ana Firma</span>';
+      if (u.role === 'admin') roleBadge = '<span class="badge" style="background:#fee2e2; color:#b91c1c; font-weight:700;">🛡️ Yönetici (Ben)</span>';
+      else if (u.role === 'internal_team') roleBadge = '<span class="badge" style="background:#e0e7ff; color:#3730a3; font-weight:700;">⚡ Üçay Elektrik</span>';
+      else if (u.role === 'ana_firma') roleBadge = '<span class="badge" style="background:#dcfce7; color:#15803d; font-weight:700;">🏢 MESA Ekibi</span>';
       else roleBadge = '<span class="badge" style="background:#f1f5f9; color:#475569; font-weight:700;">👁️ İzleyici</span>';
 
       const pwText = u.password || 'admin123';

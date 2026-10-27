@@ -261,7 +261,7 @@ def generate_initial_data():
                 "isPinned": True,
                 "createdAt": "2026-10-25 10:15",
                 "updatedAt": "2026-10-26 14:20",
-                "author": "Mustafa Özkan (Proje Müdürü)"
+                "author": "Yönetici (Ben)"
             }
         ],
         "internalWorkPlan": [
@@ -473,7 +473,7 @@ def generate_initial_data():
 ],
         "rolePermissions": {
             "admin": {
-                "name": "Yönetici (Proje Müdürü / Şantiye Şefi)",
+                "name": "Yönetici (Ben)",
                 "badge": "🛡️ Yönetici",
                 "canViewUnits": True,
                 "canEditUnits": True,
@@ -486,8 +486,8 @@ def generate_initial_data():
                 "canManageUsers": True
             },
             "internal_team": {
-                "name": "İç Şantiye Ekibi (Elektrik Saha & Mühendislik)",
-                "badge": "👷 İç Ekip",
+                "name": "Üçay Elektrik Ekibi",
+                "badge": "⚡ Üçay Elektrik",
                 "canViewUnits": True,
                 "canEditUnits": True,
                 "canViewMeetings": True,
@@ -499,8 +499,8 @@ def generate_initial_data():
                 "canManageUsers": False
             },
             "ana_firma": {
-                "name": "Ana Firma (MESA Kontrol & İşveren Sunum Modu)",
-                "badge": "🏢 Ana Firma (MESA)",
+                "name": "MESA Ekibi",
+                "badge": "🏢 MESA Ekibi",
                 "canViewUnits": True,
                 "canEditUnits": False,
                 "canViewMeetings": True,
@@ -512,7 +512,7 @@ def generate_initial_data():
                 "canManageUsers": False
             },
             "viewer": {
-                "name": "İzleyici / Taşeron Firmalar",
+                "name": "Taşeronlar / İzleyici",
                 "badge": "👁️ İzleyici",
                 "canViewUnits": True,
                 "canEditUnits": False,
@@ -526,10 +526,10 @@ def generate_initial_data():
             }
         },
         "users": [
-            {"id": "u1", "username": "proje_muduru", "name": "Mustafa Özkan (Proje Müdürü)", "role": "admin", "desc": "Tam yetkili şantiye yöneticisi"},
-            {"id": "u2", "username": "saha_ekibi", "name": "Elektrik Saha Ekibi & Mühendisler", "role": "internal_team", "desc": "İç planlama ve test icra ekibi"},
-            {"id": "u3", "username": "mesa_kontrol", "name": "MESA Kontrol & Kabul Heyeti", "role": "ana_firma", "desc": "Ana yüklenici kontrol ve sunum görünümü"},
-            {"id": "u4", "username": "taseronlar", "name": "Mekanik & Klima Taşeronları", "role": "viewer", "desc": "Saha ilerleme izleme"}
+            {"id": "u1", "username": "yonetici", "name": "Yönetici (Ben)", "role": "admin", "desc": "Tam yetkili yönetici", "password": "admin123"},
+            {"id": "u2", "username": "ucay_elektrik", "name": "Üçay Elektrik Ekibi", "role": "internal_team", "desc": "Üçay Elektrik şantiye ve test ekibi", "password": "saha123"},
+            {"id": "u3", "username": "mesa_ekibi", "name": "MESA Ekibi", "role": "ana_firma", "desc": "MESA şantiye ve kontrol heyeti", "password": "mesa123"},
+            {"id": "u4", "username": "taseronlar", "name": "Taşeronlar / İzleyici", "role": "viewer", "desc": "Saha ilerleme izleme", "password": "izleyici123"}
         ]
     }
     
