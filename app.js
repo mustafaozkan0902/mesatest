@@ -160,8 +160,25 @@ class SantiyeApp {
     if (!this.data.rolePermissions || typeof this.data.rolePermissions !== 'object') {
       this.data.rolePermissions = window.DEFAULT_SANTIYE_DATA?.rolePermissions || {};
     }
-    if (!this.data.users || !Array.isArray(this.data.users)) {
-      this.data.users = window.DEFAULT_SANTIYE_DATA?.users || [];
+    if (!this.data.users || !Array.isArray(this.data.users) || this.data.users.length === 0) {
+      this.data.users = [
+        { id: 'u1', username: 'proje_muduru', name: 'Mustafa Özkan (Proje Müdürü)', role: 'admin', password: 'admin123', desc: 'Tam yetkili şantiye yöneticisi' },
+        { id: 'u2', username: 'saha_ekibi', name: 'Elektrik Saha Ekibi & Mühendisler', role: 'internal_team', password: 'saha123', desc: 'İç planlama ve test icra ekibi' },
+        { id: 'u3', username: 'mesa_kontrol', name: 'MESA Kontrol & Kabul Heyeti', role: 'ana_firma', password: 'mesa123', desc: 'Ana yüklenici kontrol ve sunum görünümü' },
+        { id: 'u4', username: 'taseronlar', name: 'Mekanik & Klima Taşeronları', role: 'viewer', password: 'izleyici123', desc: 'Saha ilerleme izleme' }
+      ];
+    } else {
+      this.data.users.forEach(u => {
+        if (!u.password) {
+          if (u.role === 'admin') u.password = 'admin123';
+          else if (u.role === 'internal_team') u.password = 'saha123';
+          else if (u.role === 'ana_firma') u.password = 'mesa123';
+          else u.password = 'izleyici123';
+        }
+        if (!u.username) {
+          u.username = u.id;
+        }
+      });
     }
   }
 
@@ -1541,41 +1558,84 @@ class SantiyeApp {
 
   // --- AUTHENTICATION ---
   openLoginModal() {
-    document.getElementById('loginPasswordInput').value = '';
+    const userSelect = document.getElementById('loginUserSelect');
+    const pwInput = document.getElementById('loginPasswordInput');
+    if (pwInput) pwInput.value = '';
+
+    if (userSelect) {
+      const users = this.data?.users || [];
+      let options = `<option value="quick_admin">⚡ Yönetici Ana Şifresi ile Giriş</option>`;
+      users.forEach(u => {
+        let roleName = 'İzleyici';
+        if (u.role === 'admin') roleName = 'Yönetici';
+        else if (u.role === 'internal_team') roleName = 'İç Ekip';
+        else if (u.role === 'ana_firma') roleName = 'Ana Firma (MESA)';
+        options += `<option value="${u.id}">${this.escapeHtml(u.name)} (@${this.escapeHtml(u.username || u.id)}) - [${roleName}]</option>`;
+      });
+      userSelect.innerHTML = options;
+    }
+    this.onLoginUserChange();
     this.openModal('modalLogin');
   }
 
+  onLoginUserChange() {
+    const userSelect = document.getElementById('loginUserSelect');
+    const hintBox = document.getElementById('loginHintBox');
+    const pwLabel = document.getElementById('loginPasswordLabel');
+    if (!userSelect || !hintBox) return;
+
+    const val = userSelect.value;
+    if (val === 'quick_admin') {
+      if (pwLabel) pwLabel.innerText = 'Yönetici Ana Şifresi:';
+      hintBox.innerHTML = '<span>💡 Varsayılan yönetici şifresi: <code>admin123</code></span>';
+    } else {
+      const u = (this.data?.users || []).find(x => x.id === val);
+      if (u) {
+        if (pwLabel) pwLabel.innerText = `${u.name} Giriş Şifresi:`;
+        hintBox.innerHTML = `<span>👤 <strong>${this.escapeHtml(u.name)}</strong> (@${this.escapeHtml(u.username || u.id)}) hesabına ait şifrenizi giriniz.</span>`;
+      }
+    }
+  }
+
   async login() {
-    const pw = document.getElementById('loginPasswordInput').value;
+    const userSelect = document.getElementById('loginUserSelect');
+    const pwInput = document.getElementById('loginPasswordInput');
+    const pw = (pwInput?.value || '').trim();
     if (!pw) {
-      this.showToast('Lütfen şifre giriniz.', 'warning');
+      this.showToast('Lütfen giriş şifrenizi yazınız.', 'warning');
       return;
     }
 
-    try {
-      const res = await fetch(`${this.apiUrl}/api/auth/login`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ password: pw })
-      });
+    const selectedUserId = userSelect ? userSelect.value : 'quick_admin';
 
-      const resData = await res.json();
-      if (res.ok && resData.success) {
-        this.adminToken = resData.token;
-        localStorage.setItem('santiye_admin_token', this.adminToken);
-        this.currentRole = 'admin';
-        localStorage.setItem('santiye_active_role', 'admin');
-        this.isAdmin = true;
-        this.updateRoleUI();
-        this.closeModal('modalLogin');
-        this.showToast('Yönetici girişi başarılı! Artık tüm yetkiler aktif.', 'success');
-        this.renderAll();
-      } else {
-        this.showToast(resData.message || 'Hatalı şifre!', 'error');
-      }
-    } catch (e) {
-      // Offline fallback login for default password 'admin123'
-      if (pw === 'admin123') {
+    // 1. Direct Master Admin check (or quick_admin option)
+    if (selectedUserId === 'quick_admin' || pw === 'admin123') {
+      // Try server login first if backend is running
+      try {
+        const res = await fetch(`${this.apiUrl}/api/auth/login`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ password: pw })
+        });
+        const resData = await res.json();
+        if (res.ok && resData.success) {
+          this.adminToken = resData.token;
+          localStorage.setItem('santiye_admin_token', this.adminToken);
+          this.currentRole = 'admin';
+          localStorage.setItem('santiye_active_role', 'admin');
+          this.isAdmin = true;
+          this.updateRoleUI();
+          this.closeModal('modalLogin');
+          this.showToast('Yönetici girişi başarılı! Tüm yetkiler aktif.', 'success');
+          this.renderAll();
+          return;
+        }
+      } catch (e) {}
+
+      // Fallback local check
+      const adminUser = (this.data?.users || []).find(u => u.role === 'admin' || u.id === 'u1');
+      const expectedAdminPw = adminUser?.password || 'admin123';
+      if (pw === 'admin123' || pw === expectedAdminPw) {
         this.adminToken = 'local-admin-token';
         localStorage.setItem('santiye_admin_token', this.adminToken);
         this.currentRole = 'admin';
@@ -1583,12 +1643,46 @@ class SantiyeApp {
         this.isAdmin = true;
         this.updateRoleUI();
         this.closeModal('modalLogin');
-        this.showToast('Yönetici girişi başarılı (Yerel Mod).', 'success');
+        this.showToast('Yönetici girişi başarılı! Tüm yetkiler aktif.', 'success');
         this.renderAll();
-      } else {
-        this.showToast('Hatalı şifre!', 'error');
+        return;
       }
     }
+
+    // 2. Specific User Login Check
+    const user = (this.data?.users || []).find(u => u.id === selectedUserId || u.username === selectedUserId);
+    if (user) {
+      const expectedPw = user.password || (user.role === 'admin' ? 'admin123' : user.role === 'internal_team' ? 'saha123' : user.role === 'ana_firma' ? 'mesa123' : 'izleyici123');
+      if (pw === expectedPw || (user.role === 'admin' && pw === 'admin123')) {
+        if (user.role === 'admin') {
+          this.adminToken = 'local-admin-token';
+          this.isAdmin = true;
+        } else {
+          this.adminToken = null;
+          this.isAdmin = false;
+        }
+        this.currentRole = user.role;
+        localStorage.setItem('santiye_active_role', user.role);
+        this.updateRoleUI();
+        this.closeModal('modalLogin');
+        this.showToast(`Hoş geldiniz, ${user.name}! (${user.role} yetkisi ile giriş yapıldı)`, 'success');
+        this.renderAll();
+        return;
+      } else {
+        this.showToast(`Hatalı şifre! "${user.name}" kullanıcısı için şifrenizi kontrol ediniz.`, 'error');
+        return;
+      }
+    }
+
+    // 3. Fallback: Check if password matches any defined user in system
+    const matchedUser = (this.data?.users || []).find(u => u.password === pw);
+    if (matchedUser) {
+      this.loginAsUser(matchedUser.id);
+      this.closeModal('modalLogin');
+      return;
+    }
+
+    this.showToast('Hatalı şifre! Lütfen şifrenizi kontrol ediniz.', 'error');
   }
 
   logout() {
@@ -3927,8 +4021,7 @@ class SantiyeApp {
   // =========================================================================
   openPermissionsModal() {
     const tbody = document.getElementById('permMatrixBody');
-    const userGrid = document.getElementById('usersListGrid');
-    if (!tbody || !userGrid) return;
+    if (!tbody) return;
 
     const sections = [
       { id: 'meetings', name: '📋 Toplantı To-Do & Kararlar', desc: 'Haftalık taahhütler ve sözler' },
@@ -3975,39 +4068,205 @@ class SantiyeApp {
       return `<tr>${cells}</tr>`;
     }).join('');
 
-    const users = this.data?.users || [
-      { id: 'u1', name: 'Mustafa Özkan (Proje Müdürü)', role: 'admin', desc: 'Tam yetkili şantiye yöneticisi' },
-      { id: 'u2', name: 'Elektrik Saha Ekibi', role: 'internal_team', desc: 'İç planlama ve test icra ekibi' },
-      { id: 'u3', name: 'MESA Teslim & Kontrol Heyeti', role: 'ana_firma', desc: 'Ana firma teslim sunumu' },
-      { id: 'u4', name: 'Taşeron Temsilcileri', role: 'viewer', desc: 'Saha izleme' }
-    ];
-
-    userGrid.innerHTML = users.map(u => {
-      let roleBadge = '';
-      if (u.role === 'admin') roleBadge = '<span class="badge" style="background:#fee2e2; color:#b91c1c;">🛡️ Yönetici</span>';
-      else if (u.role === 'internal_team') roleBadge = '<span class="badge" style="background:#e0e7ff; color:#3730a3;">👷 İç Ekip</span>';
-      else if (u.role === 'ana_firma') roleBadge = '<span class="badge" style="background:#dcfce7; color:#15803d;">🏢 Ana Firma</span>';
-      else roleBadge = '<span class="badge" style="background:#f1f5f9; color:#475569;">👁️ İzleyici</span>';
-
-      return `
-        <div class="user-item-card">
-          <div>
-            <div style="font-weight:700; color:#0f172a; font-size:0.88rem;">${this.escapeHtml(u.name)}</div>
-            <div style="font-size:0.75rem; color:#64748b;">${this.escapeHtml(u.desc || '')}</div>
-            <div style="margin-top:0.35rem;">${roleBadge}</div>
-          </div>
-          <button class="btn btn-secondary btn-sm" onclick="app.closeModal('modalPermissions'); app.switchActiveRole('${u.role}')" title="Bu profilin ekranını test et">
-            <span>Önizle ➔</span>
-          </button>
-        </div>
-      `;
-    }).join('');
-
+    this.renderUsersList();
     this.openModal('modalPermissions');
   }
 
+  renderUsersList() {
+    const userGrid = document.getElementById('usersListGrid');
+    if (!userGrid) return;
+
+    const users = this.data?.users || [];
+    userGrid.innerHTML = users.map(u => {
+      let roleBadge = '';
+      if (u.role === 'admin') roleBadge = '<span class="badge" style="background:#fee2e2; color:#b91c1c; font-weight:700;">🛡️ Yönetici</span>';
+      else if (u.role === 'internal_team') roleBadge = '<span class="badge" style="background:#e0e7ff; color:#3730a3; font-weight:700;">👷 İç Ekip</span>';
+      else if (u.role === 'ana_firma') roleBadge = '<span class="badge" style="background:#dcfce7; color:#15803d; font-weight:700;">🏢 Ana Firma</span>';
+      else roleBadge = '<span class="badge" style="background:#f1f5f9; color:#475569; font-weight:700;">👁️ İzleyici</span>';
+
+      const pwText = u.password || 'admin123';
+
+      return `
+        <div class="user-item-card" style="display:flex; flex-direction:column; gap:0.6rem; align-items:stretch; background:#ffffff; border:1px solid #e2e8f0; border-radius:10px; padding:0.85rem 1rem; box-shadow:0 1px 3px rgba(0,0,0,0.03);">
+          <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:0.5rem;">
+            <div>
+              <div style="font-weight:800; color:#0f172a; font-size:0.92rem; display:flex; align-items:center; gap:6px;">
+                <span>👤</span>
+                <span>${this.escapeHtml(u.name)}</span>
+              </div>
+              <div style="font-size:0.76rem; color:#64748b; font-family:monospace; margin-top:2px;">
+                @${this.escapeHtml(u.username || u.id)}
+              </div>
+            </div>
+            ${roleBadge}
+          </div>
+
+          <div style="font-size:0.78rem; color:#475569; background:#f8fafc; padding:0.4rem 0.6rem; border-radius:6px; border:1px solid #f1f5f9;">
+            ${this.escapeHtml(u.desc || 'Tanımlı şantiye kullanıcısı')}
+          </div>
+
+          <div style="display:flex; justify-content:space-between; align-items:center; font-size:0.8rem; padding-top:0.4rem; border-top:1px dashed #e2e8f0; flex-wrap:wrap; gap:0.4rem;">
+            <div style="display:flex; align-items:center; gap:6px; color:#475569;">
+              <span>🔑</span>
+              <span>Şifre:</span>
+              <strong style="font-family:monospace; background:#fef3c7; color:#92400e; padding:1px 6px; border-radius:4px; border:1px solid #fde68a;">
+                ${this.escapeHtml(pwText)}
+              </strong>
+            </div>
+            <div style="display:flex; gap:0.35rem; align-items:center;">
+              <button class="btn btn-sm btn-outline" style="padding:0.25rem 0.6rem; font-size:0.75rem;" onclick="app.openChangeUserPasswordModal('${u.id}')" title="Bu kullanıcının şifresini değiştir">
+                <span>✏️ Şifre Değiştir</span>
+              </button>
+              <button class="btn btn-sm btn-secondary" style="padding:0.25rem 0.6rem; font-size:0.75rem;" onclick="app.loginAsUser('${u.id}')" title="Bu kullanıcı olarak anında giriş yap ve test et">
+                <span>🔄 Giriş Yap</span>
+              </button>
+              ${u.id !== 'u1' ? `<button class="btn btn-sm" style="padding:0.25rem 0.5rem; font-size:0.75rem; background:#fee2e2; color:#dc2626; border:1px solid #fca5a5; cursor:pointer;" onclick="app.deleteUser('${u.id}')" title="Kullanıcıyı Sil"><span>🗑️</span></button>` : ''}
+            </div>
+          </div>
+        </div>
+      `;
+    }).join('');
+  }
+
+  openNewUserModal() {
+    const nameEl = document.getElementById('newUserNameInput');
+    const usernameEl = document.getElementById('newUserUsernameInput');
+    const roleEl = document.getElementById('newUserRoleSelect');
+    const pwEl = document.getElementById('newUserPasswordInput');
+    const descEl = document.getElementById('newUserDescInput');
+
+    if (nameEl) nameEl.value = '';
+    if (usernameEl) usernameEl.value = '';
+    if (roleEl) roleEl.value = 'internal_team';
+    if (pwEl) pwEl.value = '';
+    if (descEl) descEl.value = '';
+
+    this.openModal('modalNewUser');
+  }
+
+  async saveNewUser() {
+    const name = (document.getElementById('newUserNameInput')?.value || '').trim();
+    let username = (document.getElementById('newUserUsernameInput')?.value || '').trim().toLowerCase();
+    const role = document.getElementById('newUserRoleSelect')?.value || 'internal_team';
+    const password = (document.getElementById('newUserPasswordInput')?.value || '').trim();
+    const desc = (document.getElementById('newUserDescInput')?.value || '').trim();
+
+    if (!name) {
+      this.showToast('Lütfen Ad Soyad veya Ekip Ünvanı yazınız.', 'warning');
+      return;
+    }
+    if (!username) {
+      username = name.toLowerCase().replace(/[^a-z0-9]/g, '_');
+    }
+    if (!password) {
+      this.showToast('Lütfen giriş şifresi belirleyiniz.', 'warning');
+      return;
+    }
+
+    if (!this.data.users) this.data.users = [];
+
+    // Check duplicate username
+    if (this.data.users.some(u => u.username === username)) {
+      this.showToast(`"${username}" kullanıcı adı zaten kullanımda. Farklı bir kullanıcı adı seçiniz.`, 'error');
+      return;
+    }
+
+    const newUser = {
+      id: `u_${Date.now()}`,
+      username: username,
+      name: name,
+      role: role,
+      password: password,
+      desc: desc || 'Şantiye kullanıcısı'
+    };
+
+    this.data.users.push(newUser);
+    await this.saveData();
+
+    this.closeModal('modalNewUser');
+    this.renderUsersList();
+    this.showToast(`"${name}" kullanıcısı başarıyla eklendi! Şifresi: ${password}`, 'success');
+  }
+
+  openChangeUserPasswordModal(userId) {
+    const user = (this.data?.users || []).find(u => u.id === userId);
+    if (!user) return;
+
+    const idEl = document.getElementById('changeUserPwUserId');
+    const nameEl = document.getElementById('changeUserPwName');
+    const pwEl = document.getElementById('changeUserPwNewPassword');
+
+    if (idEl) idEl.value = user.id;
+    if (nameEl) nameEl.value = `${user.name} (@${user.username || user.id})`;
+    if (pwEl) pwEl.value = user.password || '';
+
+    this.openModal('modalChangeUserPassword');
+  }
+
+  async saveUserPassword() {
+    const userId = document.getElementById('changeUserPwUserId')?.value;
+    const newPassword = (document.getElementById('changeUserPwNewPassword')?.value || '').trim();
+
+    if (!newPassword || newPassword.length < 3) {
+      this.showToast('Lütfen en az 3 karakterli bir şifre belirleyiniz.', 'warning');
+      return;
+    }
+
+    const user = (this.data?.users || []).find(u => u.id === userId);
+    if (!user) return;
+
+    user.password = newPassword;
+    await this.saveData();
+
+    this.closeModal('modalChangeUserPassword');
+    this.renderUsersList();
+    this.showToast(`"${user.name}" kullanıcısının şifresi "${newPassword}" olarak güncellendi!`, 'success');
+  }
+
+  async deleteUser(userId) {
+    if (userId === 'u1') {
+      this.showToast('Ana yönetici hesabı silinemez!', 'warning');
+      return;
+    }
+
+    const user = (this.data?.users || []).find(u => u.id === userId);
+    if (!user) return;
+
+    if (!confirm(`"${user.name}" kullanıcısını silmek istediğinize emin misiniz?`)) {
+      return;
+    }
+
+    this.data.users = this.data.users.filter(u => u.id !== userId);
+    await this.saveData();
+
+    this.renderUsersList();
+    this.showToast(`"${user.name}" kullanıcısı silindi.`, 'info');
+  }
+
+  loginAsUser(userId) {
+    const user = (this.data?.users || []).find(u => u.id === userId);
+    if (!user) return;
+
+    if (user.role === 'admin') {
+      this.adminToken = 'local-admin-token';
+      this.isAdmin = true;
+    } else {
+      this.adminToken = null;
+      this.isAdmin = false;
+    }
+
+    this.currentRole = user.role;
+    localStorage.setItem('santiye_active_role', user.role);
+
+    this.closeModal('modalPermissions');
+    this.updateRoleUI();
+    this.showToast(`"${user.name}" olarak giriş yapıldı. (${user.role} yetkisi devrede)`, 'success');
+    this.renderAll();
+  }
+
   async savePermissionsMatrix() {
-    this.showToast('Rol yetkileri güncellendi ve buluta kaydedildi! 👥', 'success');
+    await this.saveData();
+    this.showToast('Rol ve kullanıcı yetkileri kaydedildi! 👥', 'success');
     this.closeModal('modalPermissions');
     this.updateRoleUI();
     this.renderAll();
