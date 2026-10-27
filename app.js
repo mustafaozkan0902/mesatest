@@ -22,6 +22,9 @@ class SantiyeApp {
     this.privateNoteFilterColor = 'all';
     this.selectedNoteColor = 'amber';
     this.apiUrl = window.location.origin.startsWith('http') ? window.location.origin : 'http://localhost:8088';
+    this.currentMasterTab = 'test';
+    this.currentTestSubTab = 'matrix';
+    this.currentInternalSubTab = 'internal_plan';
     
     this.fallbackKey = 'santiye_data_v2';
     localStorage.removeItem('santiye_offline_backup_data');
@@ -50,8 +53,12 @@ class SantiyeApp {
       this.renderAll();
     }
 
-    const initialTab = localStorage.getItem('santiye_active_tab') || 'meetings';
-    this.switchTab(initialTab);
+    const initialMasterTab = localStorage.getItem('santiye_active_master_tab') || 'test';
+    const initialTestSub = localStorage.getItem('santiye_active_test_sub_tab') || 'matrix';
+    const initialInternalSub = localStorage.getItem('santiye_active_internal_sub_tab') || 'internal_plan';
+    this.currentTestSubTab = initialTestSub;
+    this.currentInternalSubTab = initialInternalSub;
+    this.switchMasterTab(initialMasterTab);
 
     // 2. Then attempt cloud or local server background sync
     this.initFirebase();
@@ -252,6 +259,26 @@ class SantiyeApp {
     }
     if (tabBtnInternal) {
       tabBtnInternal.style.display = this.hasPermission('internal_plan', 'view') ? 'inline-flex' : 'none';
+    }
+
+    const btnMasterInternal = document.getElementById('btnMasterInternal');
+    const subTabBtnPrivate = document.getElementById('subTabBtn-private_notes');
+    const subTabBtnInternal = document.getElementById('subTabBtn-internal_plan');
+    const canSeeInternal = this.hasPermission('internal_plan', 'view') || this.hasPermission('private_notes', 'view');
+
+    if (btnMasterInternal) {
+      btnMasterInternal.style.display = canSeeInternal ? 'flex' : 'none';
+    }
+    if (subTabBtnPrivate) {
+      subTabBtnPrivate.style.display = this.hasPermission('private_notes', 'view') ? 'inline-flex' : 'none';
+    }
+    if (subTabBtnInternal) {
+      subTabBtnInternal.style.display = this.hasPermission('internal_plan', 'view') ? 'inline-flex' : 'none';
+    }
+
+    // Ana firma / MESA veya salt okunur izleyici moduna gecildiyse ve secili sekme 2. Kisim ise test sekmesine dondur
+    if (!canSeeInternal && this.currentMasterTab === 'internal') {
+      this.switchMasterTab('test');
     }
 
     const privateCount = (this.data?.privateNotes || []).length;
@@ -484,57 +511,133 @@ class SantiyeApp {
     this.renderLogs();
   }
 
-  // --- TAB SWITCHING ---
-  switchTab(tabId) {
-    // Permission checks
-    if (tabId === 'private_notes' && !this.hasPermission('private_notes', 'view')) {
-      this.showToast('Özel Notlar alanına yalnızca şantiye yöneticisi erişebilir.', 'warning');
-      this.switchTab('meetings');
-      return;
-    }
-    if (tabId === 'internal_plan' && !this.hasPermission('internal_plan', 'view')) {
-      this.showToast('İnternal İş Planı alanına erişim yetkiniz bulunmamaktadır.', 'warning');
-      this.switchTab('meetings');
-      return;
+  // --- MASTER & SUB-TAB SWITCHING ---
+  switchMasterTab(masterTabId) {
+    if (masterTabId === 'internal') {
+      if (!this.hasPermission('internal_plan', 'view') && !this.hasPermission('private_notes', 'view')) {
+        this.showToast('İnternal alana erişim yetkiniz bulunmamaktadır.', 'warning');
+        return;
+      }
     }
 
-    this.currentTab = tabId;
+    this.currentMasterTab = masterTabId;
     try {
-      localStorage.setItem('santiye_active_tab', tabId);
+      localStorage.setItem('santiye_active_master_tab', masterTabId);
     } catch(e) {}
 
-    document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
-    document.querySelectorAll('.view-panel').forEach(panel => panel.classList.remove('active'));
+    // Master Tab Buttons
+    document.querySelectorAll('.master-tab-btn').forEach(btn => btn.classList.remove('active'));
+    const masterBtnMap = {
+      test: 'btnMasterTest',
+      internal: 'btnMasterInternal',
+      meetings: 'btnMasterMeetings'
+    };
+    const targetBtn = document.getElementById(masterBtnMap[masterTabId]);
+    if (targetBtn) targetBtn.classList.add('active');
 
-    const btn = Array.from(document.querySelectorAll('.tab-btn')).find(b => b.getAttribute('onclick')?.includes(`'${tabId}'`));
-    if (btn) btn.classList.add('active');
-
-    const panel = document.getElementById(`view-${tabId}`);
-    if (panel) panel.classList.add('active');
-
-    // Space optimization: To-Do, İnternal Plan ve Özel Notlar tam ekran alanı kullansın
-    const workflowBanner = document.querySelector('.workflow-banner');
-    const kpiGrid = document.querySelector('.kpi-grid');
-    if (['meetings', 'internal_plan', 'private_notes'].includes(tabId)) {
-      if (workflowBanner) workflowBanner.style.display = 'none';
-      if (kpiGrid) kpiGrid.style.display = 'none';
-    } else {
-      if (workflowBanner) workflowBanner.style.display = '';
-      if (kpiGrid) kpiGrid.style.display = '';
+    // Master Sections
+    document.querySelectorAll('.master-section-panel').forEach(panel => {
+      panel.classList.remove('active');
+      panel.style.display = 'none';
+    });
+    const targetPanel = document.getElementById(`masterSection-${masterTabId}`);
+    if (targetPanel) {
+      targetPanel.classList.add('active');
+      targetPanel.style.display = 'block';
     }
 
-    if (tabId === 'building') {
-      this.renderBuilding();
-    } else if (tabId === 'table') {
-      this.renderTable();
-    } else if (tabId === 'stats') {
-      this.renderStats();
-    } else if (tabId === 'meetings') {
+    // Trigger proper sub-view rendering
+    if (masterTabId === 'test') {
+      const sub = this.currentTestSubTab || 'matrix';
+      this.switchTestSubTab(sub);
+    } else if (masterTabId === 'internal') {
+      let sub = this.currentInternalSubTab || 'internal_plan';
+      if (sub === 'private_notes' && !this.hasPermission('private_notes', 'view')) {
+        sub = 'internal_plan';
+      }
+      this.switchInternalSubTab(sub);
+    } else if (masterTabId === 'meetings') {
       this.renderMeetings();
-    } else if (tabId === 'internal_plan') {
+    }
+  }
+
+  switchTestSubTab(subTabId) {
+    this.currentTestSubTab = subTabId;
+    try {
+      localStorage.setItem('santiye_active_test_sub_tab', subTabId);
+    } catch(e) {}
+
+    const testSection = document.getElementById('masterSection-test');
+    if (testSection) {
+      testSection.querySelectorAll('.sub-tab-btn').forEach(b => b.classList.remove('active'));
+      const activeBtn = document.getElementById(`subTabBtn-${subTabId}`);
+      if (activeBtn) activeBtn.classList.add('active');
+
+      testSection.querySelectorAll('.view-panel').forEach(p => p.classList.remove('active'));
+      const panel = document.getElementById(`view-${subTabId}`);
+      if (panel) panel.classList.add('active');
+    }
+
+    if (subTabId === 'building') {
+      this.renderBuilding();
+    } else if (subTabId === 'table') {
+      this.renderTable();
+    } else if (subTabId === 'stats') {
+      this.renderStats();
+    } else if (subTabId === 'logs') {
+      this.renderLogs();
+    } else if (subTabId === 'matrix') {
+      this.renderMatrix();
+    }
+  }
+
+  switchInternalSubTab(subTabId) {
+    if (subTabId === 'private_notes' && !this.hasPermission('private_notes', 'view')) {
+      this.showToast('Özel Notlar alanına yalnızca şantiye yöneticisi erişebilir.', 'warning');
+      this.switchInternalSubTab('internal_plan');
+      return;
+    }
+    if (subTabId === 'internal_plan' && !this.hasPermission('internal_plan', 'view')) {
+      this.showToast('İnternal İş Planı alanına erişim yetkiniz bulunmamaktadır.', 'warning');
+      this.switchMasterTab('meetings');
+      return;
+    }
+
+    this.currentInternalSubTab = subTabId;
+    try {
+      localStorage.setItem('santiye_active_internal_sub_tab', subTabId);
+    } catch(e) {}
+
+    const internalSection = document.getElementById('masterSection-internal');
+    if (internalSection) {
+      internalSection.querySelectorAll('.sub-tab-btn').forEach(b => b.classList.remove('active'));
+      const activeBtn = document.getElementById(`subTabBtn-${subTabId}`);
+      if (activeBtn) activeBtn.classList.add('active');
+
+      internalSection.querySelectorAll('.view-panel').forEach(p => p.classList.remove('active'));
+      const panel = document.getElementById(`view-${subTabId}`);
+      if (panel) panel.classList.add('active');
+    }
+
+    if (subTabId === 'internal_plan') {
       this.renderInternalPlan();
-    } else if (tabId === 'private_notes') {
+    } else if (subTabId === 'private_notes') {
       this.renderPrivateNotes();
+    }
+  }
+
+  // Backwards compatibility for any legacy callers
+  switchTab(tabId) {
+    if (['matrix', 'building', 'table', 'stats', 'logs'].includes(tabId)) {
+      this.currentTestSubTab = tabId;
+      this.switchMasterTab('test');
+      this.switchTestSubTab(tabId);
+    } else if (['internal_plan', 'private_notes'].includes(tabId)) {
+      this.currentInternalSubTab = tabId;
+      this.switchMasterTab('internal');
+      this.switchInternalSubTab(tabId);
+    } else if (tabId === 'meetings') {
+      this.switchMasterTab('meetings');
     }
   }
 
@@ -1897,10 +2000,19 @@ class SantiyeApp {
     if (elPending) elPending.innerText = pendingCount;
     if (elDone) elDone.innerText = doneCount;
     if (elTotal) elTotal.innerText = totalCount;
+    const badgeText = overdueCount > 0 ? `${overdueCount} Gecikme` : totalCount;
+    const badgeBg = overdueCount > 0 ? '#fee2e2' : '#e2e8f0';
+    const badgeColor = overdueCount > 0 ? '#b91c1c' : '#475569';
     if (elTabCount) {
-      elTabCount.innerText = overdueCount > 0 ? `${overdueCount} Gecikme` : totalCount;
-      elTabCount.style.background = overdueCount > 0 ? '#fee2e2' : '#e2e8f0';
-      elTabCount.style.color = overdueCount > 0 ? '#b91c1c' : '#475569';
+      elTabCount.innerText = badgeText;
+      elTabCount.style.background = badgeBg;
+      elTabCount.style.color = badgeColor;
+    }
+    const elMasterBadge = document.getElementById('meetingMasterBadge');
+    if (elMasterBadge) {
+      elMasterBadge.innerText = badgeText;
+      elMasterBadge.style.background = badgeBg;
+      elMasterBadge.style.color = badgeColor;
     }
     if (elSummaryBadge) {
       elSummaryBadge.innerText = `${totalCount} Madde • ${overdueCount} Geciken • ${doneCount} Tamamlanan`;

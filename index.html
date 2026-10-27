@@ -2700,6 +2700,204 @@ body {
 .team-col-muh { background: #dcfce7; color: #15803d; border-color: #86efac; }
 .team-col-genel { background: #f1f5f9; color: #475569; border-color: #cbd5e1; }
 
+
+/* ==========================================================================
+   MASTER 3-SECTION NAVIGATION & SUB-NAV STYLES
+   ========================================================================== */
+
+.master-tabs-nav {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.85rem;
+  margin-bottom: 1.25rem;
+  background: transparent;
+}
+
+@media (max-width: 960px) {
+  .master-tabs-nav {
+    grid-template-columns: 1fr;
+    gap: 0.5rem;
+  }
+}
+
+.master-tab-btn {
+  background: #ffffff;
+  border: 2px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 0.85rem 1.15rem;
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  text-align: left;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+  position: relative;
+  overflow: hidden;
+}
+
+.master-tab-btn:hover {
+  border-color: #cbd5e1;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.08);
+}
+
+.master-tab-btn.active {
+  background: #ffffff;
+  border-color: #0284c7;
+  box-shadow: 0 4px 12px rgba(2, 132, 199, 0.15);
+}
+
+.master-tab-btn.active::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: #0284c7;
+}
+
+#btnMasterInternal.active {
+  border-color: #f59e0b;
+  box-shadow: 0 4px 12px rgba(245, 158, 11, 0.15);
+}
+#btnMasterInternal.active::before {
+  background: #f59e0b;
+}
+
+#btnMasterMeetings.active {
+  border-color: #dc2626;
+  box-shadow: 0 4px 12px rgba(220, 38, 38, 0.12);
+}
+#btnMasterMeetings.active::before {
+  background: #dc2626;
+}
+
+.master-tab-icon {
+  font-size: 1.6rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 10px;
+  background: #f8fafc;
+  flex-shrink: 0;
+}
+
+.master-tab-btn.active .master-tab-icon {
+  background: #e0f2fe;
+}
+#btnMasterInternal.active .master-tab-icon {
+  background: #fef3c7;
+}
+#btnMasterMeetings.active .master-tab-icon {
+  background: #fee2e2;
+}
+
+.master-tab-text {
+  flex: 1;
+  min-width: 0;
+}
+
+.master-tab-title {
+  font-size: 0.95rem;
+  font-weight: 800;
+  color: #0f172a;
+  line-height: 1.25;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.master-tab-desc {
+  font-size: 0.74rem;
+  color: #64748b;
+  margin-top: 3px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.master-tab-badge-secret {
+  background: #fef3c7;
+  color: #92400e;
+  border: 1px solid #fde68a;
+  font-size: 0.65rem;
+  font-weight: 800;
+  padding: 2px 7px;
+  border-radius: 9999px;
+  margin-left: auto;
+}
+
+/* Sub-Navigation Bar inside Master Sections */
+.sub-nav-bar {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  background: #ffffff;
+  padding: 0.45rem 0.6rem;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  margin-bottom: 1.25rem;
+  overflow-x: auto;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03);
+}
+
+.sub-tab-btn {
+  background: transparent;
+  border: 1px solid transparent;
+  color: #475569;
+  font-size: 0.82rem;
+  font-weight: 600;
+  padding: 0.45rem 0.9rem;
+  border-radius: 7px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  white-space: nowrap;
+  transition: all 0.15s ease;
+}
+
+.sub-tab-btn:hover {
+  background: #f8fafc;
+  color: #0f172a;
+}
+
+.sub-tab-btn.active {
+  background: #0284c7;
+  color: #ffffff;
+  font-weight: 700;
+  box-shadow: 0 2px 4px rgba(2, 132, 199, 0.25);
+}
+
+.sub-tab-btn.active .tab-count {
+  background: rgba(255, 255, 255, 0.25) !important;
+  color: #ffffff !important;
+}
+
+.internal-sub-nav .sub-tab-btn.active {
+  background: #0f172a;
+  color: #ffffff;
+  box-shadow: 0 2px 4px rgba(15, 23, 42, 0.25);
+}
+
+.master-section-panel {
+  display: none;
+  animation: fadeIn 0.2s ease;
+}
+
+.master-section-panel.active {
+  display: block;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
   </style>
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⚡</text></svg>">
 </head>
@@ -2807,8 +3005,50 @@ body {
     </div>
   </aside>
 
-  <!-- Prerequisite Rule Banner -->
-  <aside class="workflow-banner">
+<!-- Main Application Body -->
+
+  <main class="main-content">
+
+    <!-- ========================================================
+         MASTER 3-SECTION NAVIGATION BAR
+         1. Kısım: Şantiye Test Takibi & Isı Haritası (MESA / Ana Firma Görünümü)
+         2. Kısım: İnternal İş Planı & Özel Notlarım (Yönetici & Ekip Gizli Alanı)
+         3. Kısım: Toplantı Notları & Şantiye To-Do (Haftalık Kararlar & Taahhütler)
+         ======================================================== -->
+    <nav class="master-tabs-nav">
+      <button class="master-tab-btn active" id="btnMasterTest" onclick="app.switchMasterTab('test')">
+        <span class="master-tab-icon">🏢</span>
+        <div class="master-tab-text">
+          <div class="master-tab-title">1. Şantiye Test Takibi & Isı Haritası</div>
+          <div class="master-tab-desc">Ana Firma (MESA) & Saha Kabul Testleri</div>
+        </div>
+      </button>
+
+      <button class="master-tab-btn" id="btnMasterInternal" onclick="app.switchMasterTab('internal')" style="display: none;">
+        <span class="master-tab-icon">🔒</span>
+        <div class="master-tab-text">
+          <div class="master-tab-title">2. İnternal İş Planı & Özel Notlarım</div>
+          <div class="master-tab-desc">Yönetici Not Defteri & 1 Aylık İş Planı</div>
+        </div>
+        <span class="master-tab-badge-secret">Gizli</span>
+      </button>
+
+      <button class="master-tab-btn" id="btnMasterMeetings" onclick="app.switchMasterTab('meetings')">
+        <span class="master-tab-icon">📋</span>
+        <div class="master-tab-text">
+          <div class="master-tab-title">3. Toplantı Notları & Şantiye To-Do</div>
+          <div class="master-tab-desc">Haftalık Kararlar & Taahhüt Takibi</div>
+        </div>
+        <span class="tab-count" id="meetingMasterBadge" style="background: #fee2e2; color: #b91c1c;">0</span>
+      </button>
+    </nav>
+
+    <!-- ========================================================
+         1. KISIM: ŞANTİYE TEST TAKİBİ & ISI HARİTASI (ANA FİRMA GÖRÜNÜMÜ)
+         ======================================================== -->
+    <div id="masterSection-test" class="master-section-panel active">
+      <!-- Prerequisite Rule Banner -->
+  <aside class="workflow-banner" style="margin-bottom: 1rem; border-radius: 10px; border: 1px solid #e2e8f0;">
     <div class="workflow-container">
       <div style="font-size: 0.85rem; font-weight: 700; color: #1e293b; display: flex; align-items: center; gap: 0.5rem;">
         <span>📋</span>
@@ -2838,10 +3078,7 @@ body {
     </div>
   </aside>
 
-  <!-- Main Application Body -->
-  <main class="main-content">
-
-    <!-- KPI Summary Row -->
+      <!-- KPI Summary Row -->
     <section class="kpi-grid">
       <!-- Total Units -->
       <div class="kpi-card">
@@ -2922,51 +3159,228 @@ body {
       </div>
     </section>
 
-    <!-- Navigation Tabs -->
-    <nav class="tabs-nav">
-      <button class="tab-btn main-tab-btn active" onclick="app.switchTab('meetings')">
-        <span>📋</span>
-        <span>Şantiye To-Do & Toplantı Kararları</span>
-        <span class="tab-count" id="meetingTabCount" style="background: #fee2e2; color: #b91c1c;">0</span>
-      </button>
-      <button class="tab-btn" id="tabBtnInternalPlan" onclick="app.switchTab('internal_plan')" style="display: none;">
-        <span>📅</span>
-        <span>İnternal İş Planı</span>
-        <span class="tab-count" id="internalPlanTabCount" style="background: #e0e7ff; color: #3730a3;">0</span>
-      </button>
-      <button class="tab-btn" id="tabBtnPrivateNotes" onclick="app.switchTab('private_notes')" style="display: none; border: 1px dashed #f59e0b;">
-        <span>🔒</span>
-        <span>Özel Notlarım</span>
-        <span class="tab-badge-secret">Gizli</span>
-        <span class="tab-count" id="privateNotesTabCount" style="background: #fef3c7; color: #92400e;">0</span>
-      </button>
-      <div class="tab-nav-divider"></div>
-      <button class="tab-btn" onclick="app.switchTab('matrix')">
-        <span>🗺️</span>
-        <span>Şantiye Isı Haritası (Matris)</span>
-      </button>
-      <button class="tab-btn" onclick="app.switchTab('building')">
-        <span>🏢</span>
-        <span>Blok Kesiti & Kat Kartları</span>
-      </button>
-      <button class="tab-btn" onclick="app.switchTab('table')">
-        <span>📑</span>
-        <span>Detaylı Liste & Tablo</span>
-        <span class="tab-count" id="tableTabCount">80</span>
-      </button>
-      <button class="tab-btn" onclick="app.switchTab('stats')">
-        <span>📊</span>
-        <span>Blok İlerleme Grafiği</span>
-      </button>
-      <button class="tab-btn" onclick="app.switchTab('logs')">
-        <span>📜</span>
-        <span>İşlem & Onay Geçmişi</span>
-        <span class="tab-count" id="logTabCount">0</span>
-      </button>
-    </nav>
+      <!-- Section 1 Sub-Navigation Bar -->
+      <nav class="sub-nav-bar">
+        <button class="sub-tab-btn active" id="subTabBtn-matrix" onclick="app.switchTestSubTab('matrix')">
+          <span>🗺️</span>
+          <span>Şantiye Isı Haritası (Matris)</span>
+        </button>
+        <button class="sub-tab-btn" id="subTabBtn-building" onclick="app.switchTestSubTab('building')">
+          <span>🏢</span>
+          <span>Blok Kesiti & Kat Kartları</span>
+        </button>
+        <button class="sub-tab-btn" id="subTabBtn-table" onclick="app.switchTestSubTab('table')">
+          <span>📑</span>
+          <span>Detaylı Liste & Tablo</span>
+          <span class="tab-count" id="tableTabCount">80</span>
+        </button>
+        <button class="sub-tab-btn" id="subTabBtn-stats" onclick="app.switchTestSubTab('stats')">
+          <span>📊</span>
+          <span>Blok İlerleme Grafiği</span>
+        </button>
+        <button class="sub-tab-btn" id="subTabBtn-logs" onclick="app.switchTestSubTab('logs')">
+          <span>📜</span>
+          <span>İşlem & Onay Geçmişi</span>
+          <span class="tab-count" id="logTabCount">0</span>
+        </button>
+      </nav>
 
-    <!-- TAB: İnternal İş Planı -->
-    <section id="view-internal_plan" class="view-panel">
+      <!-- TAB 1: Matris -->
+      <section id="view-matrix" class="view-panel active">
+      <div class="toolbar">
+        <div class="filter-group">
+          <span style="font-size: 0.8rem; font-weight: 700; color: #475569;">Filtrele:</span>
+          <button class="filter-chip active" onclick="app.setMatrixFilter('all')">Tüm Katlar</button>
+          <button class="filter-chip chip-ready" onclick="app.setMatrixFilter('ready')">⚡ Teste Hazır Olanlar</button>
+          <button class="filter-chip chip-mesa" onclick="app.setMatrixFilter('mesa_wait')">🏢 MESA Onayı Bekleyenler</button>
+          <button class="filter-chip" onclick="app.setMatrixFilter('prereq_wait')">⚠️ Ön Şartı (Mekanik/Klima) Eksikler</button>
+          <button class="filter-chip chip-done" onclick="app.setMatrixFilter('done')">✅ Testi Tamamlananlar</button>
+        </div>
+
+        <div style="display: flex; align-items: center; gap: 0.75rem; font-size: 0.78rem;">
+          <span style="display: flex; align-items: center; gap: 4px;"><span class="sub-badge test-ok">✓</span> Test Tamam</span>
+          <span style="display: flex; align-items: center; gap: 4px;"><span class="sub-badge test-ready">⚡</span> Teste Hazır</span>
+          <span style="display: flex; align-items: center; gap: 4px;"><span class="sub-badge" style="background:#a855f7;">🏢</span> MESA Bekliyor</span>
+          <span style="display: flex; align-items: center; gap: 4px;"><span class="sub-badge prog">⏳</span> İmalat Sürüyor</span>
+        </div>
+      </div>
+
+      <div class="matrix-container">
+        <table class="matrix-table" id="matrixTable">
+          <!-- Dynamically populated -->
+        </table>
+      </div>
+    </section>
+
+    <!-- TAB 2: Blok Bazlı Görünüm (Building Elevation & Cards) -->
+
+      <!-- TAB 2: Blok Kesiti -->
+      <section id="view-building" class="view-panel">
+      <!-- 10 Blok Seçim Butonları -->
+      <div class="block-selector-bar" id="blockButtonsBar">
+        <!-- Dynamically rendered Blok 1 .. Blok 10 -->
+      </div>
+
+      <div class="building-elevation-wrapper">
+        <!-- Sidebar Summary for Selected Block -->
+        <div class="building-sidebar">
+          <div class="building-summary-title">
+            <span id="activeBlockTitle">Blok 1 Özeti</span>
+            <span class="badge-ready" id="activeBlockBadge" style="font-size: 0.75rem; padding: 0.2rem 0.5rem; border-radius: 4px;">Aktif</span>
+          </div>
+          <p style="font-size: 0.8rem; color: #64748b; margin-bottom: 1rem;">Bu bloğa ait 8 katın (Çatı Katından B2 Bodrumuna kadar) detaylı ön şart ve test aşamaları aşağıdadır.</p>
+          
+          <div style="display: flex; flex-direction: column; gap: 0.75rem;">
+            <div style="background: #f8fafc; padding: 0.75rem; border-radius: 8px; border: 1px solid #e2e8f0;">
+              <div style="font-size: 0.75rem; color: #64748b; font-weight: 700;">BLOK TEST İLERLEMESİ</div>
+              <div style="font-size: 1.4rem; font-weight: 800; color: #0284c7;" id="activeBlockProgressText">0 / 8 Kat</div>
+              <div class="kpi-progress"><div id="activeBlockProgressBar" class="kpi-bar" style="background: #0284c7; width: 0%;"></div></div>
+            </div>
+
+            <div style="font-size: 0.8rem; display: flex; flex-direction: column; gap: 0.4rem;">
+              <div style="display:flex; justify-content:space-between;"><span>Mekanik İşi Biten:</span> <strong id="blockMekanikCount">0/8</strong></div>
+              <div style="display:flex; justify-content:space-between;"><span>Klima İşi Biten:</span> <strong id="blockKlimaCount">0/8</strong></div>
+              <div style="display:flex; justify-content:space-between;"><span>MESA Kabul Onaylı:</span> <strong id="blockMesaCount">0/8</strong></div>
+              <div style="display:flex; justify-content:space-between;"><span>Elektrik Testine Hazır:</span> <strong style="color: #0284c7;" id="blockReadyCount">0</strong></div>
+              <div style="display:flex; justify-content:space-between;"><span>Elektrik Testi Biten:</span> <strong style="color: #16a34a;" id="blockDoneCount">0</strong></div>
+            </div>
+
+            <div id="adminBlockControls" style="display: none; margin-top: 0.5rem; padding-top: 0.75rem; border-top: 1px dashed #cbd5e1;">
+              <button class="btn btn-primary" style="width: 100%;" onclick="app.quickCompleteBlockMekanik()">
+                <span>🔧</span>
+                <span>Bu Bloğun Mekaniklerini Tamamla</span>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Floors List (Vertical Building Cross-section) -->
+        <div class="building-floors-list" id="buildingFloorsList">
+          <!-- Dynamically populated: Çatı down to B2 -->
+        </div>
+      </div>
+    </section>
+
+    <!-- TAB 3: Detaylı Tablo Görünümü -->
+
+      <!-- TAB 3: Detaylı Tablo -->
+      <section id="view-table" class="view-panel">
+      <div class="toolbar">
+        <div class="filter-group">
+          <input type="text" id="tableSearchInput" class="search-input" placeholder="🔍 Blok veya Kat Ara (örn: Blok 3, Zemin)..." oninput="app.renderTable()">
+          <select id="tableBlockFilter" class="form-select" style="width: auto;" onchange="app.renderTable()">
+            <option value="all">Tüm Bloklar (10 Blok)</option>
+            <option value="1">Blok 1</option>
+            <option value="2">Blok 2</option>
+            <option value="3">Blok 3</option>
+            <option value="4">Blok 4</option>
+            <option value="5">Blok 5</option>
+            <option value="6">Blok 6</option>
+            <option value="7">Blok 7</option>
+            <option value="8">Blok 8</option>
+            <option value="9">Blok 9</option>
+            <option value="10">Blok 10</option>
+          </select>
+          <select id="tableStatusFilter" class="form-select" style="width: auto;" onchange="app.renderTable()">
+            <option value="all">Tüm Durumlar</option>
+            <option value="ready">⚡ Teste Hazır Olanlar</option>
+            <option value="mesa_wait">🏢 MESA Onayı Bekleyenler</option>
+            <option value="prereq_wait">⚠️ Ön Şartı Eksikler</option>
+            <option value="done">✅ Testi Tamamlananlar</option>
+          </select>
+        </div>
+
+        <div>
+          <button class="btn btn-secondary" onclick="app.exportToExcel()">
+            <span>📊</span>
+            <span>CSV / Excel İndir</span>
+          </button>
+        </div>
+      </div>
+
+      <div class="table-card">
+        <div class="data-table-wrapper">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Blok & Kat</th>
+                <th>1. Mekanik Durumu</th>
+                <th>2. Klima Durumu</th>
+                <th>3. MESA Kabul & Onay</th>
+                <th>4. Elektrik Testi Durumu</th>
+                <th>Son Güncelleme</th>
+                <th style="text-align: right;">İşlem</th>
+              </tr>
+            </thead>
+            <tbody id="dataTableBody">
+              <!-- Dynamically populated -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- TAB 4: Blok İlerleme & İstatistik Raporu -->
+
+      <!-- TAB 4: İstatistikler -->
+      <section id="view-stats" class="view-panel">
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 1.25rem; margin-bottom: 1.5rem;" id="blockStatsGrid">
+        <!-- Rendered dynamically for 10 blocks -->
+      </div>
+    </section>
+
+    <!-- TAB 5: İşlem & Onay Günlüğü (Audit Trail) -->
+
+      <!-- TAB 5: İşlem Geçmişi (Loglar) -->
+      <section id="view-logs" class="view-panel">
+      <div class="table-card">
+        <div style="padding: 1rem 1.25rem; border-bottom: 1px solid #e2e8f0; display:flex; justify-content:space-between; align-items:center;">
+          <h3 style="font-size: 1rem; font-weight: 700;">Şantiye İşlem & Onay Günlüğü</h3>
+          <span style="font-size: 0.8rem; color: #64748b;">Mekanik, Klima, MESA ve Elektrik Testi hareket kayıtları</span>
+        </div>
+        <div class="data-table-wrapper">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Tarih / Saat</th>
+                <th>Kullanıcı</th>
+                <th>Blok / Kat</th>
+                <th>İşlem</th>
+                <th>Detay & Açıklama</th>
+              </tr>
+            </thead>
+            <tbody id="auditLogsBody">
+              <!-- Dynamically populated -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- TAB 6: Toplantı Kararları & Gecikme Takip Sistemi -->
+    </div>
+
+    <!-- ========================================================
+         2. KISIM: İNTERNAL ALAN (İŞ PLANI & YÖNETİCİ ÖZEL NOTLARI)
+         ======================================================== -->
+    <div id="masterSection-internal" class="master-section-panel" style="display: none;">
+      <!-- Section 2 Sub-Navigation Bar -->
+      <nav class="sub-nav-bar internal-sub-nav">
+        <button class="sub-tab-btn active" id="subTabBtn-internal_plan" onclick="app.switchInternalSubTab('internal_plan')">
+          <span>📅</span>
+          <span>1 Aylık İnternal İş Planı (Excel Çizelgesi)</span>
+          <span class="tab-count" id="internalPlanTabCount" style="background: #e0e7ff; color: #3730a3;">0</span>
+        </button>
+        <button class="sub-tab-btn" id="subTabBtn-private_notes" onclick="app.switchInternalSubTab('private_notes')">
+          <span>🔒</span>
+          <span>Yönetici Özel Notlarım</span>
+          <span class="master-tab-badge-secret">Gizli</span>
+          <span class="tab-count" id="privateNotesTabCount" style="background: #fef3c7; color: #92400e;">0</span>
+        </button>
+      </nav>
+
+      <!-- TAB: İnternal İş Planı -->
+      <section id="view-internal_plan" class="view-panel active">
       <div class="section-banner">
         <div>
           <div class="section-banner-title">
@@ -3083,7 +3497,9 @@ body {
     </section>
 
     <!-- TAB: Özel Notlarım -->
-    <section id="view-private_notes" class="view-panel">
+
+      <!-- TAB: Özel Notlarım -->
+      <section id="view-private_notes" class="view-panel">
       <div class="section-banner" style="border-left: 5px solid #f59e0b;">
         <div>
           <div class="section-banner-title">
@@ -3135,171 +3551,13 @@ body {
     </section>
 
     <!-- TAB 1: Şantiye Isı Haritası / Matrix Grid -->
-    <section id="view-matrix" class="view-panel">
-      <div class="toolbar">
-        <div class="filter-group">
-          <span style="font-size: 0.8rem; font-weight: 700; color: #475569;">Filtrele:</span>
-          <button class="filter-chip active" onclick="app.setMatrixFilter('all')">Tüm Katlar</button>
-          <button class="filter-chip chip-ready" onclick="app.setMatrixFilter('ready')">⚡ Teste Hazır Olanlar</button>
-          <button class="filter-chip chip-mesa" onclick="app.setMatrixFilter('mesa_wait')">🏢 MESA Onayı Bekleyenler</button>
-          <button class="filter-chip" onclick="app.setMatrixFilter('prereq_wait')">⚠️ Ön Şartı (Mekanik/Klima) Eksikler</button>
-          <button class="filter-chip chip-done" onclick="app.setMatrixFilter('done')">✅ Testi Tamamlananlar</button>
-        </div>
+    </div>
 
-        <div style="display: flex; align-items: center; gap: 0.75rem; font-size: 0.78rem;">
-          <span style="display: flex; align-items: center; gap: 4px;"><span class="sub-badge test-ok">✓</span> Test Tamam</span>
-          <span style="display: flex; align-items: center; gap: 4px;"><span class="sub-badge test-ready">⚡</span> Teste Hazır</span>
-          <span style="display: flex; align-items: center; gap: 4px;"><span class="sub-badge" style="background:#a855f7;">🏢</span> MESA Bekliyor</span>
-          <span style="display: flex; align-items: center; gap: 4px;"><span class="sub-badge prog">⏳</span> İmalat Sürüyor</span>
-        </div>
-      </div>
-
-      <div class="matrix-container">
-        <table class="matrix-table" id="matrixTable">
-          <!-- Dynamically populated -->
-        </table>
-      </div>
-    </section>
-
-    <!-- TAB 2: Blok Bazlı Görünüm (Building Elevation & Cards) -->
-    <section id="view-building" class="view-panel">
-      <!-- 10 Blok Seçim Butonları -->
-      <div class="block-selector-bar" id="blockButtonsBar">
-        <!-- Dynamically rendered Blok 1 .. Blok 10 -->
-      </div>
-
-      <div class="building-elevation-wrapper">
-        <!-- Sidebar Summary for Selected Block -->
-        <div class="building-sidebar">
-          <div class="building-summary-title">
-            <span id="activeBlockTitle">Blok 1 Özeti</span>
-            <span class="badge-ready" id="activeBlockBadge" style="font-size: 0.75rem; padding: 0.2rem 0.5rem; border-radius: 4px;">Aktif</span>
-          </div>
-          <p style="font-size: 0.8rem; color: #64748b; margin-bottom: 1rem;">Bu bloğa ait 8 katın (Çatı Katından B2 Bodrumuna kadar) detaylı ön şart ve test aşamaları aşağıdadır.</p>
-          
-          <div style="display: flex; flex-direction: column; gap: 0.75rem;">
-            <div style="background: #f8fafc; padding: 0.75rem; border-radius: 8px; border: 1px solid #e2e8f0;">
-              <div style="font-size: 0.75rem; color: #64748b; font-weight: 700;">BLOK TEST İLERLEMESİ</div>
-              <div style="font-size: 1.4rem; font-weight: 800; color: #0284c7;" id="activeBlockProgressText">0 / 8 Kat</div>
-              <div class="kpi-progress"><div id="activeBlockProgressBar" class="kpi-bar" style="background: #0284c7; width: 0%;"></div></div>
-            </div>
-
-            <div style="font-size: 0.8rem; display: flex; flex-direction: column; gap: 0.4rem;">
-              <div style="display:flex; justify-content:space-between;"><span>Mekanik İşi Biten:</span> <strong id="blockMekanikCount">0/8</strong></div>
-              <div style="display:flex; justify-content:space-between;"><span>Klima İşi Biten:</span> <strong id="blockKlimaCount">0/8</strong></div>
-              <div style="display:flex; justify-content:space-between;"><span>MESA Kabul Onaylı:</span> <strong id="blockMesaCount">0/8</strong></div>
-              <div style="display:flex; justify-content:space-between;"><span>Elektrik Testine Hazır:</span> <strong style="color: #0284c7;" id="blockReadyCount">0</strong></div>
-              <div style="display:flex; justify-content:space-between;"><span>Elektrik Testi Biten:</span> <strong style="color: #16a34a;" id="blockDoneCount">0</strong></div>
-            </div>
-
-            <div id="adminBlockControls" style="display: none; margin-top: 0.5rem; padding-top: 0.75rem; border-top: 1px dashed #cbd5e1;">
-              <button class="btn btn-primary" style="width: 100%;" onclick="app.quickCompleteBlockMekanik()">
-                <span>🔧</span>
-                <span>Bu Bloğun Mekaniklerini Tamamla</span>
-              </button>
-            </div>
-          </div>
-        </div>
-
-        <!-- Floors List (Vertical Building Cross-section) -->
-        <div class="building-floors-list" id="buildingFloorsList">
-          <!-- Dynamically populated: Çatı down to B2 -->
-        </div>
-      </div>
-    </section>
-
-    <!-- TAB 3: Detaylı Tablo Görünümü -->
-    <section id="view-table" class="view-panel">
-      <div class="toolbar">
-        <div class="filter-group">
-          <input type="text" id="tableSearchInput" class="search-input" placeholder="🔍 Blok veya Kat Ara (örn: Blok 3, Zemin)..." oninput="app.renderTable()">
-          <select id="tableBlockFilter" class="form-select" style="width: auto;" onchange="app.renderTable()">
-            <option value="all">Tüm Bloklar (10 Blok)</option>
-            <option value="1">Blok 1</option>
-            <option value="2">Blok 2</option>
-            <option value="3">Blok 3</option>
-            <option value="4">Blok 4</option>
-            <option value="5">Blok 5</option>
-            <option value="6">Blok 6</option>
-            <option value="7">Blok 7</option>
-            <option value="8">Blok 8</option>
-            <option value="9">Blok 9</option>
-            <option value="10">Blok 10</option>
-          </select>
-          <select id="tableStatusFilter" class="form-select" style="width: auto;" onchange="app.renderTable()">
-            <option value="all">Tüm Durumlar</option>
-            <option value="ready">⚡ Teste Hazır Olanlar</option>
-            <option value="mesa_wait">🏢 MESA Onayı Bekleyenler</option>
-            <option value="prereq_wait">⚠️ Ön Şartı Eksikler</option>
-            <option value="done">✅ Testi Tamamlananlar</option>
-          </select>
-        </div>
-
-        <div>
-          <button class="btn btn-secondary" onclick="app.exportToExcel()">
-            <span>📊</span>
-            <span>CSV / Excel İndir</span>
-          </button>
-        </div>
-      </div>
-
-      <div class="table-card">
-        <div class="data-table-wrapper">
-          <table class="data-table">
-            <thead>
-              <tr>
-                <th>Blok & Kat</th>
-                <th>1. Mekanik Durumu</th>
-                <th>2. Klima Durumu</th>
-                <th>3. MESA Kabul & Onay</th>
-                <th>4. Elektrik Testi Durumu</th>
-                <th>Son Güncelleme</th>
-                <th style="text-align: right;">İşlem</th>
-              </tr>
-            </thead>
-            <tbody id="dataTableBody">
-              <!-- Dynamically populated -->
-            </tbody>
-          </table>
-        </div>
-      </div>
-    </section>
-
-    <!-- TAB 4: Blok İlerleme & İstatistik Raporu -->
-    <section id="view-stats" class="view-panel">
-      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 1.25rem; margin-bottom: 1.5rem;" id="blockStatsGrid">
-        <!-- Rendered dynamically for 10 blocks -->
-      </div>
-    </section>
-
-    <!-- TAB 5: İşlem & Onay Günlüğü (Audit Trail) -->
-    <section id="view-logs" class="view-panel">
-      <div class="table-card">
-        <div style="padding: 1rem 1.25rem; border-bottom: 1px solid #e2e8f0; display:flex; justify-content:space-between; align-items:center;">
-          <h3 style="font-size: 1rem; font-weight: 700;">Şantiye İşlem & Onay Günlüğü</h3>
-          <span style="font-size: 0.8rem; color: #64748b;">Mekanik, Klima, MESA ve Elektrik Testi hareket kayıtları</span>
-        </div>
-        <div class="data-table-wrapper">
-          <table class="data-table">
-            <thead>
-              <tr>
-                <th>Tarih / Saat</th>
-                <th>Kullanıcı</th>
-                <th>Blok / Kat</th>
-                <th>İşlem</th>
-                <th>Detay & Açıklama</th>
-              </tr>
-            </thead>
-            <tbody id="auditLogsBody">
-              <!-- Dynamically populated -->
-            </tbody>
-          </table>
-        </div>
-      </div>
-    </section>
-
-    <!-- TAB 6: Toplantı Kararları & Gecikme Takip Sistemi -->
-    <section id="view-meetings" class="view-panel active">
+    <!-- ========================================================
+         3. KISIM: TOPLANTI NOTLARI & ŞANTİYE TO-DO
+         ======================================================== -->
+    <div id="masterSection-meetings" class="master-section-panel" style="display: none;">
+      <section id="view-meetings" class="view-panel active">
       <!-- Kompakt 1 Satır Toplantı & To-Do KPI Barı -->
       <div class="meeting-compact-kpi-bar">
         <div class="kpi-pill kpi-pill-danger" onclick="app.setMeetingFilter('overdue')" title="Tutulmayan ve geciken sözleri filtrele">
@@ -3405,8 +3663,9 @@ body {
         <!-- Rendered dynamically as compact checklist rows or full cards -->
       </div>
     </section>
+    </div>
 
-  </main>
+</main>
 
   <!-- MODAL 1: Kat Düzenleme & Durum Değiştirme -->
   <div id="modalEditUnit" class="modal-overlay">

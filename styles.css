@@ -2695,3 +2695,200 @@ body {
 .team-col-kablo { background: #fef3c7; color: #92400e; border-color: #fcd34d; }
 .team-col-muh { background: #dcfce7; color: #15803d; border-color: #86efac; }
 .team-col-genel { background: #f1f5f9; color: #475569; border-color: #cbd5e1; }
+
+/* ==========================================================================
+   MASTER 3-SECTION NAVIGATION & SUB-NAV STYLES
+   ========================================================================== */
+
+.master-tabs-nav {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.85rem;
+  margin-bottom: 1.25rem;
+  background: transparent;
+}
+
+@media (max-width: 960px) {
+  .master-tabs-nav {
+    grid-template-columns: 1fr;
+    gap: 0.5rem;
+  }
+}
+
+.master-tab-btn {
+  background: #ffffff;
+  border: 2px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 0.85rem 1.15rem;
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  text-align: left;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+  position: relative;
+  overflow: hidden;
+}
+
+.master-tab-btn:hover {
+  border-color: #cbd5e1;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.08);
+}
+
+.master-tab-btn.active {
+  background: #ffffff;
+  border-color: #0284c7;
+  box-shadow: 0 4px 12px rgba(2, 132, 199, 0.15);
+}
+
+.master-tab-btn.active::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: #0284c7;
+}
+
+#btnMasterInternal.active {
+  border-color: #f59e0b;
+  box-shadow: 0 4px 12px rgba(245, 158, 11, 0.15);
+}
+#btnMasterInternal.active::before {
+  background: #f59e0b;
+}
+
+#btnMasterMeetings.active {
+  border-color: #dc2626;
+  box-shadow: 0 4px 12px rgba(220, 38, 38, 0.12);
+}
+#btnMasterMeetings.active::before {
+  background: #dc2626;
+}
+
+.master-tab-icon {
+  font-size: 1.6rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 10px;
+  background: #f8fafc;
+  flex-shrink: 0;
+}
+
+.master-tab-btn.active .master-tab-icon {
+  background: #e0f2fe;
+}
+#btnMasterInternal.active .master-tab-icon {
+  background: #fef3c7;
+}
+#btnMasterMeetings.active .master-tab-icon {
+  background: #fee2e2;
+}
+
+.master-tab-text {
+  flex: 1;
+  min-width: 0;
+}
+
+.master-tab-title {
+  font-size: 0.95rem;
+  font-weight: 800;
+  color: #0f172a;
+  line-height: 1.25;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.master-tab-desc {
+  font-size: 0.74rem;
+  color: #64748b;
+  margin-top: 3px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.master-tab-badge-secret {
+  background: #fef3c7;
+  color: #92400e;
+  border: 1px solid #fde68a;
+  font-size: 0.65rem;
+  font-weight: 800;
+  padding: 2px 7px;
+  border-radius: 9999px;
+  margin-left: auto;
+}
+
+/* Sub-Navigation Bar inside Master Sections */
+.sub-nav-bar {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  background: #ffffff;
+  padding: 0.45rem 0.6rem;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  margin-bottom: 1.25rem;
+  overflow-x: auto;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03);
+}
+
+.sub-tab-btn {
+  background: transparent;
+  border: 1px solid transparent;
+  color: #475569;
+  font-size: 0.82rem;
+  font-weight: 600;
+  padding: 0.45rem 0.9rem;
+  border-radius: 7px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  white-space: nowrap;
+  transition: all 0.15s ease;
+}
+
+.sub-tab-btn:hover {
+  background: #f8fafc;
+  color: #0f172a;
+}
+
+.sub-tab-btn.active {
+  background: #0284c7;
+  color: #ffffff;
+  font-weight: 700;
+  box-shadow: 0 2px 4px rgba(2, 132, 199, 0.25);
+}
+
+.sub-tab-btn.active .tab-count {
+  background: rgba(255, 255, 255, 0.25) !important;
+  color: #ffffff !important;
+}
+
+.internal-sub-nav .sub-tab-btn.active {
+  background: #0f172a;
+  color: #ffffff;
+  box-shadow: 0 2px 4px rgba(15, 23, 42, 0.25);
+}
+
+.master-section-panel {
+  display: none;
+  animation: fadeIn 0.2s ease;
+}
+
+.master-section-panel.active {
+  display: block;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
