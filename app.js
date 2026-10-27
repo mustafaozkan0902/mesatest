@@ -8,6 +8,7 @@ class SantiyeApp {
     this.data = null;
     this.currentTab = 'matrix';
     this.matrixFilter = 'all';
+    this.currentMeetingFilter = 'all';
     this.activeBlockId = 1;
     this.isAdmin = false;
     this.adminToken = localStorage.getItem('santiye_admin_token') || null;
@@ -72,6 +73,7 @@ class SantiyeApp {
       this.db.collection('santiye_elektrik_test').doc('main_data').onSnapshot((doc) => {
         if (doc.exists) {
           this.data = doc.data();
+          if (!this.data.meetingActions) this.data.meetingActions = [];
           localStorage.setItem(this.fallbackKey, JSON.stringify(this.data));
           this.updateSyncUI('bulut');
           this.renderAll();
@@ -165,6 +167,7 @@ class SantiyeApp {
           const cloudData = doc.data();
           if (cloudData && cloudData.units) {
             this.data = cloudData;
+            if (!this.data.meetingActions) this.data.meetingActions = [];
             localStorage.setItem(this.fallbackKey, JSON.stringify(this.data));
             this.updateSyncUI('bulut');
             if (!isSilent) this.renderAll();
@@ -281,11 +284,13 @@ class SantiyeApp {
 
   renderAll() {
     if (!this.data || !this.data.units) return;
+    if (!this.data.meetingActions) this.data.meetingActions = [];
 
     this.renderKPIs();
     this.renderMatrix();
     this.renderBuilding();
     this.renderTable();
+    this.renderMeetings();
     this.renderStats();
     this.renderLogs();
   }
@@ -308,6 +313,8 @@ class SantiyeApp {
       this.renderTable();
     } else if (tabId === 'stats') {
       this.renderStats();
+    } else if (tabId === 'meetings') {
+      this.renderMeetings();
     }
   }
 
@@ -557,12 +564,32 @@ class SantiyeApp {
       else if (u.elektrikTest?.status === 'hazir') testBadge = '<span class="stage-val-badge badge-ready">⚡ TESTE HAZIR</span>';
       else if (u.elektrikTest?.status === 'suruyor') testBadge = '<span class="stage-val-badge badge-prog">Test Yapılıyor</span>';
 
+      // Check for meeting actions on this unit
+      const unitActions = (this.data.meetingActions || []).filter(a => 
+        a.unitId === uKey || (String(a.blockId) === String(this.activeBlockId) && a.floorId === f.id)
+      );
+      const activeUnitActions = unitActions.filter(a => a.status !== 'tamamlandi');
+      let actionAlertHtml = '';
+      if (activeUnitActions.length > 0) {
+        const hasOverdue = activeUnitActions.some(a => this.getActionDelayMetrics(a).isOverdue);
+        const alertBg = hasOverdue 
+          ? 'background:#fef2f2; color:#b91c1c; border:1px solid #fca5a5;' 
+          : 'background:#eff6ff; color:#1d4ed8; border:1px solid #bfdbfe;';
+        actionAlertHtml = `
+          <div class="floor-action-alert" style="${alertBg}" onclick="event.stopPropagation(); app.filterMeetingsByUnit('${this.activeBlockId}', '${f.id}')">
+            <span>${hasOverdue ? '⚠️' : '🗓️'}</span>
+            <span>${activeUnitActions.length} Toplantı Sözü (${hasOverdue ? 'Gecikmede' : 'Devam'})</span>
+          </div>
+        `;
+      }
+
       floorsHtml += `
         <div class="${cardClass}">
           <div class="floor-card-header">
             <div class="floor-badge-title">
               <span class="floor-badge-pill">${f.short}</span>
               <span class="floor-title-text">${curBlock.name} - ${f.name}</span>
+              ${actionAlertHtml}
             </div>
             <div>
               ${overallBadge}
@@ -891,6 +918,7 @@ class SantiyeApp {
       this.enableModalInputs(false);
     }
 
+    this.renderUnitMeetingActions(unitId);
     this.handleModalStateChange();
     this.openModal('modalEditUnit');
   }
@@ -1396,6 +1424,618 @@ class SantiyeApp {
       }
     };
     reader.readAsText(file);
+  }
+
+  // =========================================================================
+  // TOPLANTI KARARLARI, VERİLEN SÖZLER & GECİKME TAKİP SİSTEMİ
+  // =========================================================================
+
+  formatDateTR(dateStr) {
+    if (!dateStr) return '-';
+    const parts = String(dateStr).split('T')[0].split('-');
+    if (parts.length === 3) {
+      return `${parts[2]}.${parts[1]}.${parts[0]}`;
+    }
+    return dateStr;
+  }
+
+  escapeHtml(str) {
+    if (!str) return '';
+    return String(str)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#039;');
+  }
+
+  getActionDelayMetrics(action) {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    const initial = action.initialPromiseDate ? new Date(action.initialPromiseDate) : new Date();
+    initial.setHours(0, 0, 0, 0);
+
+    const current = action.currentPromiseDate ? new Date(action.currentPromiseDate) : initial;
+    current.setHours(0, 0, 0, 0);
+
+    const diffDaysFromInitial = Math.round((today - initial) / (1000 * 60 * 60 * 24));
+    const diffDaysFromCurrent = Math.round((today - current) / (1000 * 60 * 60 * 24));
+    const revisionCount = (action.history && action.history.length > 1) ? (action.history.length - 1) : 0;
+
+    const isCompleted = action.status === 'tamamlandi';
+    const isOverdue = !isCompleted && (diffDaysFromInitial > 0 || diffDaysFromCurrent > 0 || revisionCount > 0);
+
+    return {
+      diffDaysFromInitial,
+      diffDaysFromCurrent,
+      revisionCount,
+      isOverdue,
+      isCompleted
+    };
+  }
+
+  getDelayStatusBadge(action) {
+    const m = this.getActionDelayMetrics(action);
+
+    if (m.isCompleted) {
+      return `<span class="stage-val-badge badge-ok" style="font-size:0.8rem; padding:0.35rem 0.65rem;">✅ SÖZ TUTULDU (Tamamlandı)</span>`;
+    }
+
+    if (m.diffDaysFromInitial > 0) {
+      const revNote = m.revisionCount > 0 ? ` • ${m.revisionCount} Kez Ertelendi` : ' • Hedef Geçti';
+      return `<span class="stage-val-badge badge-rev" style="font-size:0.8rem; padding:0.35rem 0.65rem; font-weight:800; background:#fee2e2; color:#b91c1c; border:1.5px solid #f87171;">⚠️ ${m.diffDaysFromInitial} GÜNDÜR YAPILAMADI (${revNote})</span>`;
+    }
+
+    if (m.revisionCount > 0) {
+      return `<span class="stage-val-badge badge-prog" style="font-size:0.8rem; padding:0.35rem 0.65rem; font-weight:700; background:#fef3c7; color:#b45309; border:1px solid #fcd34d;">🔄 REVİZE EDİLDİ (${m.revisionCount}. Erteleme - Yeni Plan)</span>`;
+    }
+
+    return `<span class="stage-val-badge badge-wait" style="font-size:0.8rem; padding:0.35rem 0.65rem; color:#0369a1; background:#e0f2fe; border:1px solid #7dd3fc;">⏳ SÜRESİNDE DEVAM EDİYOR</span>`;
+  }
+
+  setMeetingFilter(filter) {
+    this.currentMeetingFilter = filter;
+    document.querySelectorAll('#view-meetings .filter-chip').forEach(c => c.classList.remove('active'));
+    if (filter === 'all') document.getElementById('chipMeetingAll')?.classList.add('active');
+    else if (filter === 'overdue') document.getElementById('chipMeetingOverdue')?.classList.add('active');
+    else if (filter === 'pending') document.getElementById('chipMeetingPending')?.classList.add('active');
+    else if (filter === 'done') document.getElementById('chipMeetingDone')?.classList.add('active');
+    this.renderMeetings();
+  }
+
+  renderMeetings() {
+    if (!this.data) return;
+    if (!this.data.meetingActions) this.data.meetingActions = [];
+
+    const actions = this.data.meetingActions;
+
+    // KPI Counters
+    let overdueCount = 0;
+    let pendingCount = 0;
+    let doneCount = 0;
+    let totalCount = actions.length;
+
+    actions.forEach(a => {
+      const m = this.getActionDelayMetrics(a);
+      if (m.isCompleted) {
+        doneCount++;
+      } else if (m.isOverdue) {
+        overdueCount++;
+      } else {
+        pendingCount++;
+      }
+    });
+
+    const elOverdue = document.getElementById('meetingKpiOverdue');
+    const elPending = document.getElementById('meetingKpiPending');
+    const elDone = document.getElementById('meetingKpiDone');
+    const elTotal = document.getElementById('meetingKpiTotal');
+    const elTabCount = document.getElementById('meetingTabCount');
+
+    if (elOverdue) elOverdue.innerText = overdueCount;
+    if (elPending) elPending.innerText = pendingCount;
+    if (elDone) elDone.innerText = doneCount;
+    if (elTotal) elTotal.innerText = totalCount;
+    if (elTabCount) {
+      elTabCount.innerText = overdueCount > 0 ? `${overdueCount} Gecikme` : totalCount;
+      elTabCount.style.background = overdueCount > 0 ? '#fee2e2' : '#e2e8f0';
+      elTabCount.style.color = overdueCount > 0 ? '#b91c1c' : '#475569';
+    }
+
+    // Filter by selected criteria
+    const blockFilter = document.getElementById('meetingFilterBlock')?.value || 'all';
+    const discFilter = document.getElementById('meetingFilterDiscipline')?.value || 'all';
+    const searchText = (document.getElementById('meetingSearchInput')?.value || '').toLowerCase().trim();
+
+    let filtered = actions.filter(a => {
+      const m = this.getActionDelayMetrics(a);
+
+      // Status chip filter
+      if (this.currentMeetingFilter === 'overdue' && (!m.isOverdue || m.isCompleted)) return false;
+      if (this.currentMeetingFilter === 'pending' && (m.isCompleted || m.isOverdue)) return false;
+      if (this.currentMeetingFilter === 'done' && !m.isCompleted) return false;
+
+      // Block filter
+      if (blockFilter !== 'all') {
+        if (String(a.blockId) !== String(blockFilter)) return false;
+      }
+
+      // Discipline filter
+      if (discFilter !== 'all') {
+        if (a.discipline !== discFilter) return false;
+      }
+
+      // Search query
+      if (searchText) {
+        const titleMatch = (a.title || '').toLowerCase().includes(searchText);
+        const respMatch = (a.responsible || '').toLowerCase().includes(searchText);
+        const noteMatch = (a.note || '').toLowerCase().includes(searchText);
+        const historyMatch = (a.history || []).some(h => 
+          (h.reason || '').toLowerCase().includes(searchText) || 
+          (h.note || '').toLowerCase().includes(searchText) ||
+          (h.meetingTitle || '').toLowerCase().includes(searchText)
+        );
+        if (!titleMatch && !respMatch && !noteMatch && !historyMatch) return false;
+      }
+
+      return true;
+    });
+
+    const container = document.getElementById('meetingCardsContainer');
+    if (!container) return;
+
+    if (filtered.length === 0) {
+      container.innerHTML = `
+        <div style="text-align: center; padding: 3rem 1.5rem; background: white; border: 1.5px dashed #cbd5e1; border-radius: 10px; color: #64748b;">
+          <div style="font-size: 2.5rem; margin-bottom: 0.75rem;">📋</div>
+          <h3 style="font-size: 1.1rem; font-weight: 700; color: #334155; margin-bottom: 0.35rem;">Kriterlere Uygun Toplantı Kararı Bulunamadı</h3>
+          <p style="font-size: 0.85rem; max-width: 480px; margin: 0 auto 1.25rem;">Şu an seçilen filtrelerde herhangi bir karar bulunmuyor. Yeni bir karar ekleyebilir veya filtreleri temizleyebilirsiniz.</p>
+          <button class="btn btn-primary btn-sm" onclick="app.openNewMeetingModal()">➕ Yeni Toplantı Kararı Ekle</button>
+        </div>
+      `;
+      return;
+    }
+
+    let html = '';
+    filtered.forEach(action => {
+      const m = this.getActionDelayMetrics(action);
+      let cardStatusClass = 'meeting-action-card';
+      if (m.isCompleted) cardStatusClass += ' status-done';
+      else if (m.diffDaysFromInitial > 0) cardStatusClass += ' status-overdue';
+      else if (m.revisionCount > 0) cardStatusClass += ' status-delayed';
+
+      // Location label
+      let locLabel = '🏢 Genel Şantiye';
+      if (action.blockId && action.blockId !== 'all') {
+        const b = this.data.blocks?.find(x => String(x.id) === String(action.blockId));
+        const bName = b ? b.name : `Blok ${action.blockId}`;
+        const f = this.data.floors?.find(x => x.id === action.floorId);
+        const fName = f ? f.name : (action.floorId === 'all' ? 'Tüm Katlar' : action.floorId);
+        locLabel = `🏢 ${bName} • ${fName}`;
+      }
+
+      // Timeline Steps HTML
+      let timelineHtml = '<div class="action-timeline">';
+      (action.history || []).forEach((step, idx) => {
+        const isFirst = idx === 0;
+        const isLast = idx === (action.history.length - 1);
+        const isFailed = step.status === 'tutulmadi' || (!isFirst && step.reason);
+        const isDone = step.status === 'tamamlandi';
+
+        let stepClass = 'action-timeline-step';
+        if (isDone) stepClass += ' done';
+        else if (isFailed) stepClass += ' failed';
+        else if (isFirst) stepClass += ' initial';
+
+        timelineHtml += `
+          <div class="${stepClass}">
+            <div class="action-timeline-dot"></div>
+            <div class="timeline-step-header">
+              <span style="font-weight: 700; color: #1e293b;">
+                ${isFirst ? '📌 1. Toplantı Sözü' : `🔄 ${idx + 1}. Toplantı Kararı`} • ${this.formatDateTR(step.meetingDate)}
+                ${step.meetingTitle ? `<span style="font-weight: normal; color: #64748b; margin-left: 4px;">(${this.escapeHtml(step.meetingTitle)})</span>` : ''}
+              </span>
+              <span style="font-size: 0.78rem; color: #475569;">
+                Taahhüt Edilen Hedef: <strong style="color: #0284c7;">${this.formatDateTR(step.targetDate)}</strong>
+              </span>
+            </div>
+
+            ${step.reason ? `
+              <div class="timeline-step-reason">
+                <strong>⚠️ Neden Yapılamadı? (Gecikme Gerekçesi / Mazeret):</strong>
+                <div>${this.escapeHtml(step.reason)}</div>
+              </div>
+            ` : ''}
+
+            ${step.note ? `
+              <div class="timeline-step-note">
+                <strong>${isFirst ? 'İlk Alınan Söz / Detay:' : 'Bu Toplantıda Verilen Yeni Söz:'}</strong>
+                ${this.escapeHtml(step.note)}
+              </div>
+            ` : ''}
+          </div>
+        `;
+      });
+      timelineHtml += '</div>';
+
+      html += `
+        <div class="${cardStatusClass}">
+          <div class="action-card-header">
+            <div class="action-tags">
+              <span class="action-tag-loc">${locLabel}</span>
+              <span class="action-tag-disc">${action.discipline || 'Genel'}</span>
+              <span class="action-tag-resp">👷 ${this.escapeHtml(action.responsible || 'Sorumlu Belirtilmedi')}</span>
+            </div>
+            <div>
+              ${this.getDelayStatusBadge(action)}
+            </div>
+          </div>
+
+          <div class="action-title">${this.escapeHtml(action.title)}</div>
+
+          <!-- Tarih ve Gecikme Metrikleri Kutusu -->
+          <div class="action-meta-box">
+            <div class="action-meta-col">
+              <span class="meta-lbl">🔒 İlk Söz Verilen Tarih</span>
+              <span class="meta-val" style="color: #0284c7;">${this.formatDateTR(action.initialPromiseDate)}</span>
+              <span style="font-size: 0.7rem; color: #94a3b8;">(Kalıcı referans tarih)</span>
+            </div>
+
+            <div class="action-meta-col">
+              <span class="meta-lbl">⏱️ Gecikme / Bekleme Süresi</span>
+              <span class="meta-val" style="color: ${m.diffDaysFromInitial > 0 ? '#dc2626' : '#16a34a'};">
+                ${m.isCompleted ? `✅ Tamamlandı` : (m.diffDaysFromInitial > 0 ? `⚠️ ${m.diffDaysFromInitial} Gündür Yapılamadı` : '⏳ Süresi İçinde')}
+              </span>
+              <span style="font-size: 0.7rem; color: #94a3b8;">
+                ${m.revisionCount > 0 ? `${m.revisionCount} Kez Toplantıda Ertelendi` : 'İlk plan aşamasında'}
+              </span>
+            </div>
+
+            <div class="action-meta-col">
+              <span class="meta-lbl">🎯 Güncel Planlanan Bitiş</span>
+              <span class="meta-val" style="color: ${m.diffDaysFromCurrent > 0 ? '#dc2626' : '#b45309'};">
+                ${this.formatDateTR(action.currentPromiseDate)}
+              </span>
+              <span style="font-size: 0.7rem; color: #94a3b8;">
+                ${m.diffDaysFromCurrent > 0 && !m.isCompleted ? `(Süresi ${m.diffDaysFromCurrent} gün geçti)` : '(Son revize plan)'}
+              </span>
+            </div>
+
+            <div class="action-meta-col">
+              <span class="meta-lbl">📅 Kayıt / Toplantı Tarihi</span>
+              <span class="meta-val" style="color: #475569;">${this.formatDateTR(action.createdAt)}</span>
+              <span style="font-size: 0.7rem; color: #94a3b8;">Ekleyen: ${this.escapeHtml(action.createdBy || 'Yönetici')}</span>
+            </div>
+          </div>
+
+          <!-- Eski Sözler ve Gecikme Mazeretleri Kronolojisi (Asla Silinmeyen Tarihçe) -->
+          <div class="action-timeline-wrapper">
+            <div class="action-timeline-title">
+              <span>📜</span>
+              <span>Toplantı Kararları, Eski Sözler & Gecikme Mazeretleri Kronolojisi (${(action.history || []).length} Toplantı Kaydı)</span>
+            </div>
+            ${timelineHtml}
+          </div>
+
+          <!-- Aksiyon Butonları -->
+          <div class="action-card-footer">
+            <div style="font-size: 0.75rem; color: #64748b;">
+              ${action.completedDate ? `✅ <strong>Tamamlandı:</strong> ${this.formatDateTR(action.completedDate)} • ${this.escapeHtml(action.completionNote || '')}` : '⏳ İşlem şantiye gündeminde takip ediliyor'}
+            </div>
+
+            <div style="display: flex; gap: 0.5rem; align-items: center;">
+              ${!m.isCompleted ? `
+                <button class="btn btn-revise btn-sm" onclick="app.openReviseMeetingModal('${action.id}')">
+                  <span>🔄</span>
+                  <span>Erteleme & Mazeret Ekle</span>
+                </button>
+                <button class="btn btn-sm" style="background:#16a34a; color:white;" onclick="app.openCompleteMeetingModal('${action.id}')">
+                  <span>✅</span>
+                  <span>Söz Tutuldu (Tamamla)</span>
+                </button>
+              ` : `
+                <span class="stage-val-badge badge-ok">Tamamlandı ✓</span>
+              `}
+
+              ${this.isAdmin ? `
+                <button class="btn btn-secondary btn-sm" title="Kaydı Sil" onclick="app.deleteMeetingAction('${action.id}')" style="color:#dc2626; padding:0.35rem 0.6rem;">
+                  <span>🗑️</span>
+                </button>
+              ` : ''}
+            </div>
+          </div>
+        </div>
+      `;
+    });
+
+    container.innerHTML = html;
+  }
+
+  // --- MODAL: NEW MEETING ACTION ---
+  openNewMeetingModal(preselectedBlockId = 'all', preselectedFloorId = 'all') {
+    const todayStr = new Date().toISOString().split('T')[0];
+    document.getElementById('newActionDate').value = todayStr;
+    document.getElementById('newActionInitialDate').value = todayStr;
+    document.getElementById('newActionMeetingTitle').value = 'Haftalık Şantiye Koordinasyon Toplantısı';
+    document.getElementById('newActionTargetBlock').value = preselectedBlockId || 'all';
+    document.getElementById('newActionTargetFloor').value = preselectedFloorId || 'all';
+    document.getElementById('newActionTitle').value = '';
+    document.getElementById('newActionResponsible').value = '';
+    document.getElementById('newActionNote').value = '';
+    this.openModal('modalNewMeetingAction');
+  }
+
+  openNewMeetingModalForCurrentUnit() {
+    const unitId = document.getElementById('editUnitId').value;
+    const u = this.data.units[unitId];
+    if (u) {
+      this.closeModal('modalEditUnit');
+      this.openNewMeetingModal(u.blockId, u.floorId);
+    }
+  }
+
+  async saveNewMeetingAction() {
+    const title = document.getElementById('newActionTitle').value.trim();
+    const initialDate = document.getElementById('newActionInitialDate').value;
+    if (!title) {
+      this.showToast('Lütfen taahhüt edilen konuyu / işin tanımını giriniz.', 'warning');
+      return;
+    }
+    if (!initialDate) {
+      this.showToast('Lütfen söz verilen ilk bitiş tarihini giriniz.', 'warning');
+      return;
+    }
+
+    const meetingDate = document.getElementById('newActionDate').value || new Date().toISOString().split('T')[0];
+    const meetingTitle = document.getElementById('newActionMeetingTitle').value.trim() || 'Haftalık Koordinasyon Toplantısı';
+    const blockId = document.getElementById('newActionTargetBlock').value;
+    const floorId = document.getElementById('newActionTargetFloor').value;
+    const discipline = document.getElementById('newActionDiscipline').value;
+    const responsible = document.getElementById('newActionResponsible').value.trim() || 'Sorumlu Belirtilmedi';
+    const note = document.getElementById('newActionNote').value.trim();
+
+    let unitId = 'general';
+    if (blockId !== 'all' && floorId !== 'all') {
+      unitId = `${blockId}_${floorId}`;
+    }
+
+    const newAction = {
+      id: 'act_' + Date.now() + '_' + Math.floor(Math.random() * 1000),
+      createdAt: meetingDate,
+      createdBy: this.isAdmin ? 'Şantiye Yöneticisi' : 'Sistem',
+      meetingTitle: meetingTitle,
+      blockId: blockId,
+      floorId: floorId,
+      unitId: unitId,
+      discipline: discipline,
+      responsible: responsible,
+      title: title,
+      initialPromiseDate: initialDate,
+      currentPromiseDate: initialDate,
+      status: 'devam',
+      note: note,
+      history: [
+        {
+          id: 'rev_' + Date.now(),
+          meetingDate: meetingDate,
+          meetingTitle: meetingTitle,
+          targetDate: initialDate,
+          reason: '',
+          note: note || 'Toplantıda ilk taahhüt ve hedef tarih belirlendi.',
+          status: 'soz_verildi'
+        }
+      ]
+    };
+
+    if (!this.data.meetingActions) this.data.meetingActions = [];
+    this.data.meetingActions.unshift(newAction);
+
+    // Add audit log
+    this.addLog('Toplantı Sözü Eklendi', `[${discipline}] ${responsible}: "${title}" (İlk Hedef: ${this.formatDateTR(initialDate)})`, 'primary', unitId);
+
+    await this.saveData(this.data);
+    this.closeModal('modalNewMeetingAction');
+    this.renderMeetings();
+    this.renderBuilding();
+    this.showToast('Yeni toplantı kararı ve taahhüdü başarıyla kaydedildi! ✅', 'success');
+  }
+
+  // --- MODAL: REVISE MEETING ACTION (Erteleme & Mazeret) ---
+  openReviseMeetingModal(actionId) {
+    const action = (this.data.meetingActions || []).find(a => a.id === actionId);
+    if (!action) return;
+
+    const m = this.getActionDelayMetrics(action);
+
+    document.getElementById('reviseActionId').value = actionId;
+    document.getElementById('reviseActionSummary').innerText = `${action.discipline} • ${action.responsible} ➔ "${action.title}"`;
+    document.getElementById('reviseActionOriginalInfo').innerHTML = `
+      🔒 <strong>İlk Verilen Söz Tarihi:</strong> ${this.formatDateTR(action.initialPromiseDate)} (Asla Silinmez)<br>
+      ⏱️ <strong>Durum:</strong> ${m.diffDaysFromInitial > 0 ? `<span style="color:#dc2626; font-weight:700;">${m.diffDaysFromInitial} gündür yapılamadı</span>` : 'Süresinde'} 
+      • Bugüne kadar <strong>${m.revisionCount} kez</strong> toplantıda ertelendi.
+    `;
+
+    const todayStr = new Date().toISOString().split('T')[0];
+    document.getElementById('reviseActionDate').value = todayStr;
+    document.getElementById('reviseActionMeetingTitle').value = `${m.revisionCount + 2}. Hafta Koordinasyon Toplantısı`;
+    document.getElementById('reviseActionReason').value = '';
+    
+    // Default next target: today + 7 days
+    const nextDate = new Date();
+    nextDate.setDate(nextDate.getDate() + 7);
+    document.getElementById('reviseActionNewDate').value = nextDate.toISOString().split('T')[0];
+    document.getElementById('reviseActionNewNote').value = '';
+
+    this.openModal('modalReviseMeetingAction');
+  }
+
+  async saveReviseMeetingAction() {
+    const actionId = document.getElementById('reviseActionId').value;
+    const action = (this.data.meetingActions || []).find(a => a.id === actionId);
+    if (!action) return;
+
+    const reason = document.getElementById('reviseActionReason').value.trim();
+    const newDate = document.getElementById('reviseActionNewDate').value;
+    const meetingTitle = document.getElementById('reviseActionMeetingTitle').value.trim() || 'Koordinasyon Toplantısı';
+    const meetingDate = document.getElementById('reviseActionDate').value || new Date().toISOString().split('T')[0];
+    const newNote = document.getElementById('reviseActionNewNote').value.trim();
+
+    if (!reason) {
+      this.showToast('Lütfen işin neden yapılamadığını (gecikme gerekçesini) giriniz!', 'warning');
+      return;
+    }
+    if (!newDate) {
+      this.showToast('Lütfen yeni söz verilen bitiş tarihini (yeni plan) seçiniz!', 'warning');
+      return;
+    }
+
+    // Mark previous step as tutulmadi
+    if (action.history && action.history.length > 0) {
+      action.history[action.history.length - 1].status = 'tutulmadi';
+    }
+
+    // Append new revision to history (OLD PROMISES ARE PRESERVED)
+    action.history.push({
+      id: 'rev_' + Date.now(),
+      meetingDate: meetingDate,
+      meetingTitle: meetingTitle,
+      targetDate: newDate,
+      reason: reason,
+      note: newNote,
+      status: 'devam'
+    });
+
+    action.currentPromiseDate = newDate;
+    action.status = 'gecikmede';
+
+    // Add audit log
+    this.addLog('Toplantı Sözü Ertelendi', `"${action.title}" yeni hedefe (${this.formatDateTR(newDate)}) ertelendi. Mazeret: ${reason}`, 'warning', action.unitId || 'all');
+
+    await this.saveData(this.data);
+    this.closeModal('modalReviseMeetingAction');
+    this.renderMeetings();
+    this.renderBuilding();
+    this.showToast('Gecikme nedeni ve yeni plan kaydedildi! Eski tarihler tarihçede korundu. ✅', 'success');
+  }
+
+  // --- MODAL: COMPLETE MEETING ACTION ---
+  openCompleteMeetingModal(actionId) {
+    const action = (this.data.meetingActions || []).find(a => a.id === actionId);
+    if (!action) return;
+
+    document.getElementById('completeActionId').value = actionId;
+    document.getElementById('completeActionSummary').innerHTML = `
+      <strong>${this.escapeHtml(action.title)}</strong><br>
+      <span style="font-size:0.8rem; color:#15803d;">Sorumlu: ${this.escapeHtml(action.responsible)} | İlk Hedef: ${this.formatDateTR(action.initialPromiseDate)}</span>
+    `;
+
+    document.getElementById('completeActionDate').value = new Date().toISOString().split('T')[0];
+    document.getElementById('completeActionNote').value = 'İmalat ve testler tamamlandı, teslim alındı.';
+    this.openModal('modalCompleteMeetingAction');
+  }
+
+  async saveCompleteMeetingAction() {
+    const actionId = document.getElementById('completeActionId').value;
+    const action = (this.data.meetingActions || []).find(a => a.id === actionId);
+    if (!action) return;
+
+    const completedDate = document.getElementById('completeActionDate').value || new Date().toISOString().split('T')[0];
+    const completionNote = document.getElementById('completeActionNote').value.trim();
+
+    action.status = 'tamamlandi';
+    action.completedDate = completedDate;
+    action.completionNote = completionNote;
+
+    if (action.history && action.history.length > 0) {
+      action.history[action.history.length - 1].status = 'tamamlandi';
+    }
+
+    action.history.push({
+      id: 'rev_' + Date.now(),
+      meetingDate: completedDate,
+      meetingTitle: 'Tamamlanma & Teslim',
+      targetDate: completedDate,
+      reason: '',
+      note: `✅ İş tamamlandı. ${completionNote}`,
+      status: 'tamamlandi'
+    });
+
+    this.addLog('Toplantı Sözü Tamamlandı', `"${action.title}" başarıyla tamamlandı. (${this.formatDateTR(completedDate)})`, 'success', action.unitId || 'all');
+
+    await this.saveData(this.data);
+    this.closeModal('modalCompleteMeetingAction');
+    this.renderMeetings();
+    this.renderBuilding();
+    this.showToast('Taahhüt tamamlandı olarak işaretlendi! 🎉', 'success');
+  }
+
+  async deleteMeetingAction(actionId) {
+    if (!confirm('Bu toplantı kararını ve geçmiş kayıtlarını silmek istediğinize emin misiniz?')) {
+      return;
+    }
+    this.data.meetingActions = (this.data.meetingActions || []).filter(a => a.id !== actionId);
+    await this.saveData(this.data);
+    this.renderMeetings();
+    this.renderBuilding();
+    this.showToast('Toplantı kararı silindi.', 'info');
+  }
+
+  filterMeetingsByUnit(blockId, floorId) {
+    this.switchTab('meetings');
+    const blkSelect = document.getElementById('meetingFilterBlock');
+    if (blkSelect) blkSelect.value = String(blockId);
+    this.setMeetingFilter('all');
+  }
+
+  renderUnitMeetingActions(unitId) {
+    const container = document.getElementById('unitMeetingActionsContainer');
+    if (!container) return;
+
+    const u = this.data.units[unitId];
+    if (!u) {
+      container.innerHTML = '<div style="color:#64748b;">Kat bilgisi bulunamadı.</div>';
+      return;
+    }
+
+    const unitActions = (this.data.meetingActions || []).filter(a => 
+      a.unitId === unitId || (String(a.blockId) === String(u.blockId) && a.floorId === u.floorId)
+    );
+
+    if (unitActions.length === 0) {
+      container.innerHTML = `
+        <div style="font-size:0.8rem; color:#64748b; font-style:italic; padding:0.4rem 0;">
+          Bu kat için şu anda kayıtlı herhangi bir toplantı kararı / taahhüdü bulunmuyor.
+        </div>
+      `;
+      return;
+    }
+
+    let html = '<div style="display:flex; flex-direction:column; gap:0.6rem;">';
+    unitActions.forEach(a => {
+      const m = this.getActionDelayMetrics(a);
+      html += `
+        <div style="background:white; border:1px solid #fde68a; border-radius:6px; padding:0.65rem 0.85rem; font-size:0.8rem;">
+          <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:0.5rem; margin-bottom:0.25rem;">
+            <strong>${this.escapeHtml(a.title)}</strong>
+            ${this.getDelayStatusBadge(a)}
+          </div>
+          <div style="font-size:0.75rem; color:#64748b;">
+            Sorumlu: <strong>${this.escapeHtml(a.responsible)}</strong> • 
+            İlk Söz: <strong>${this.formatDateTR(a.initialPromiseDate)}</strong> • 
+            Güncel Plan: <strong style="color:#b45309;">${this.formatDateTR(a.currentPromiseDate)}</strong>
+          </div>
+          ${a.history && a.history.length > 1 && a.history[a.history.length - 1].reason ? `
+            <div style="font-size:0.74rem; color:#b91c1c; background:#fef2f2; padding:0.3rem 0.5rem; border-radius:4px; margin-top:0.35rem;">
+              <strong>Son Mazeret:</strong> ${this.escapeHtml(a.history[a.history.length - 1].reason)}
+            </div>
+          ` : ''}
+        </div>
+      `;
+    });
+    html += '</div>';
+
+    container.innerHTML = html;
   }
 
   // --- UTILS: MODALS & TOASTS ---
