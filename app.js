@@ -12,9 +12,29 @@ class SantiyeApp {
     this.meetingViewMode = 'todo';
     this.isCompletedCollapsed = localStorage.getItem('santiye_completed_collapsed') === 'true';
     this.activeBlockId = 1;
+
+    // Session & User State
+    this.currentUser = null;
+    const rawSession = localStorage.getItem('santiye_user_session');
+    if (rawSession) {
+      try { this.currentUser = JSON.parse(rawSession); } catch(e) {}
+    }
     this.adminToken = localStorage.getItem('santiye_admin_token') || null;
-    this.currentRole = localStorage.getItem('santiye_active_role') || (this.adminToken ? 'admin' : 'viewer');
-    this.isAdmin = (this.currentRole === 'admin');
+
+    if (this.currentUser) {
+      this.currentRole = this.currentUser.role || 'viewer';
+      this.isAdmin = (this.currentRole === 'admin');
+    } else if (this.adminToken) {
+      this.currentRole = 'admin';
+      this.isAdmin = true;
+      this.currentUser = { id: 'u1', name: 'Mustafa Özkan (Proje Müdürü)', username: 'proje_muduru', role: 'admin' };
+    } else {
+      // Default: Strictly viewer/read-only when not logged in
+      this.currentRole = 'viewer';
+      this.isAdmin = false;
+      this.currentUser = null;
+    }
+
     this.internalPlanFilterStatus = 'all';
     this.internalPlanViewMode = 'excel';
     this.internalPlanScheduleStartDate = '2026-10-28';
@@ -48,16 +68,20 @@ class SantiyeApp {
     this.checkAdminStatus();
     this.bindEvents();
 
-    // 1. Immediately render from built-in 80 units so UI is instantly complete!
+    // 1. Heatmap is ALWAYS first and visible for visitors & guests!
+    let initialMasterTab = 'test';
+    let initialTestSub = 'matrix';
+    if (this.isLoggedIn()) {
+      initialMasterTab = localStorage.getItem('santiye_active_master_tab') || 'test';
+      initialTestSub = localStorage.getItem('santiye_active_test_sub_tab') || 'matrix';
+    }
+    this.currentTestSubTab = initialTestSub;
+    this.currentInternalSubTab = localStorage.getItem('santiye_active_internal_sub_tab') || 'internal_plan';
+
+    // Immediately render from built-in 80 units so UI is instantly complete!
     if (this.data) {
       this.renderAll();
     }
-
-    const initialMasterTab = localStorage.getItem('santiye_active_master_tab') || 'test';
-    const initialTestSub = localStorage.getItem('santiye_active_test_sub_tab') || 'matrix';
-    const initialInternalSub = localStorage.getItem('santiye_active_internal_sub_tab') || 'internal_plan';
-    this.currentTestSubTab = initialTestSub;
-    this.currentInternalSubTab = initialInternalSub;
     this.switchMasterTab(initialMasterTab);
 
     // 2. Then attempt cloud or local server background sync
@@ -65,6 +89,7 @@ class SantiyeApp {
     await this.loadData(true);
     if (this.data) {
       this.renderAll();
+      this.switchMasterTab(this.currentMasterTab || 'test');
     }
     
     // Auto sync every 30 seconds if not on Firebase real-time
@@ -194,16 +219,21 @@ class SantiyeApp {
       this.currentUser = null;
     }
 
-    if (this.adminToken) {
-      this.currentRole = localStorage.getItem('santiye_active_role') || 'admin';
-      this.isAdmin = (this.currentRole === 'admin');
-    } else if (this.currentUser) {
+    const savedToken = localStorage.getItem('santiye_admin_token');
+    this.adminToken = savedToken || null;
+
+    if (this.currentUser) {
       this.currentRole = this.currentUser.role || 'viewer';
       this.isAdmin = (this.currentRole === 'admin');
+    } else if (this.adminToken) {
+      this.currentRole = 'admin';
+      this.isAdmin = true;
+      this.currentUser = { id: 'u1', name: 'Mustafa Özkan (Proje Müdürü)', username: 'proje_muduru', role: 'admin' };
     } else {
       // Giriş yapılmamışsa: KESİNLİKLE salt okunur izleyici modu
       this.currentRole = 'viewer';
       this.isAdmin = false;
+      this.currentUser = null;
     }
     this.updateRoleUI();
   }
@@ -251,6 +281,7 @@ class SantiyeApp {
     }
     return false;
   }
+
   updateRoleUI() {
     const isAuth = this.isLoggedIn();
     const role = isAuth ? (this.currentRole || 'viewer') : 'viewer';
@@ -269,7 +300,7 @@ class SantiyeApp {
         roleBadge.innerHTML = '<span>👁️</span><span>Giriş Yapılmadı (Salt Okunur)</span>';
       } else if (role === 'admin') {
         roleBadge.className = 'role-badge admin';
-        const name = this.currentUser?.name || 'Yönetici (Admin)';
+        const name = this.currentUser?.name || 'Mustafa Özkan (Yönetici)';
         roleBadge.innerHTML = `<span>🛡️</span><span>${this.escapeHtml(name)}</span>`;
       } else if (role === 'internal_team') {
         roleBadge.className = 'role-badge internal';
@@ -312,24 +343,22 @@ class SantiyeApp {
       anaFirmaBanner.style.display = (isAuth && role === 'ana_firma') ? 'block' : 'none';
     }
 
-    // 2. Kısım: İnternal İş Planı & Özel Notlarım sekmesi
-    // Yalnızca giriş yapmış Admin veya İç Ekip görebilir!
     const btnMasterInternal = document.getElementById('btnMasterInternal');
     const subTabBtnPrivate = document.getElementById('subTabBtn-private_notes');
     const subTabBtnInternal = document.getElementById('subTabBtn-internal_plan');
-    const canSeeInternal = isAuth && (this.hasPermission('internal_plan', 'view') || this.hasPermission('private_notes', 'view'));
+    const canSeeInternal = this.hasPermission('internal_plan', 'view') || this.hasPermission('private_notes', 'view');
 
     if (btnMasterInternal) {
       btnMasterInternal.style.display = canSeeInternal ? 'flex' : 'none';
     }
     if (subTabBtnPrivate) {
-      subTabBtnPrivate.style.display = (isAuth && this.hasPermission('private_notes', 'view')) ? 'inline-flex' : 'none';
+      subTabBtnPrivate.style.display = this.hasPermission('private_notes', 'view') ? 'inline-flex' : 'none';
     }
     if (subTabBtnInternal) {
-      subTabBtnInternal.style.display = (isAuth && this.hasPermission('internal_plan', 'view')) ? 'inline-flex' : 'none';
+      subTabBtnInternal.style.display = this.hasPermission('internal_plan', 'view') ? 'inline-flex' : 'none';
     }
 
-    // Giriş yapılmadıysa veya yetkisiz profile geçildiyse ve şu an 2. Kısım açıksa güvenle 1. Kısma aktar
+    // Ana firma / MESA veya salt okunur izleyici moduna gecildiyse ve secili sekme 2. Kisim ise test sekmesine dondur
     if (!canSeeInternal && this.currentMasterTab === 'internal') {
       this.switchMasterTab('test');
     }
@@ -342,6 +371,377 @@ class SantiyeApp {
     const internalCountEl = document.getElementById('internalPlanTabCount');
     if (internalCountEl) internalCountEl.innerText = internalActiveCount;
   }
+
+  updateAdminUI(isAdmin) {
+    this.updateRoleUI();
+  }
+
+  switchActiveRole(targetRole) {
+    if (targetRole === 'admin') {
+      if (!this.adminToken) {
+        this.openLoginModal();
+        return;
+      }
+      this.currentRole = 'admin';
+      this.isAdmin = true;
+      localStorage.setItem('santiye_active_role', 'admin');
+      this.updateRoleUI();
+      this.renderAll();
+      this.showToast('Yönetici moduna geçildi (Tüm yetkiler aktif). 🛡️', 'success');
+      return;
+    }
+
+    this.currentRole = targetRole;
+    this.isAdmin = false;
+    localStorage.setItem('santiye_active_role', targetRole);
+
+    if (
+      (this.currentTab === 'private_notes' && !this.hasPermission('private_notes', 'view')) ||
+      (this.currentTab === 'internal_plan' && !this.hasPermission('internal_plan', 'view'))
+    ) {
+      this.switchTab('meetings');
+    }
+
+    this.updateRoleUI();
+    this.renderAll();
+
+    if (targetRole === 'ana_firma') {
+      this.showToast('🏢 Ana Firma (MESA) Sunum Modu Açıldı. Özel notlarınız ve iç planlarınız ekrandan gizlendi!', 'info');
+    } else if (targetRole === 'internal_team') {
+      this.showToast('👷 İç Şantiye Ekibi Görünümüne Geçildi.', 'info');
+    } else {
+      this.showToast('👁️ İzleyici Görünümüne Geçildi.', 'info');
+    }
+  }
+
+  returnToAdminMode() {
+    const pwdInput = document.getElementById('adminVerifyPasswordInput');
+    if (pwdInput) pwdInput.value = '';
+    this.openModal('modalAdminVerify');
+  }
+
+  async verifyAdminPassword() {
+    const pwd = document.getElementById('adminVerifyPasswordInput').value;
+    if (!pwd) {
+      this.showToast('Lütfen şifre giriniz.', 'warning');
+      return;
+    }
+
+    let isValid = false;
+    if (pwd === 'admin123') {
+      isValid = true;
+    } else {
+      try {
+        const res = await fetch(`${this.apiUrl}/api/auth/login`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ password: pwd })
+        });
+        const data = await res.json();
+        if (res.ok && data.success) isValid = true;
+      } catch(e) {}
+    }
+
+    if (isValid) {
+      this.adminToken = this.adminToken || 'local-admin-token';
+      localStorage.setItem('santiye_admin_token', this.adminToken);
+      this.closeModal('modalAdminVerify');
+      this.switchActiveRole('admin');
+      this.showToast('Yönetici moduna başarıyla dönüldü! 🛡️', 'success');
+    } else {
+      this.showToast('Hatalı şifre! Yönetici moduna geçilemedi.', 'error');
+    }
+  }
+
+  async loadData(isSilent = false) {
+    // 1. Try Firebase Firestore if active
+    if (this.isCloudActive && this.db) {
+      try {
+        const doc = await this.db.collection('santiye_elektrik_test').doc('main_data').get();
+        if (doc.exists) {
+          const cloudData = doc.data();
+          if (cloudData && cloudData.units) {
+            this.data = cloudData;
+            this.ensureDataIntegrity();
+            localStorage.setItem(this.fallbackKey, JSON.stringify(this.data));
+            this.updateSyncUI('bulut');
+            if (!isSilent) this.renderAll();
+            return;
+          }
+        }
+      } catch (e) {
+        console.warn('Firestore get uyarısı:', e);
+      }
+    }
+
+    // 2. Try Python server API (/api/data)
+    try {
+      const response = await fetch(`${this.apiUrl}/api/data`, { cache: 'no-store' });
+      const contentType = response.headers.get('content-type') || '';
+      if (response.ok && contentType.includes('application/json')) {
+        const serverData = await response.json();
+        if (serverData && serverData.units) {
+          this.data = serverData;
+          localStorage.setItem(this.fallbackKey, JSON.stringify(this.data));
+          this.updateSyncUI('yerel_sunucu');
+          if (!isSilent) this.renderAll();
+          return;
+        }
+      }
+    } catch (e) {
+      // Python server not reachable (e.g. static hosting on Cloudflare/Netlify)
+    }
+
+    // 3. Try static JSON file (data/santiye_data.json)
+    try {
+      const staticRes = await fetch('data/santiye_data.json', { cache: 'no-store' });
+      const contentType = staticRes.headers.get('content-type') || '';
+      if (staticRes.ok && (contentType.includes('application/json') || contentType.includes('text/plain'))) {
+        const staticData = await staticRes.json();
+        if (staticData && staticData.units) {
+          const cached = localStorage.getItem(this.fallbackKey);
+          this.data = cached ? JSON.parse(cached) : staticData;
+          this.updateSyncUI('yerel_hafiza');
+          if (!isSilent) this.renderAll();
+          return;
+        }
+      }
+    } catch (e) {
+      console.warn('Statik JSON okunamadı:', e);
+    }
+
+    // 4. Try localStorage fallback or built-in default
+    const cached = localStorage.getItem(this.fallbackKey);
+    if (cached) {
+      try { this.data = JSON.parse(cached); } catch(e) {}
+    }
+    if (!this.data && window.DEFAULT_SANTIYE_DATA) {
+      this.data = JSON.parse(JSON.stringify(window.DEFAULT_SANTIYE_DATA));
+    }
+    this.updateSyncUI('yerel_hafiza');
+    if (!isSilent && this.data) this.renderAll();
+  }
+
+  async saveData(updatedData) {
+    this.data = updatedData;
+    localStorage.setItem(this.fallbackKey, JSON.stringify(this.data));
+
+    let savedToCloud = false;
+
+    // 1. Save to Firebase Firestore (Netlify real-time broadcast to all devices)
+    if (this.db) {
+      try {
+        await this.db.collection('santiye_elektrik_test').doc('main_data').set(this.data);
+        this.isCloudActive = true;
+        this.updateSyncUI('bulut');
+        savedToCloud = true;
+        this.showToast('Buluta kaydedildi ve tüm cihazlara anında yansıtıldı! ✅', 'success');
+      } catch (e) {
+        console.warn('Buluta kaydedilemedi:', e);
+        if (e.code === 'permission-denied') {
+          this.showToast('⚠️ Firebase izin kuralı bekleniyor: Değişiklik telefonun hafızasına kaydedildi ancak diğer cihazlara yansıması için Firebase kuralı açılmalıdır.', 'warning');
+        } else {
+          this.showToast('Değişiklik bu cihaza kaydedildi.', 'info');
+        }
+      }
+    }
+
+    // 2. Save to Python server API if running locally
+    if (!savedToCloud && (window.location.origin.includes('localhost') || window.location.origin.includes('127.0.0.1'))) {
+      try {
+        await fetch(`${this.apiUrl}/api/data`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${this.adminToken}`
+          },
+          body: JSON.stringify(this.data)
+        });
+      } catch (e) {
+        // Python server not active
+      }
+    }
+  }
+
+  bindEvents() {
+    // Setup bulk fields default
+    this.handleBulkFieldChange();
+
+    // Close modals on overlay click
+    document.querySelectorAll('.modal-overlay').forEach(overlay => {
+      overlay.addEventListener('click', (e) => {
+        if (e.target === overlay) {
+          overlay.classList.remove('active');
+        }
+      });
+    });
+  }
+
+  renderAll() {
+    if (!this.data || !this.data.units) return;
+    this.ensureDataIntegrity();
+    this.updateRoleUI();
+
+    this.renderKPIs();
+    this.renderMatrix();
+    this.renderBuilding();
+    this.renderTable();
+    this.renderMeetings();
+    this.renderInternalPlan();
+    this.renderPrivateNotes();
+    this.renderStats();
+    this.renderLogs();
+  }
+
+  // --- MASTER & SUB-TAB SWITCHING ---
+  switchMasterTab(masterTabId) {
+    if (masterTabId === 'internal') {
+      if (!this.hasPermission('internal_plan', 'view') && !this.hasPermission('private_notes', 'view')) {
+        this.showToast('İnternal alana erişim yetkiniz bulunmamaktadır.', 'warning');
+        masterTabId = 'test';
+      }
+    }
+
+    if (!['test', 'internal', 'meetings'].includes(masterTabId)) {
+      masterTabId = 'test';
+    }
+
+    this.currentMasterTab = masterTabId;
+    try {
+      localStorage.setItem('santiye_active_master_tab', masterTabId);
+    } catch(e) {}
+
+    // Master Tab Buttons
+    document.querySelectorAll('.master-tab-btn').forEach(btn => btn.classList.remove('active'));
+    const masterBtnMap = {
+      test: 'btnMasterTest',
+      internal: 'btnMasterInternal',
+      meetings: 'btnMasterMeetings'
+    };
+    const targetBtn = document.getElementById(masterBtnMap[masterTabId]);
+    if (targetBtn) targetBtn.classList.add('active');
+
+    // Master Sections
+    document.querySelectorAll('.master-section-panel').forEach(panel => {
+      panel.classList.remove('active');
+      panel.style.display = 'none';
+    });
+    const targetPanel = document.getElementById(`masterSection-${masterTabId}`);
+    if (targetPanel) {
+      targetPanel.classList.add('active');
+      targetPanel.style.display = 'block';
+    } else {
+      const defaultPanel = document.getElementById('masterSection-test');
+      if (defaultPanel) {
+        defaultPanel.classList.add('active');
+        defaultPanel.style.display = 'block';
+      }
+    }
+
+    // Trigger proper sub-view rendering
+    if (masterTabId === 'test') {
+      const sub = this.currentTestSubTab || 'matrix';
+      this.switchTestSubTab(sub);
+    } else if (masterTabId === 'internal') {
+      let sub = this.currentInternalSubTab || 'internal_plan';
+      if (sub === 'private_notes' && !this.hasPermission('private_notes', 'view')) {
+        sub = 'internal_plan';
+      }
+      this.switchInternalSubTab(sub);
+    } else if (masterTabId === 'meetings') {
+      this.renderMeetings();
+    }
+  }
+
+  switchTestSubTab(subTabId) {
+    if (!['matrix', 'building', 'table', 'stats', 'logs'].includes(subTabId)) {
+      subTabId = 'matrix';
+    }
+    this.currentTestSubTab = subTabId;
+    try {
+      localStorage.setItem('santiye_active_test_sub_tab', subTabId);
+    } catch(e) {}
+
+    const testSection = document.getElementById('masterSection-test');
+    if (testSection) {
+      testSection.querySelectorAll('.sub-tab-btn').forEach(b => b.classList.remove('active'));
+      const activeBtn = document.getElementById(`subTabBtn-${subTabId}`);
+      if (activeBtn) activeBtn.classList.add('active');
+
+      testSection.querySelectorAll('.view-panel').forEach(p => {
+        p.classList.remove('active');
+        p.style.display = 'none';
+      });
+      const panel = document.getElementById(`view-${subTabId}`);
+      if (panel) {
+        panel.classList.add('active');
+        panel.style.display = 'block';
+      }
+    }
+
+    if (subTabId === 'building') {
+      this.renderBuilding();
+    } else if (subTabId === 'table') {
+      this.renderTable();
+    } else if (subTabId === 'stats') {
+      this.renderStats();
+    } else if (subTabId === 'logs') {
+      this.renderLogs();
+    } else if (subTabId === 'matrix') {
+      this.renderMatrix();
+    }
+  }
+
+  switchInternalSubTab(subTabId) {
+    if (subTabId === 'private_notes' && !this.hasPermission('private_notes', 'view')) {
+      this.showToast('Özel Notlar alanına yalnızca şantiye yöneticisi erişebilir.', 'warning');
+      this.switchInternalSubTab('internal_plan');
+      return;
+    }
+    if (subTabId === 'internal_plan' && !this.hasPermission('internal_plan', 'view')) {
+      this.showToast('İnternal İş Planı alanına erişim yetkiniz bulunmamaktadır.', 'warning');
+      this.switchMasterTab('meetings');
+      return;
+    }
+
+    this.currentInternalSubTab = subTabId;
+    try {
+      localStorage.setItem('santiye_active_internal_sub_tab', subTabId);
+    } catch(e) {}
+
+    const internalSection = document.getElementById('masterSection-internal');
+    if (internalSection) {
+      internalSection.querySelectorAll('.sub-tab-btn').forEach(b => b.classList.remove('active'));
+      const activeBtn = document.getElementById(`subTabBtn-${subTabId}`);
+      if (activeBtn) activeBtn.classList.add('active');
+
+      internalSection.querySelectorAll('.view-panel').forEach(p => p.classList.remove('active'));
+      const panel = document.getElementById(`view-${subTabId}`);
+      if (panel) panel.classList.add('active');
+    }
+
+    if (subTabId === 'internal_plan') {
+      this.renderInternalPlan();
+    } else if (subTabId === 'private_notes') {
+      this.renderPrivateNotes();
+    }
+  }
+
+  // Backwards compatibility for any legacy callers
+  switchTab(tabId) {
+    if (['matrix', 'building', 'table', 'stats', 'logs'].includes(tabId)) {
+      this.currentTestSubTab = tabId;
+      this.switchMasterTab('test');
+      this.switchTestSubTab(tabId);
+    } else if (['internal_plan', 'private_notes'].includes(tabId)) {
+      this.currentInternalSubTab = tabId;
+      this.switchMasterTab('internal');
+      this.switchInternalSubTab(tabId);
+    } else if (tabId === 'meetings') {
+      this.switchMasterTab('meetings');
+    }
+  }
+
   // --- KPI CALCULATIONS ---
   renderKPIs() {
     const units = Object.values(this.data.units);
@@ -932,18 +1332,20 @@ class SantiyeApp {
     document.getElementById('editElkReport').value = u.elektrikTest?.reportNo || '';
     document.getElementById('editElkNote').value = u.elektrikTest?.note || '';
 
-    // Role & Login check for save button
-    const canEdit = this.isLoggedIn() && (this.isAdmin || this.hasPermission('units', 'edit'));
+    // Role check for save button & read-only guard
     const btnSave = document.getElementById('btnSaveUnit');
     const readOnlyAlert = document.getElementById('unitModalReadOnlyAlert');
+    const canEdit = this.hasPermission('units', 'edit');
 
-    if (readOnlyAlert) {
-      readOnlyAlert.style.display = canEdit ? 'none' : 'flex';
+    if (canEdit) {
+      if (btnSave) btnSave.style.display = 'inline-flex';
+      if (readOnlyAlert) readOnlyAlert.style.display = 'none';
+      this.enableModalInputs(true);
+    } else {
+      if (btnSave) btnSave.style.display = 'none';
+      if (readOnlyAlert) readOnlyAlert.style.display = 'flex';
+      this.enableModalInputs(false);
     }
-    if (btnSave) {
-      btnSave.style.display = canEdit ? 'inline-flex' : 'none';
-    }
-    this.enableModalInputs(canEdit);
 
     this.renderUnitMeetingActions(unitId);
     this.handleModalStateChange();
@@ -1046,10 +1448,10 @@ class SantiyeApp {
   }
 
   async saveUnitData() {
-    if (!this.requireLogin('Kat durumlarını güncellemek için lütfen yetkili girişi yapınız.')) {
+    if (!this.requireLogin('Kat durumunu güncellemek için lütfen giriş yapınız.')) {
       return;
     }
-    if (!this.isAdmin && !this.hasPermission('units', 'edit')) {
+    if (!this.hasPermission('units', 'edit')) {
       this.showToast('Kat durumlarını düzenleme yetkiniz bulunmamaktadır.', 'error');
       return;
     }
@@ -1126,6 +1528,13 @@ class SantiyeApp {
 
   // --- BULK OPERATIONS ---
   openBulkModal() {
+    if (!this.requireLogin('Toplu güncelleme yapmak için lütfen yönetici girişi yapınız.')) {
+      return;
+    }
+    if (!this.isAdmin) {
+      this.showToast('Toplu güncelleme yetkisi yalnızca yöneticilere aittir.', 'warning');
+      return;
+    }
     this.openModal('modalBulk');
   }
 
@@ -1253,18 +1662,36 @@ class SantiyeApp {
 
     if (userSelect) {
       const users = this.data?.users || [];
-      let options = `<option value="quick_admin">⚡ Yönetici Ana Şifresi ile Giriş</option>`;
+      let options = `<option value="quick_admin">⚡ Hızlı Yönetici Girişi (admin123)</option>`;
       users.forEach(u => {
         let roleName = 'İzleyici';
         if (u.role === 'admin') roleName = 'Yönetici';
         else if (u.role === 'internal_team') roleName = 'İç Ekip';
         else if (u.role === 'ana_firma') roleName = 'Ana Firma (MESA)';
-        options += `<option value="${u.id}">${this.escapeHtml(u.name)} (@${this.escapeHtml(u.username || u.id)}) - [${roleName}]</option>`;
+        options += `<option value="${u.id}">${this.escapeHtml(u.name)} [${roleName}]</option>`;
       });
       userSelect.innerHTML = options;
     }
     this.onLoginUserChange();
     this.openModal('modalLogin');
+    setTimeout(() => {
+      const p = document.getElementById('loginPasswordInput');
+      if (p && p.focus) p.focus();
+    }, 150);
+  }
+
+  quickSelectLogin(userId) {
+    const userSelect = document.getElementById('loginUserSelect');
+    const pwInput = document.getElementById('loginPasswordInput');
+    if (userSelect) {
+      userSelect.value = userId;
+    }
+    this.onLoginUserChange();
+    const u = (this.data?.users || []).find(x => x.id === userId);
+    if (u && pwInput) {
+      pwInput.value = u.password || (u.role === 'admin' ? 'admin123' : u.role === 'internal_team' ? 'saha123' : u.role === 'ana_firma' ? 'mesa123' : 'izleyici123');
+      if (pwInput.focus) pwInput.focus();
+    }
   }
 
   onLoginUserChange() {
@@ -1276,12 +1703,14 @@ class SantiyeApp {
     const val = userSelect.value;
     if (val === 'quick_admin') {
       if (pwLabel) pwLabel.innerText = 'Yönetici Ana Şifresi:';
-      hintBox.innerHTML = '<span>💡 Varsayılan yönetici şifresi: <code>admin123</code></span>';
+      hintBox.innerHTML = '<span>💡 Yönetici ana şifresi: <code>admin123</code></span>';
     } else {
       const u = (this.data?.users || []).find(x => x.id === val);
       if (u) {
         if (pwLabel) pwLabel.innerText = `${u.name} Giriş Şifresi:`;
-        hintBox.innerHTML = `<span>👤 <strong>${this.escapeHtml(u.name)}</strong> (@${this.escapeHtml(u.username || u.id)}) hesabına ait şifrenizi giriniz.</span>`;
+        const defaultHint = u.role === 'admin' ? 'admin123' : u.role === 'internal_team' ? 'saha123' : u.role === 'ana_firma' ? 'mesa123' : 'izleyici123';
+        const displayHint = u.password || defaultHint;
+        hintBox.innerHTML = `<span>👤 <strong>${this.escapeHtml(u.name)}</strong> (@${this.escapeHtml(u.username || u.id)}) hesabına ait şifrenizi giriniz. (Varsayılan: <code>${this.escapeHtml(displayHint)}</code>)</span>`;
       }
     }
   }
@@ -1292,116 +1721,121 @@ class SantiyeApp {
     const pw = (pwInput?.value || '').trim();
     if (!pw) {
       this.showToast('Lütfen giriş şifrenizi yazınız.', 'warning');
+      if (pwInput && pwInput.focus) pwInput.focus();
       return;
     }
 
     const selectedUserId = userSelect ? userSelect.value : 'quick_admin';
+    const users = this.data?.users || [];
+    let loggedInUser = null;
 
-    // 1. Direct Master Admin check (or quick_admin option)
-    if (selectedUserId === 'quick_admin' || pw === 'admin123') {
-      // Try server login first if backend is running
-      try {
-        const res = await fetch(`${this.apiUrl}/api/auth/login`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ password: pw })
-        });
-        const resData = await res.json();
-        if (res.ok && resData.success) {
-          this.adminToken = resData.token;
-          localStorage.setItem('santiye_admin_token', this.adminToken);
-          this.currentRole = 'admin';
-          localStorage.setItem('santiye_active_role', 'admin');
-          this.isAdmin = true;
-          this.updateRoleUI();
-          this.closeModal('modalLogin');
-          this.showToast('Yönetici girişi başarılı! Tüm yetkiler aktif.', 'success');
-          this.renderAll();
-          return;
+    // 1. Check if dropdown selected user matches
+    if (selectedUserId && selectedUserId !== 'quick_admin') {
+      const u = users.find(x => x.id === selectedUserId);
+      if (u) {
+        const expectedPw = u.password || (u.role === 'admin' ? 'admin123' : u.role === 'internal_team' ? 'saha123' : u.role === 'ana_firma' ? 'mesa123' : 'izleyici123');
+        if (pw === expectedPw || (u.role === 'admin' && pw === 'admin123')) {
+          loggedInUser = u;
         }
-      } catch (e) {}
-
-      // Fallback local check
-      const adminUser = (this.data?.users || []).find(u => u.role === 'admin' || u.id === 'u1');
-      const expectedAdminPw = adminUser?.password || 'admin123';
-      if (pw === 'admin123' || pw === expectedAdminPw) {
-        this.adminToken = 'local-admin-token';
-        this.currentUser = {
-          id: adminUser?.id || 'u1',
-          name: adminUser?.name || 'Mustafa Özkan (Proje Müdürü)',
-          role: 'admin',
-          username: adminUser?.username || 'proje_muduru'
-        };
-        localStorage.setItem('santiye_admin_token', this.adminToken);
-        localStorage.setItem('santiye_user_session', JSON.stringify(this.currentUser));
-        this.currentRole = 'admin';
-        localStorage.setItem('santiye_active_role', 'admin');
-        this.isAdmin = true;
-        this.updateRoleUI();
-        this.closeModal('modalLogin');
-        this.showToast('Yönetici girişi başarılı! Tüm yetkiler aktif.', 'success');
-        this.renderAll();
-        return;
       }
     }
 
-    // 2. Specific User Login Check
-    const user = (this.data?.users || []).find(u => u.id === selectedUserId || u.username === selectedUserId);
-    if (user) {
-      const expectedPw = user.password || (user.role === 'admin' ? 'admin123' : user.role === 'internal_team' ? 'saha123' : user.role === 'ana_firma' ? 'mesa123' : 'izleyici123');
-      if (pw === expectedPw || (user.role === 'admin' && pw === 'admin123')) {
-        this.currentUser = {
-          id: user.id,
-          name: user.name,
-          role: user.role,
-          username: user.username
-        };
-        localStorage.setItem('santiye_user_session', JSON.stringify(this.currentUser));
-        localStorage.setItem('santiye_active_role', user.role);
-
-        if (user.role === 'admin') {
-          this.adminToken = 'local-admin-token';
-          localStorage.setItem('santiye_admin_token', this.adminToken);
-          this.isAdmin = true;
-        } else {
-          this.adminToken = null;
-          localStorage.removeItem('santiye_admin_token');
-          this.isAdmin = false;
-        }
-        this.currentRole = user.role;
-        this.updateRoleUI();
-        this.closeModal('modalLogin');
-        this.showToast(`Hoş geldiniz, ${user.name}! (${user.role} yetkisi ile giriş yapıldı)`, 'success');
-        this.renderAll();
-        return;
-      } else {
-        this.showToast(`Hatalı şifre! "${user.name}" kullanıcısı için şifrenizi kontrol ediniz.`, 'error');
-        return;
+    // 2. Check if master admin password entered
+    if (!loggedInUser) {
+      const adminUser = users.find(u => u.role === 'admin') || {
+        id: 'u1',
+        name: 'Mustafa Özkan (Proje Müdürü)',
+        username: 'proje_muduru',
+        role: 'admin',
+        password: 'admin123'
+      };
+      const adminPw = adminUser.password || 'admin123';
+      if (pw === 'admin123' || pw === adminPw) {
+        loggedInUser = adminUser;
       }
     }
 
-    // 3. Fallback: Check if password matches any defined user in system
-    const matchedUser = (this.data?.users || []).find(u => u.password === pw);
-    if (matchedUser) {
-      this.loginAsUser(matchedUser.id);
-      this.closeModal('modalLogin');
+    // 3. Match against any user's password
+    if (!loggedInUser) {
+      const matched = users.find(u => {
+        const expected = u.password || (u.role === 'admin' ? 'admin123' : u.role === 'internal_team' ? 'saha123' : u.role === 'ana_firma' ? 'mesa123' : 'izleyici123');
+        return u.password === pw || expected === pw;
+      });
+      if (matched) {
+        loggedInUser = matched;
+      }
+    }
+
+    if (!loggedInUser) {
+      this.showToast('Hatalı şifre! Lütfen şifrenizi kontrol ediniz.', 'error');
+      if (pwInput) {
+        if (pwInput.select) pwInput.select();
+        if (pwInput.focus) pwInput.focus();
+      }
       return;
     }
 
-    this.showToast('Hatalı şifre! Lütfen şifrenizi kontrol ediniz.', 'error');
+    // Login successful
+    this.currentUser = {
+      id: loggedInUser.id,
+      name: loggedInUser.name,
+      username: loggedInUser.username || loggedInUser.id,
+      role: loggedInUser.role
+    };
+    this.currentRole = loggedInUser.role;
+
+    localStorage.setItem('santiye_user_session', JSON.stringify(this.currentUser));
+    localStorage.setItem('santiye_active_role', loggedInUser.role);
+
+    if (loggedInUser.role === 'admin') {
+      this.adminToken = 'admin-session-' + Date.now();
+      localStorage.setItem('santiye_admin_token', this.adminToken);
+      this.isAdmin = true;
+    } else {
+      this.adminToken = null;
+      localStorage.removeItem('santiye_admin_token');
+      this.isAdmin = false;
+    }
+
+    // Backend server sync (non-blocking if on localhost)
+    if (loggedInUser.role === 'admin' && window.location.origin.includes('localhost')) {
+      fetch(`${this.apiUrl}/api/auth/login`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ password: pw })
+      }).then(r => r.json()).then(data => {
+        if (data?.token) {
+          this.adminToken = data.token;
+          localStorage.setItem('santiye_admin_token', data.token);
+        }
+      }).catch(() => {});
+    }
+
+    this.closeModal('modalLogin');
+    this.updateRoleUI();
+
+    let roleTitle = 'İzleyici';
+    if (loggedInUser.role === 'admin') roleTitle = 'Yönetici (Tüm Yetkiler Aktif)';
+    else if (loggedInUser.role === 'internal_team') roleTitle = 'İç Şantiye Ekibi';
+    else if (loggedInUser.role === 'ana_firma') roleTitle = 'Ana Firma (MESA)';
+
+    this.showToast(`Hoş geldiniz, ${loggedInUser.name}! (${roleTitle}) ✅`, 'success');
+    this.renderAll();
   }
 
   logout() {
     this.adminToken = null;
+    this.currentUser = null;
     this.isAdmin = false;
     this.currentRole = 'viewer';
     localStorage.removeItem('santiye_admin_token');
+    localStorage.removeItem('santiye_user_session');
     localStorage.removeItem('santiye_active_role');
     this.updateRoleUI();
-    this.showToast('Çıkış yapıldı. İzleyici modundasınız.', 'info');
-    if (this.currentTab === 'private_notes' || this.currentTab === 'internal_plan') {
-      this.switchTab('meetings');
-    }
+    this.showToast('Çıkış yapıldı. İzleyici modundasınız (Salt Okunur).', 'info');
+    // Always navigate to Heatmap on logout
+    this.switchMasterTab('test');
+    this.switchTestSubTab('matrix');
     this.renderAll();
   }
 
@@ -1610,13 +2044,6 @@ class SantiyeApp {
   }
 
   async toggleActionComplete(actionId) {
-    if (!this.requireLogin('To-Do maddesinin durumunu değiştirmek için lütfen giriş yapınız.')) {
-      return;
-    }
-    if (!this.hasPermission('meetings', 'edit')) {
-      this.showToast('Toplantı kararlarını düzenleme yetkiniz bulunmamaktadır.', 'error');
-      return;
-    }
     const action = (this.data.meetingActions || []).find(a => a.id === actionId);
     if (!action) return;
 
@@ -1842,8 +2269,10 @@ class SantiyeApp {
       weeks.sort((a, b) => (parseInt(b) || 0) - (parseInt(a) || 0));
 
       const optionsKey = weeks.join(',');
-      if (weekSelect.dataset.weeksKey !== optionsKey) {
-        weekSelect.dataset.weeksKey = optionsKey;
+      const curKey = weekSelect.getAttribute ? weekSelect.getAttribute('data-weeks-key') : (weekSelect.dataset ? weekSelect.dataset.weeksKey : null);
+      if (curKey !== optionsKey) {
+        if (weekSelect.setAttribute) weekSelect.setAttribute('data-weeks-key', optionsKey);
+        else if (weekSelect.dataset) weekSelect.dataset.weeksKey = optionsKey;
         let optHtml = '<option value="all">📅 Tüm Haftalar</option>';
         weeks.forEach(w => {
           optHtml += `<option value="${w}">${w} Toplantıları</option>`;
@@ -2180,7 +2609,7 @@ class SantiyeApp {
             </div>
 
             <div style="display: flex; gap: 0.5rem; align-items: center;">
-              ${this.isLoggedIn() && this.hasPermission('meetings', 'edit') ? (!m.isCompleted ? `
+              ${!m.isCompleted ? `
                 <button class="btn btn-revise btn-sm" onclick="app.openReviseMeetingModal('${action.id}')">
                   <span>🔄</span>
                   <span>Erteleme & Mazeret Ekle</span>
@@ -2191,8 +2620,6 @@ class SantiyeApp {
                 </button>
               ` : `
                 <span class="stage-val-badge badge-ok">Tamamlandı ✓</span>
-              `) : `
-                <span style="font-size:0.75rem; color:#64748b; background:#f8fafc; padding:0.25rem 0.5rem; border-radius:4px; border:1px solid #e2e8f0;">👁️ Salt Okunur</span>
               `}
 
               ${this.isAdmin ? `
@@ -2432,6 +2859,7 @@ class SantiyeApp {
     document.getElementById('actionDetailModalBody').innerHTML = bodyHtml;
 
     // Footer buttons
+    const canEditMeeting = this.hasPermission('meetings', 'edit');
     let footerHtml = `
       <div style="display:flex; justify-content:space-between; width:100%; align-items:center; flex-wrap:wrap; gap:0.5rem;">
         <div>
@@ -2444,7 +2872,7 @@ class SantiyeApp {
         </div>
         <div style="display:flex; gap:0.5rem; align-items:center;">
           <button class="btn btn-secondary" onclick="app.closeModal('modalActionDetail')">Kapat</button>
-          ${this.isLoggedIn() && this.hasPermission('meetings', 'edit') ? (!m.isCompleted ? `
+          ${canEditMeeting ? (!m.isCompleted ? `
             <button class="btn btn-revise" onclick="app.closeModal('modalActionDetail'); app.openReviseMeetingModal('${action.id}')">
               <span>🔄</span>
               <span>Erteleme & Mazeret Ekle</span>
@@ -2611,6 +3039,13 @@ class SantiyeApp {
   }
 
   async saveReviseMeetingAction() {
+    if (!this.requireLogin('Söz erteleme ve mazeret güncellemek için lütfen giriş yapınız.')) {
+      return;
+    }
+    if (!this.hasPermission('meetings', 'edit')) {
+      this.showToast('Toplantı kararlarını düzenleme yetkiniz bulunmamaktadır.', 'error');
+      return;
+    }
     const actionId = document.getElementById('reviseActionId').value;
     const action = (this.data.meetingActions || []).find(a => a.id === actionId);
     if (!action) return;
@@ -2686,6 +3121,13 @@ class SantiyeApp {
   }
 
   async saveCompleteMeetingAction() {
+    if (!this.requireLogin('Tamamlandı onayı vermek için lütfen giriş yapınız.')) {
+      return;
+    }
+    if (!this.hasPermission('meetings', 'edit')) {
+      this.showToast('Toplantı kararlarını düzenleme yetkiniz bulunmamaktadır.', 'error');
+      return;
+    }
     const actionId = document.getElementById('completeActionId').value;
     const action = (this.data.meetingActions || []).find(a => a.id === actionId);
     if (!action) return;
@@ -2722,6 +3164,13 @@ class SantiyeApp {
   }
 
   async deleteMeetingAction(actionId) {
+    if (!this.requireLogin('Karar kaydını silmek için lütfen giriş yapınız.')) {
+      return;
+    }
+    if (!this.hasPermission('meetings', 'edit')) {
+      this.showToast('Toplantı kararlarını silme yetkiniz bulunmamaktadır.', 'error');
+      return;
+    }
     if (!confirm('Bu toplantı kararını ve geçmiş kayıtlarını silmek istediğinize emin misiniz?')) {
       return;
     }
@@ -3995,16 +4444,26 @@ class SantiyeApp {
     const user = (this.data?.users || []).find(u => u.id === userId);
     if (!user) return;
 
+    this.currentUser = {
+      id: user.id,
+      name: user.name,
+      username: user.username || user.id,
+      role: user.role
+    };
+    this.currentRole = user.role;
+
+    localStorage.setItem('santiye_user_session', JSON.stringify(this.currentUser));
+    localStorage.setItem('santiye_active_role', user.role);
+
     if (user.role === 'admin') {
-      this.adminToken = 'local-admin-token';
+      this.adminToken = 'admin-session-' + Date.now();
+      localStorage.setItem('santiye_admin_token', this.adminToken);
       this.isAdmin = true;
     } else {
       this.adminToken = null;
+      localStorage.removeItem('santiye_admin_token');
       this.isAdmin = false;
     }
-
-    this.currentRole = user.role;
-    localStorage.setItem('santiye_active_role', user.role);
 
     this.closeModal('modalPermissions');
     this.updateRoleUI();
@@ -4050,7 +4509,13 @@ class SantiyeApp {
       toast.style.opacity = '0';
       toast.style.transform = 'translateX(100%)';
       toast.style.transition = 'all 0.3s ease';
-      setTimeout(() => toast.remove(), 300);
+      setTimeout(() => {
+        if (toast.remove) {
+          toast.remove();
+        } else if (toast.parentNode) {
+          toast.parentNode.removeChild(toast);
+        }
+      }, 300);
     }, 4000);
   }
 }

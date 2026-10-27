@@ -3869,16 +3869,27 @@ body {
 
     <!-- MODAL 2: Şantiye & Kullanıcı Girişi (Login) -->
   <div id="modalLogin" class="modal-overlay">
-    <div class="modal-box" style="max-width: 440px;">
+    <div class="modal-box" style="max-width: 460px;">
       <div class="modal-header">
         <div>
           <h2 class="modal-title">🔑 Şantiye Girişi & Yetkilendirme</h2>
-          <div style="font-size: 0.8rem; color: #64748b;">Kullanıcı hesabınızı seçip şifrenizi giriniz</div>
+          <div style="font-size: 0.8rem; color: #64748b;">Hesabınızı seçip şifrenizi giriniz veya doğrudan şifre yazınız</div>
         </div>
         <button class="modal-close" onclick="app.closeModal('modalLogin')">&times;</button>
       </div>
       <div class="modal-body">
-        <div class="form-group">
+        <!-- Hızlı Hesap Butonları -->
+        <div style="margin-bottom: 0.85rem;">
+          <div style="font-size: 0.76rem; font-weight: 700; color: #475569; margin-bottom: 0.4rem;">⚡ Hızlı Hesap Seçimi:</div>
+          <div style="display: flex; gap: 0.4rem; flex-wrap: wrap;">
+            <button type="button" class="btn btn-sm btn-outline" onclick="app.quickSelectLogin('u1')" style="font-size: 0.76rem; padding: 3px 8px; border-radius: 6px;">🛡️ Yönetici (admin123)</button>
+            <button type="button" class="btn btn-sm btn-outline" onclick="app.quickSelectLogin('u2')" style="font-size: 0.76rem; padding: 3px 8px; border-radius: 6px;">👷 İç Ekip (saha123)</button>
+            <button type="button" class="btn btn-sm btn-outline" onclick="app.quickSelectLogin('u3')" style="font-size: 0.76rem; padding: 3px 8px; border-radius: 6px;">🏢 MESA (mesa123)</button>
+            <button type="button" class="btn btn-sm btn-outline" onclick="app.quickSelectLogin('u4')" style="font-size: 0.76rem; padding: 3px 8px; border-radius: 6px;">👁️ İzleyici (izleyici123)</button>
+          </div>
+        </div>
+
+        <div class="form-group" style="margin-bottom: 0.75rem;">
           <label class="form-label">Kullanıcı Hesabı:</label>
           <select id="loginUserSelect" class="form-select" onchange="app.onLoginUserChange()">
             <!-- Dinamik olarak tanımlı kullanıcılar listelenir -->
