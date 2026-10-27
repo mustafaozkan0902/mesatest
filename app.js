@@ -1021,7 +1021,8 @@ class SantiyeApp {
 
   async saveUnitData() {
     if (!this.isAdmin) {
-      this.showToast('Değişiklik yapabilmek için yönetici girişi yapmalısınız.', 'error');
+      this.showToast('Değişiklik yapabilmek için yönetici girişi yapmalısınız.', 'warning');
+      this.openLoginModal();
       return;
     }
 
@@ -1450,6 +1451,70 @@ class SantiyeApp {
       .replace(/'/g, '&#039;');
   }
 
+  addLog(action, details, badgeType = 'info', unitId = 'all') {
+    if (!this.data) return;
+    if (!this.data.logs) this.data.logs = [];
+
+    let bName = 'Toplantı';
+    let fName = 'Karar';
+    if (unitId && unitId !== 'all' && unitId !== 'general') {
+      const u = this.data.units ? this.data.units[unitId] : null;
+      if (u) {
+        bName = u.blockName;
+        fName = u.floorName;
+      }
+    }
+
+    this.data.logs.unshift({
+      id: `log-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
+      timestamp: new Date().toLocaleString('tr-TR'),
+      user: this.isAdmin ? 'Yönetici' : 'Sistem',
+      unitId: unitId,
+      blockName: bName,
+      floorName: fName,
+      action: action,
+      details: details,
+      badgeType: badgeType
+    });
+  }
+
+  async toggleActionComplete(actionId) {
+    const action = (this.data.meetingActions || []).find(a => a.id === actionId);
+    if (!action) return;
+
+    if (action.status === 'tamamlandi') {
+      // Revert to devam/gecikmede
+      action.status = (action.history && action.history.length > 1) ? 'gecikmede' : 'devam';
+      action.completedDate = null;
+      action.completionNote = '';
+      this.addLog('Toplantı Sözü Geri Alındı', `"${action.title}" tamamlandı durumu geri alındı.`, 'info', action.unitId || 'all');
+      this.showToast('Madde tekrar aktif (yapılacak) duruma getirildi.', 'info');
+    } else {
+      // Mark as completed
+      const todayStr = new Date().toISOString().split('T')[0];
+      action.status = 'tamamlandi';
+      action.completedDate = todayStr;
+      action.completionNote = 'To-Do kontrolü ile tamamlandı olarak işaretlendi.';
+      
+      if (!action.history) action.history = [];
+      action.history.push({
+        id: 'rev_' + Date.now(),
+        meetingDate: todayStr,
+        meetingTitle: 'Tamamlanma & Teslim',
+        targetDate: todayStr,
+        reason: '',
+        note: '✅ Söz tutuldu ve imalat teslim alındı.',
+        status: 'tamamlandi'
+      });
+      this.addLog('Toplantı Sözü Tamamlandı', `"${action.title}" tamamlandı olarak işaretlendi.`, 'success', action.unitId || 'all');
+      this.showToast('Madde tamamlandı (tiklendi)! 🎉', 'success');
+    }
+
+    await this.saveData(this.data);
+    this.renderMeetings();
+    this.renderBuilding();
+  }
+
   getActionDelayMetrics(action) {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
@@ -1640,22 +1705,22 @@ class SantiyeApp {
         let tickHtml = '';
         if (m.isCompleted) {
           tickHtml = `
-            <button class="todo-tick-badge tick-done" title="Söz Tamamlandı ✓ (Detaylar için tıklayın)" onclick="event.stopPropagation(); app.openActionDetailModal('${action.id}')">
-              <span style="font-size: 1.1rem;">✅</span>
+            <button class="todo-tick-badge tick-done" title="Söz Tamamlandı ✓ (Durumu geri almak için tıklayın)" onclick="event.stopPropagation(); app.toggleActionComplete('${action.id}')">
+              <span style="font-size: 1.15rem;">✅</span>
               <span>TAMAMLANDI</span>
             </button>
           `;
         } else if (m.diffDaysFromInitial > 0) {
           tickHtml = `
-            <button class="todo-tick-badge tick-overdue" title="İşi tamamlandı olarak işaretle veya mazeret ekle" onclick="event.stopPropagation(); app.openActionDetailModal('${action.id}')">
-              <span style="font-size: 1.1rem;">⚠️</span>
+            <button class="todo-tick-badge tick-overdue" title="Tamamlandı olarak işaretlemek (tiklemek) için tıklayın" onclick="event.stopPropagation(); app.toggleActionComplete('${action.id}')">
+              <span style="font-size: 1.15rem;">⚠️</span>
               <span>${m.diffDaysFromInitial} GÜN GECİKTİ (${m.revisionCount > 0 ? m.revisionCount + '. Erteleme' : 'Gecikmede'})</span>
             </button>
           `;
         } else {
           tickHtml = `
-            <button class="todo-tick-badge tick-pending" title="İşi tamamlandı olarak işaretle" onclick="event.stopPropagation(); app.openCompleteMeetingModal('${action.id}')">
-              <span style="font-size: 1.1rem;">⏳</span>
+            <button class="todo-tick-badge tick-pending" title="Tamamlandı olarak işaretlemek (tiklemek) için tıklayın" onclick="event.stopPropagation(); app.toggleActionComplete('${action.id}')">
+              <span style="font-size: 1.15rem;">⏳</span>
               <span>SÜRESİNDE (${this.formatDateTR(action.currentPromiseDate)})</span>
             </button>
           `;
@@ -2166,6 +2231,7 @@ class SantiyeApp {
 
     await this.saveData(this.data);
     this.closeModal('modalReviseMeetingAction');
+    this.closeModal('modalActionDetail');
     this.renderMeetings();
     this.renderBuilding();
     this.showToast('Gecikme nedeni ve yeni plan kaydedildi! Eski tarihler tarihçede korundu. ✅', 'success');
@@ -2217,6 +2283,7 @@ class SantiyeApp {
 
     await this.saveData(this.data);
     this.closeModal('modalCompleteMeetingAction');
+    this.closeModal('modalActionDetail');
     this.renderMeetings();
     this.renderBuilding();
     this.showToast('Taahhüt tamamlandı olarak işaretlendi! 🎉', 'success');
