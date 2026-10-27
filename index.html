@@ -1589,12 +1589,12 @@ body {
 .todo-item-card {
   background: white;
   border: 1.5px solid #e2e8f0;
-  border-radius: 10px;
-  padding: 0.85rem 1.25rem;
+  border-radius: 8px;
+  padding: 0.55rem 1rem;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 1rem;
+  gap: 0.85rem;
   transition: all 0.15s ease;
   cursor: pointer;
   box-shadow: 0 1px 3px rgba(0,0,0,0.03);
@@ -1603,7 +1603,7 @@ body {
 
 .todo-item-card:hover {
   border-color: #0284c7;
-  box-shadow: 0 4px 14px rgba(2, 132, 199, 0.1);
+  box-shadow: 0 3px 12px rgba(2, 132, 199, 0.08);
   transform: translateY(-1px);
 }
 
@@ -1625,21 +1625,21 @@ body {
 .todo-left-content {
   display: flex;
   align-items: center;
-  gap: 0.85rem;
+  gap: 0.75rem;
   flex: 1;
   min-width: 0;
 }
 
 .todo-num-badge {
-  width: 32px;
-  height: 32px;
+  width: 28px;
+  height: 28px;
   border-radius: 50%;
   background: #f1f5f9;
   color: #475569;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 0.8rem;
+  font-size: 0.75rem;
   font-weight: 800;
   flex-shrink: 0;
   border: 1px solid #e2e8f0;
@@ -1659,17 +1659,11 @@ body {
 
 .todo-body-wrap {
   display: flex;
-  flex-direction: column;
-  gap: 0.25rem;
+  align-items: center;
+  gap: 0.45rem 0.65rem;
+  flex-wrap: wrap;
   min-width: 0;
   flex: 1;
-}
-
-.todo-tags-row {
-  display: flex;
-  align-items: center;
-  gap: 0.45rem;
-  flex-wrap: wrap;
 }
 
 .todo-badge-loc {
@@ -1680,6 +1674,7 @@ body {
   padding: 0.15rem 0.5rem;
   border-radius: 4px;
   border: 1px solid #cbd5e1;
+  white-space: nowrap;
 }
 
 .todo-badge-disc {
@@ -1690,53 +1685,84 @@ body {
   padding: 0.15rem 0.5rem;
   border-radius: 4px;
   border: 1px solid #bae6fd;
-}
-
-.todo-badge-resp {
-  font-size: 0.75rem;
-  color: #475569;
-  display: inline-flex;
-  align-items: center;
-  gap: 3px;
+  white-space: nowrap;
 }
 
 .todo-title-text {
-  font-size: 1rem;
+  font-size: 0.92rem;
   font-weight: 700;
   color: #0f172a;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  display: inline-block;
+  line-height: 1.35;
 }
 
 .todo-item-card.done .todo-title-text {
   text-decoration: line-through;
-  color: #64748b;
+  color: #94a3b8;
 }
 
-.todo-sub-meta {
-  font-size: 0.76rem;
-  color: #64748b;
-  display: flex;
+.todo-meta-dates {
+  display: inline-flex;
   align-items: center;
-  gap: 0.6rem;
-  flex-wrap: wrap;
+  gap: 0.4rem;
+  font-size: 0.75rem;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  padding: 0.18rem 0.55rem;
+  border-radius: 6px;
+  color: #475569;
+  white-space: nowrap;
+}
+
+.todo-meta-dates .meta-date-arrow {
+  color: #94a3b8;
+  font-weight: 700;
+}
+
+.todo-badge-resp {
+  font-size: 0.74rem;
+  color: #475569;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  padding: 0.15rem 0.5rem;
+  border-radius: 4px;
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  white-space: nowrap;
+}
+
+.todo-badge-reason {
+  background: #fee2e2;
+  color: #b91c1c;
+  border: 1px solid #fecaca;
+  font-size: 0.73rem;
+  font-weight: 600;
+  padding: 0.15rem 0.5rem;
+  border-radius: 4px;
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  max-width: 420px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .todo-right-status {
   display: flex;
   align-items: center;
-  gap: 0.65rem;
+  gap: 0.5rem;
   flex-shrink: 0;
 }
 
 .todo-tick-badge {
   display: inline-flex;
   align-items: center;
-  gap: 0.45rem;
-  padding: 0.45rem 0.85rem;
-  border-radius: 8px;
-  font-size: 0.82rem;
+  gap: 0.4rem;
+  padding: 0.35rem 0.75rem;
+  border-radius: 6px;
+  font-size: 0.78rem;
   font-weight: 700;
   border: 1.5px solid transparent;
   cursor: pointer;

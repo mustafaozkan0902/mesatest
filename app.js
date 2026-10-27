@@ -1840,25 +1840,28 @@ class SantiyeApp {
             <div class="todo-left-content">
               <div class="todo-num-badge">${m.isCompleted ? '✓' : (idx + 1)}</div>
               <div class="todo-body-wrap">
-                <div class="todo-tags-row">
-                  <span class="todo-badge-week">📅 ${weekLabel}</span>
-                  <span class="todo-badge-loc">${locLabel}</span>
-                  <span class="todo-badge-disc">${action.discipline || 'Genel'}</span>
-                  <span class="todo-badge-resp">👷 <strong>${this.escapeHtml(action.responsible || 'Sorumlu Belirtilmedi')}</strong></span>
-                </div>
-                <div class="todo-title-text" title="${this.escapeHtml(action.title)}">
+                <span class="todo-badge-week">📅 ${weekLabel}</span>
+                <span class="todo-badge-loc">${locLabel}</span>
+                <span class="todo-badge-disc">${action.discipline || 'Genel'}</span>
+                
+                <span class="todo-title-text" title="${this.escapeHtml(action.title)}">
                   ${this.escapeHtml(action.title)}
-                </div>
-                <div class="todo-sub-meta">
-                  <span>🔒 İlk Hedef: <strong>${this.formatDateTR(action.initialPromiseDate)}</strong> (${weekLabel})</span>
-                  <span>➔ Güncel Plan: <strong style="color:${m.diffDaysFromCurrent > 0 && !m.isCompleted ? '#dc2626' : '#0284c7'};">${this.formatDateTR(action.currentPromiseDate)}</strong></span>
-                  ${m.revisionCount > 0 && !m.isCompleted ? `<span style="color:#b45309; font-weight:700;">(${m.revisionCount} Kez Ertelendi)</span>` : ''}
-                  ${action.history && action.history.length > 1 && action.history[action.history.length - 1].reason && !m.isCompleted ? `
-                    <span style="color:#b91c1c; background:#fee2e2; padding:0.1rem 0.45rem; border-radius:4px; font-weight:600;">
-                      Son Mazeret: ${this.escapeHtml(action.history[action.history.length - 1].reason)}
-                    </span>
-                  ` : ''}
-                </div>
+                </span>
+
+                <span class="todo-meta-dates">
+                  <span title="İlk verilen söz tarihi (asla silinmez)">🔒 İlk Hedef: <strong>${this.formatDateTR(action.initialPromiseDate)}</strong></span>
+                  <span class="meta-date-arrow">➔</span>
+                  <span title="Güncel planlanan bitiş">Güncel: <strong style="color:${m.diffDaysFromCurrent > 0 && !m.isCompleted ? '#dc2626' : '#0284c7'};">${this.formatDateTR(action.currentPromiseDate)}</strong></span>
+                  ${m.revisionCount > 0 && !m.isCompleted ? `<span style="color:#b45309; font-weight:700;">(${m.revisionCount}. Erteleme)</span>` : ''}
+                </span>
+
+                <span class="todo-badge-resp" title="Sorumlu Kişi / Taşeron">👷 <strong>${this.escapeHtml(action.responsible || 'Sorumlu Belirtilmedi')}</strong></span>
+
+                ${action.history && action.history.length > 1 && action.history[action.history.length - 1].reason && !m.isCompleted ? `
+                  <span class="todo-badge-reason" title="Son toplantı mazereti: ${this.escapeHtml(action.history[action.history.length - 1].reason)}">
+                    ⚠️ Mazeret: ${this.escapeHtml(action.history[action.history.length - 1].reason)}
+                  </span>
+                ` : ''}
               </div>
             </div>
 
