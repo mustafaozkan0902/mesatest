@@ -1708,6 +1708,80 @@ body {
   border-color: #0284c7;
 }
 
+/* Section Headers & Completed Separation */
+.todo-section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.5rem 0.25rem 0.25rem;
+  margin-bottom: 0.35rem;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.todo-count-badge {
+  font-size: 0.72rem;
+  font-weight: 700;
+  padding: 0.15rem 0.55rem;
+  border-radius: 9999px;
+}
+.todo-count-badge.badge-active {
+  background: #e0f2fe;
+  color: #0369a1;
+  border: 1px solid #bae6fd;
+}
+.todo-count-badge.badge-completed {
+  background: #dcfce7;
+  color: #15803d;
+  border: 1px solid #86efac;
+}
+
+.todo-completed-section {
+  margin-top: 1.75rem;
+  padding-top: 1.25rem;
+  border-top: 2px dashed #cbd5e1;
+}
+
+.todo-completed-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: #f0fdf4;
+  border: 1.5px solid #bbf7d0;
+  border-radius: 8px;
+  padding: 0.65rem 1rem;
+  cursor: pointer;
+  user-select: none;
+  transition: all 0.15s ease;
+  margin-bottom: 0.75rem;
+}
+.todo-completed-header:hover {
+  background: #dcfce7;
+  border-color: #86efac;
+}
+
+.todo-toggle-btn {
+  background: white;
+  border: 1px solid #86efac;
+  color: #166534;
+  font-size: 0.75rem;
+  font-weight: 700;
+  padding: 0.25rem 0.65rem;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+.todo-toggle-btn:hover {
+  background: #166534;
+  color: white;
+}
+
+.todo-completed-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
 @media (max-width: 768px) {
   .todo-item-card {
     flex-direction: column;

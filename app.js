@@ -10,6 +10,7 @@ class SantiyeApp {
     this.matrixFilter = 'all';
     this.currentMeetingFilter = 'all';
     this.meetingViewMode = 'todo';
+    this.isCompletedCollapsed = localStorage.getItem('santiye_completed_collapsed') === 'true';
     this.activeBlockId = 1;
     this.isAdmin = false;
     this.adminToken = localStorage.getItem('santiye_admin_token') || null;
@@ -1507,7 +1508,7 @@ class SantiyeApp {
       action.completedDate = null;
       action.completionNote = '';
       this.addLog('Toplantı Sözü Geri Alındı', `"${action.title}" tamamlandı durumu geri alındı.`, 'info', action.unitId || 'all');
-      this.showToast('Madde tekrar aktif (yapılacak) duruma getirildi.', 'info');
+      this.showToast('Madde tekrar aktif duruma getirildi ve en üste taşındı. ⚡', 'info');
     } else {
       // Mark as completed
       const todayStr = new Date().toISOString().split('T')[0];
@@ -1526,12 +1527,20 @@ class SantiyeApp {
         status: 'tamamlandi'
       });
       this.addLog('Toplantı Sözü Tamamlandı', `"${action.title}" tamamlandı olarak işaretlendi.`, 'success', action.unitId || 'all');
-      this.showToast('Madde tamamlandı (tiklendi)! 🎉', 'success');
+      this.showToast('Madde tamamlandı olarak işaretlendi ve alta taşındı! ✅', 'success');
     }
 
     await this.saveData(this.data);
     this.renderMeetings();
     this.renderBuilding();
+  }
+
+  toggleCompletedSection() {
+    this.isCompletedCollapsed = !this.isCompletedCollapsed;
+    try {
+      localStorage.setItem('santiye_completed_collapsed', this.isCompletedCollapsed ? 'true' : 'false');
+    } catch(e) {}
+    this.renderMeetings();
   }
 
   getActionDelayMetrics(action) {
@@ -1788,101 +1797,130 @@ class SantiyeApp {
       return;
     }
 
-    // --- VIEW MODE 1: TO-DO CHECKLIST (BÜYÜK RESİM & SAĞINDA TİK) ---
-    if (this.meetingViewMode === 'todo') {
-      let todoHtml = '<div class="todo-list-container">';
-      filtered.forEach((action, idx) => {
-        const m = this.getActionDelayMetrics(action);
-        let rowClass = 'todo-item-card';
-        if (m.isCompleted) rowClass += ' done';
-        else if (m.diffDaysFromInitial > 0) rowClass += ' overdue';
-        else if (m.revisionCount > 0) rowClass += ' pending';
+    // Split into Active (Open/Overdue/Pending) and Completed
+    const openActions = [];
+    const completedActions = [];
 
-        const weekLabel = this.getActionWeek(action);
+    filtered.forEach(action => {
+      const m = this.getActionDelayMetrics(action);
+      if (m.isCompleted) {
+        completedActions.push(action);
+      } else {
+        openActions.push(action);
+      }
+    });
 
-        // Location label
-        let locLabel = '🏢 Genel Şantiye';
-        if (action.blockId && action.blockId !== 'all') {
-          const b = this.data.blocks?.find(x => String(x.id) === String(action.blockId));
-          const bName = b ? b.name : `Blok ${action.blockId}`;
-          const f = this.data.floors?.find(x => x.id === action.floorId);
-          const fName = f ? f.name : (action.floorId === 'all' ? 'Tüm Katlar' : action.floorId);
-          locLabel = `🏢 ${bName} • ${fName}`;
-        }
+    // Sort open actions:
+    // 1. Overdue items come first, sorted by biggest delay (most days overdue) first
+    // 2. Pending items come next, sorted by createdAt descending (newest additions first)
+    openActions.sort((a, b) => {
+      const ma = this.getActionDelayMetrics(a);
+      const mb = this.getActionDelayMetrics(b);
+      if (ma.isOverdue && !mb.isOverdue) return -1;
+      if (!ma.isOverdue && mb.isOverdue) return 1;
+      if (ma.isOverdue && mb.isOverdue) {
+        return mb.diffDaysFromInitial - ma.diffDaysFromInitial;
+      }
+      const dateA = a.createdAt || a.initialPromiseDate || '';
+      const dateB = b.createdAt || b.initialPromiseDate || '';
+      return dateB.localeCompare(dateA);
+    });
 
-        // Sağdaki Tik / Durum Butonu
-        let tickHtml = '';
-        if (m.isCompleted) {
-          tickHtml = `
-            <button class="todo-tick-badge tick-done" title="Söz Tamamlandı ✓ (Durumu geri almak için tıklayın)" onclick="event.stopPropagation(); app.toggleActionComplete('${action.id}')">
-              <span style="font-size: 1.15rem;">✅</span>
-              <span>TAMAMLANDI</span>
-            </button>
-          `;
-        } else if (m.diffDaysFromInitial > 0) {
-          tickHtml = `
-            <button class="todo-tick-badge tick-overdue" title="Tamamlandı olarak işaretlemek (tiklemek) için tıklayın" onclick="event.stopPropagation(); app.toggleActionComplete('${action.id}')">
-              <span style="font-size: 1.15rem;">⚠️</span>
-              <span>${m.diffDaysFromInitial} GÜN GECİKTİ (${m.revisionCount > 0 ? m.revisionCount + '. Erteleme' : 'Gecikmede'})</span>
-            </button>
-          `;
-        } else {
-          tickHtml = `
-            <button class="todo-tick-badge tick-pending" title="Tamamlandı olarak işaretlemek (tiklemek) için tıklayın" onclick="event.stopPropagation(); app.toggleActionComplete('${action.id}')">
-              <span style="font-size: 1.15rem;">⏳</span>
-              <span>SÜRESİNDE (${this.formatDateTR(action.currentPromiseDate)})</span>
-            </button>
-          `;
-        }
+    // Sort completed actions: most recently completed first
+    completedActions.sort((a, b) => {
+      const dateA = a.completedDate || a.createdAt || '';
+      const dateB = b.completedDate || b.createdAt || '';
+      return dateB.localeCompare(dateA);
+    });
 
-        todoHtml += `
-          <div class="${rowClass}" onclick="app.openActionDetailModal('${action.id}')">
-            <div class="todo-left-content">
-              <div class="todo-num-badge">${m.isCompleted ? '✓' : (idx + 1)}</div>
-              <div class="todo-body-wrap">
-                <span class="todo-badge-week">📅 ${weekLabel}</span>
-                <span class="todo-badge-loc">${locLabel}</span>
-                <span class="todo-badge-disc">${action.discipline || 'Genel'}</span>
-                
-                <span class="todo-title-text" title="${this.escapeHtml(action.title)}">
-                  ${this.escapeHtml(action.title)}
+    // Helper: Render single To-Do row
+    const renderTodoRow = (action, idx) => {
+      const m = this.getActionDelayMetrics(action);
+      let rowClass = 'todo-item-card';
+      if (m.isCompleted) rowClass += ' done';
+      else if (m.diffDaysFromInitial > 0) rowClass += ' overdue';
+      else if (m.revisionCount > 0) rowClass += ' pending';
+
+      const weekLabel = this.getActionWeek(action);
+
+      // Location label
+      let locLabel = '🏢 Genel Şantiye';
+      if (action.blockId && action.blockId !== 'all') {
+        const b = this.data.blocks?.find(x => String(x.id) === String(action.blockId));
+        const bName = b ? b.name : `Blok ${action.blockId}`;
+        const f = this.data.floors?.find(x => x.id === action.floorId);
+        const fName = f ? f.name : (action.floorId === 'all' ? 'Tüm Katlar' : action.floorId);
+        locLabel = `🏢 ${bName} • ${fName}`;
+      }
+
+      // Sağdaki Tik / Durum Butonu
+      let tickHtml = '';
+      if (m.isCompleted) {
+        tickHtml = `
+          <button class="todo-tick-badge tick-done" title="Söz Tamamlandı ✓ (Durumu aktiflere geri almak için tıklayın)" onclick="event.stopPropagation(); app.toggleActionComplete('${action.id}')">
+            <span style="font-size: 1.15rem;">✅</span>
+            <span>TAMAMLANDI</span>
+          </button>
+        `;
+      } else if (m.diffDaysFromInitial > 0) {
+        tickHtml = `
+          <button class="todo-tick-badge tick-overdue" title="Tamamlandı olarak işaretlemek (tamamlananlara taşımak) için tıklayın" onclick="event.stopPropagation(); app.toggleActionComplete('${action.id}')">
+            <span style="font-size: 1.15rem;">⚠️</span>
+            <span>${m.diffDaysFromInitial} GÜN GECİKTİ (${m.revisionCount > 0 ? m.revisionCount + '. Erteleme' : 'Gecikmede'})</span>
+          </button>
+        `;
+      } else {
+        tickHtml = `
+          <button class="todo-tick-badge tick-pending" title="Tamamlandı olarak işaretlemek (tamamlananlara taşımak) için tıklayın" onclick="event.stopPropagation(); app.toggleActionComplete('${action.id}')">
+            <span style="font-size: 1.15rem;">⏳</span>
+            <span>SÜRESİNDE (${this.formatDateTR(action.currentPromiseDate)})</span>
+          </button>
+        `;
+      }
+
+      return `
+        <div class="${rowClass}" onclick="app.openActionDetailModal('${action.id}')">
+          <div class="todo-left-content">
+            <div class="todo-num-badge">${m.isCompleted ? '✓' : (idx + 1)}</div>
+            <div class="todo-body-wrap">
+              <span class="todo-badge-week">📅 ${weekLabel}</span>
+              <span class="todo-badge-loc">${locLabel}</span>
+              <span class="todo-badge-disc">${action.discipline || 'Genel'}</span>
+              
+              <span class="todo-title-text" title="${this.escapeHtml(action.title)}">
+                ${this.escapeHtml(action.title)}
+              </span>
+
+              <span class="todo-meta-dates">
+                <span title="İlk verilen söz tarihi (asla silinmez)">🔒 İlk Hedef: <strong>${this.formatDateTR(action.initialPromiseDate)}</strong></span>
+                <span class="meta-date-arrow">➔</span>
+                <span title="Güncel planlanan bitiş">Güncel: <strong style="color:${m.diffDaysFromCurrent > 0 && !m.isCompleted ? '#dc2626' : '#0284c7'};">${this.formatDateTR(action.currentPromiseDate)}</strong></span>
+                ${m.revisionCount > 0 && !m.isCompleted ? `<span style="color:#b45309; font-weight:700;">(${m.revisionCount}. Erteleme)</span>` : ''}
+              </span>
+
+              <span class="todo-badge-resp" title="Sorumlu Kişi / Taşeron">👷 <strong>${this.escapeHtml(action.responsible || 'Sorumlu Belirtilmedi')}</strong></span>
+
+              ${action.history && action.history.length > 1 && action.history[action.history.length - 1].reason && !m.isCompleted ? `
+                <span class="todo-badge-reason" title="Son toplantı mazereti: ${this.escapeHtml(action.history[action.history.length - 1].reason)}">
+                  ⚠️ Mazeret: ${this.escapeHtml(action.history[action.history.length - 1].reason)}
                 </span>
-
-                <span class="todo-meta-dates">
-                  <span title="İlk verilen söz tarihi (asla silinmez)">🔒 İlk Hedef: <strong>${this.formatDateTR(action.initialPromiseDate)}</strong></span>
-                  <span class="meta-date-arrow">➔</span>
-                  <span title="Güncel planlanan bitiş">Güncel: <strong style="color:${m.diffDaysFromCurrent > 0 && !m.isCompleted ? '#dc2626' : '#0284c7'};">${this.formatDateTR(action.currentPromiseDate)}</strong></span>
-                  ${m.revisionCount > 0 && !m.isCompleted ? `<span style="color:#b45309; font-weight:700;">(${m.revisionCount}. Erteleme)</span>` : ''}
-                </span>
-
-                <span class="todo-badge-resp" title="Sorumlu Kişi / Taşeron">👷 <strong>${this.escapeHtml(action.responsible || 'Sorumlu Belirtilmedi')}</strong></span>
-
-                ${action.history && action.history.length > 1 && action.history[action.history.length - 1].reason && !m.isCompleted ? `
-                  <span class="todo-badge-reason" title="Son toplantı mazereti: ${this.escapeHtml(action.history[action.history.length - 1].reason)}">
-                    ⚠️ Mazeret: ${this.escapeHtml(action.history[action.history.length - 1].reason)}
-                  </span>
-                ` : ''}
-              </div>
-            </div>
-
-            <div class="todo-right-status">
-              ${tickHtml}
-              <button class="todo-open-detail-btn" onclick="event.stopPropagation(); app.openActionDetailModal('${action.id}')">
-                <span>🔍</span>
-                <span>Detay & Geçmiş</span>
-              </button>
+              ` : ''}
             </div>
           </div>
-        `;
-      });
-      todoHtml += '</div>';
-      container.innerHTML = todoHtml;
-      return;
-    }
 
-    // --- VIEW MODE 2: GENİŞ KARTLAR GÖRÜNÜMÜ ---
-    let html = '';
-    filtered.forEach(action => {
+          <div class="todo-right-status">
+            ${tickHtml}
+            <button class="todo-open-detail-btn" onclick="event.stopPropagation(); app.openActionDetailModal('${action.id}')">
+              <span>🔍</span>
+              <span>Detay & Geçmiş</span>
+            </button>
+          </div>
+        </div>
+      `;
+    };
+
+    // Helper: Render single Full Card
+    const renderCard = (action) => {
       const m = this.getActionDelayMetrics(action);
       let cardStatusClass = 'meeting-action-card';
       if (m.isCompleted) cardStatusClass += ' status-done';
@@ -1948,7 +1986,7 @@ class SantiyeApp {
       });
       timelineHtml += '</div>';
 
-      html += `
+      return `
         <div class="${cardStatusClass}">
           <div class="action-card-header">
             <div class="action-tags">
@@ -2037,7 +2075,110 @@ class SantiyeApp {
           </div>
         </div>
       `;
-    });
+    };
+
+    // --- VIEW MODE 1: TO-DO CHECKLIST (BÜYÜK RESİM & SAĞINDA TİK) ---
+    if (this.meetingViewMode === 'todo') {
+      let todoHtml = '<div class="todo-list-container">';
+
+      // 1. OPEN / ACTIVE ACTIONS (At the top!)
+      if (openActions.length > 0) {
+        if (completedActions.length > 0) {
+          todoHtml += `
+            <div class="todo-section-header">
+              <div style="display:flex; align-items:center; gap:0.5rem;">
+                <span style="font-size:1.1rem;">⚡</span>
+                <span style="font-weight:800; color:#1e293b; font-size:0.95rem;">Aktif Şantiye To-Do Listesi & Bekleyen Kararlar</span>
+                <span class="todo-count-badge badge-active">${openActions.length} Bekleyen</span>
+              </div>
+            </div>
+          `;
+        }
+        openActions.forEach((action, idx) => {
+          todoHtml += renderTodoRow(action, idx);
+        });
+      } else if (completedActions.length > 0 && this.currentMeetingFilter !== 'done') {
+        todoHtml += `
+          <div style="padding: 1.5rem 1rem; background: #f0fdf4; border: 1.5px dashed #86efac; border-radius: 8px; text-align: center; color: #166534; font-size: 0.9rem; font-weight: 700;">
+            🎉 Harika! Bekleyen veya geciken açık bir madde kalmadı. Tüm taahhütler tamamlandı!
+          </div>
+        `;
+      }
+
+      // 2. COMPLETED ACTIONS (Separated at the very bottom!)
+      if (completedActions.length > 0) {
+        const isCollapsed = this.isCompletedCollapsed && this.currentMeetingFilter !== 'done';
+        todoHtml += `
+          <div class="todo-completed-section">
+            <div class="todo-completed-header" onclick="app.toggleCompletedSection()">
+              <div style="display:flex; align-items:center; gap:0.5rem;">
+                <span style="font-size:1.1rem;">✅</span>
+                <span style="font-weight:800; color:#166534; font-size:0.95rem;">Tamamlanan Sözler & Biten İşler</span>
+                <span class="todo-count-badge badge-completed">${completedActions.length} Tamamlandı</span>
+              </div>
+              <button class="todo-toggle-btn" type="button" onclick="event.stopPropagation(); app.toggleCompletedSection()">
+                ${isCollapsed ? 'Maddeleri Göster (▼)' : 'Maddeleri Gizle (▲)'}
+              </button>
+            </div>
+            <div class="todo-completed-list" style="display: ${isCollapsed ? 'none' : 'flex'};">
+        `;
+        completedActions.forEach((action, idx) => {
+          todoHtml += renderTodoRow(action, idx);
+        });
+        todoHtml += `
+            </div>
+          </div>
+        `;
+      }
+
+      todoHtml += '</div>';
+      container.innerHTML = todoHtml;
+      return;
+    }
+
+    // --- VIEW MODE 2: GENİŞ KARTLAR GÖRÜNÜMÜ ---
+    let html = '';
+    if (openActions.length > 0) {
+      if (completedActions.length > 0) {
+        html += `
+          <div class="todo-section-header" style="margin-bottom:0.75rem;">
+            <div style="display:flex; align-items:center; gap:0.5rem;">
+              <span style="font-size:1.1rem;">⚡</span>
+              <span style="font-weight:800; color:#1e293b; font-size:0.95rem;">Aktif & Bekleyen Kararlar</span>
+              <span class="todo-count-badge badge-active">${openActions.length} Bekleyen</span>
+            </div>
+          </div>
+        `;
+      }
+      openActions.forEach(action => {
+        html += renderCard(action);
+      });
+    }
+
+    if (completedActions.length > 0) {
+      const isCollapsed = this.isCompletedCollapsed && this.currentMeetingFilter !== 'done';
+      html += `
+        <div class="todo-completed-section">
+          <div class="todo-completed-header" onclick="app.toggleCompletedSection()">
+            <div style="display:flex; align-items:center; gap:0.5rem;">
+              <span style="font-size:1.1rem;">✅</span>
+              <span style="font-weight:800; color:#166534; font-size:0.95rem;">Tamamlanan Sözler & Biten İşler</span>
+              <span class="todo-count-badge badge-completed">${completedActions.length} Tamamlandı</span>
+            </div>
+            <button class="todo-toggle-btn" type="button" onclick="event.stopPropagation(); app.toggleCompletedSection()">
+              ${isCollapsed ? 'Maddeleri Göster (▼)' : 'Maddeleri Gizle (▲)'}
+            </button>
+          </div>
+          <div style="display: ${isCollapsed ? 'none' : 'flex'}; flex-direction: column; gap: 1rem;">
+      `;
+      completedActions.forEach(action => {
+        html += renderCard(action);
+      });
+      html += `
+          </div>
+        </div>
+      `;
+    }
 
     container.innerHTML = html;
   }
