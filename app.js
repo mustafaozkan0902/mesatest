@@ -16,6 +16,8 @@ class SantiyeApp {
     this.currentRole = localStorage.getItem('santiye_active_role') || (this.adminToken ? 'admin' : 'viewer');
     this.isAdmin = (this.currentRole === 'admin');
     this.internalPlanFilterStatus = 'all';
+    this.internalPlanViewMode = 'excel';
+    this.internalPlanScheduleStartDate = '2026-10-28';
     this.privateNoteFilterCategory = 'all';
     this.privateNoteFilterColor = 'all';
     this.selectedNoteColor = 'amber';
@@ -3078,20 +3080,89 @@ class SantiyeApp {
   }
 
   // =========================================================================
-  // INTERNAL WORK PLAN (İÇ SAHA EKİBİ OPERASYONEL İŞ PLANI)
+  // INTERNAL WORK PLAN (İÇ SAHA EKİBİ OPERASYONEL İŞ PLANI - 1 AYLIK EXCEL ÇİZELGESİ)
   // =========================================================================
-  renderInternalPlan() {
-    const container = document.getElementById('internalTasksContainer');
-    if (!container) return;
 
+  getTeamInfo(teamName) {
+    const raw = (teamName || '').toLowerCase();
+    if (raw.includes('test')) {
+      return {
+        label: 'Elektrik Test Ekibi',
+        short: '⚡ Test Ekibi',
+        badgeClass: 'team-col-test',
+        themeClass: 'team-theme-test',
+        color: '#0284c7'
+      };
+    } else if (raw.includes('pano')) {
+      return {
+        label: 'Pano Montaj Ekibi',
+        short: '🔌 Pano Ekibi',
+        badgeClass: 'team-col-pano',
+        themeClass: 'team-theme-pano',
+        color: '#7c3aed'
+      };
+    } else if (raw.includes('kablo') || raw.includes('tava')) {
+      return {
+        label: 'Kablo & Tava Ekibi',
+        short: '🪜 Tava/Kablo',
+        badgeClass: 'team-col-kablo',
+        themeClass: 'team-theme-kablo',
+        color: '#d97706'
+      };
+    } else if (raw.includes('mühendis') || raw.includes('ölçüm')) {
+      return {
+        label: 'Saha Mühendisliği',
+        short: '📐 Mühendislik',
+        badgeClass: 'team-col-muh',
+        themeClass: 'team-theme-muh',
+        color: '#059669'
+      };
+    } else {
+      const shortText = teamName ? teamName.substring(0, 16) : 'Saha Ekibi';
+      return {
+        label: teamName || 'Saha Ekibi',
+        short: `👷 ${shortText}`,
+        badgeClass: 'team-col-genel',
+        themeClass: 'team-theme-genel',
+        color: '#64748b'
+      };
+    }
+  }
+
+  setInternalViewMode(mode) {
+    this.internalPlanViewMode = mode;
+    const btnExcel = document.getElementById('btnViewModeExcel');
+    const btnCards = document.getElementById('btnViewModeCards');
+    if (btnExcel) btnExcel.classList.toggle('active', mode === 'excel');
+    if (btnCards) btnCards.classList.toggle('active', mode === 'cards');
+    this.renderInternalPlan();
+  }
+
+  changeSchedulePeriod(offsetDays) {
+    const cur = new Date(this.internalPlanScheduleStartDate || '2026-10-28');
+    cur.setDate(cur.getDate() + offsetDays);
+    this.internalPlanScheduleStartDate = cur.toISOString().split('T')[0];
+    this.renderExcelSchedule();
+  }
+
+  resetScheduleToToday() {
+    this.internalPlanScheduleStartDate = '2026-10-28';
+    this.renderExcelSchedule();
+  }
+
+  renderInternalPlan() {
     if (!this.hasPermission('internal_plan', 'view')) {
-      container.innerHTML = `
+      const excelCont = document.getElementById('internalExcelScheduleContainer');
+      const cardsCont = document.getElementById('internalTasksCardsContainer');
+      const msg = `
         <div style="padding: 3rem; text-align: center; color: #dc2626; background: #fef2f2; border: 1px solid #fecaca; border-radius: 10px;">
           <div style="font-size: 2.5rem; margin-bottom: 0.5rem;">📅</div>
           <h3 style="font-weight: 700; margin-bottom: 0.5rem;">Erişim İzni Yok</h3>
           <p style="font-size: 0.9rem; color: #7f1d1d;">Bu bölüm iç elektrik ekibine ve yöneticilere özeldir. Ana firma (MESA) için gizlenmiştir.</p>
         </div>
       `;
+      if (excelCont) excelCont.innerHTML = msg;
+      if (cardsCont) cardsCont.innerHTML = '';
       return;
     }
 
@@ -3113,51 +3184,291 @@ class SantiyeApp {
     if (kpiCompEl) kpiCompEl.innerText = completed;
     if (kpiRateEl) kpiRateEl.innerText = `%${rate}`;
 
-    // Populate Week Dropdown if not currently selected
-    const weekSelect = document.getElementById('internalFilterWeek');
-    if (weekSelect) {
-      const curVal = weekSelect.value || 'all';
-      const weeks = Array.from(new Set(allTasks.map(t => t.week || 44))).sort((a,b) => b - a);
-      let opts = '<option value="all">Tüm Haftalar</option>';
-      weeks.forEach(w => {
-        opts += `<option value="${w}">${w}. Hafta</option>`;
-      });
-      weekSelect.innerHTML = opts;
-      weekSelect.value = curVal;
+    const excelCont = document.getElementById('internalExcelScheduleContainer');
+    const cardsCont = document.getElementById('internalTasksCardsContainer');
+
+    if (this.internalPlanViewMode === 'cards') {
+      if (excelCont) excelCont.style.display = 'none';
+      if (cardsCont) {
+        cardsCont.style.display = 'flex';
+        this.renderInternalTasksCards();
+      }
+    } else {
+      if (cardsCont) cardsCont.style.display = 'none';
+      if (excelCont) {
+        excelCont.style.display = 'block';
+        this.renderExcelSchedule();
+      }
     }
+  }
+
+  // --- 1 AYLIK EXCEL ÇİZELGESİ (GANTT SCHEDULE MATRIX) ---
+  renderExcelSchedule() {
+    const container = document.getElementById('internalExcelScheduleContainer');
+    if (!container) return;
+
+    const allTasks = [...(this.data?.internalWorkPlan || [])];
 
     // Filter tasks
-    let tasks = [...allTasks];
-    const filterStatus = this.internalPlanFilterStatus || 'all';
-    if (filterStatus !== 'all') {
-      tasks = tasks.filter(t => t.status === filterStatus);
+    const teamFilter = document.getElementById('internalFilterTeam')?.value || 'all';
+    const statusFilter = document.getElementById('internalFilterStatus')?.value || 'all';
+    const catFilter = document.getElementById('internalFilterCategory')?.value || 'all';
+
+    let tasks = allTasks.filter(t => {
+      if (statusFilter !== 'all' && t.status !== statusFilter) return false;
+      if (catFilter !== 'all' && t.category !== catFilter) return false;
+      if (teamFilter !== 'all') {
+        const team = this.getTeamInfo(t.assignedTo);
+        if (teamFilter === 'test' && !team.badgeClass.includes('test')) return false;
+        if (teamFilter === 'pano' && !team.badgeClass.includes('pano')) return false;
+        if (teamFilter === 'kablo' && !team.badgeClass.includes('kablo')) return false;
+        if (teamFilter === 'muh' && !team.badgeClass.includes('muh')) return false;
+      }
+      return true;
+    });
+
+    // Generate 30 days starting from this.internalPlanScheduleStartDate
+    const startDate = new Date(this.internalPlanScheduleStartDate || '2026-10-28');
+    const days = [];
+    const dayNames = ['Paz', 'Pzt', 'Sal', 'Çar', 'Per', 'Cum', 'Cmt'];
+    const monthNames = ['Oca', 'Şub', 'Mar', 'Nis', 'May', 'Haz', 'Tem', 'Ağu', 'Eyl', 'Eki', 'Kas', 'Ara'];
+    const todayStr = '2026-10-28'; // Current reference shantye time
+
+    for (let i = 0; i < 30; i++) {
+      const d = new Date(startDate);
+      d.setDate(d.getDate() + i);
+      const iso = d.toISOString().split('T')[0];
+      days.push({
+        dateObj: d,
+        iso: iso,
+        dayNum: String(d.getDate()).padStart(2, '0'),
+        dayName: dayNames[d.getDay()],
+        monthName: monthNames[d.getMonth()],
+        year: d.getFullYear(),
+        isWeekend: d.getDay() === 0 || d.getDay() === 6,
+        isToday: iso === todayStr
+      });
     }
 
-    const selectedWeek = weekSelect ? weekSelect.value : 'all';
-    if (selectedWeek && selectedWeek !== 'all') {
-      tasks = tasks.filter(t => String(t.week) === String(selectedWeek));
+    // Update Period Label
+    const firstDay = days[0];
+    const lastDay = days[days.length - 1];
+    const periodLabelEl = document.getElementById('excelSchedulePeriodLabel');
+    if (periodLabelEl) {
+      periodLabelEl.innerText = `${firstDay.dayNum} ${firstDay.monthName} - ${lastDay.dayNum} ${lastDay.monthName} ${lastDay.year} (1 Aylık Plan)`;
     }
 
-    const catSelect = document.getElementById('internalFilterCategory');
-    const selectedCat = catSelect ? catSelect.value : 'all';
-    if (selectedCat && selectedCat !== 'all') {
-      tasks = tasks.filter(t => t.category === selectedCat);
-    }
+    // Group days by ISO week for Top Header row
+    const weekGroups = [];
+    let curGroup = null;
+    days.forEach(day => {
+      const wNum = this.getISOWeek(day.iso) || 44;
+      const key = `${day.monthName}_W${wNum}`;
+      if (!curGroup || curGroup.key !== key) {
+        curGroup = { key: key, count: 1, month: day.monthName, week: wNum };
+        weekGroups.push(curGroup);
+      } else {
+        curGroup.count++;
+      }
+    });
 
-    // Sort: in_progress first, pending next, completed last. Then by priority.
-    const statusWeight = { in_progress: 1, pending: 2, completed: 3 };
-    const priorityWeight = { critical: 1, high: 2, medium: 3, low: 4 };
+    // Top Header Row 1 (Grouped Weeks)
+    const headerRow1 = `
+      <tr>
+        <th class="excel-col-num" rowspan="2">#</th>
+        <th class="excel-col-title" rowspan="2">İş / İmalat Başlığı</th>
+        <th class="excel-col-team" rowspan="2">Sorumlu Ekip</th>
+        <th style="width: 85px; min-width: 85px; max-width: 85px; font-size:0.75rem;" rowspan="2">Hedef</th>
+        <th style="width: 80px; min-width: 80px; max-width: 80px; font-size:0.75rem;" rowspan="2">Durum</th>
+        ${weekGroups.map(g => `<th class="excel-header-group" colspan="${g.count}">📅 ${g.week}. Hafta (${g.month})</th>`).join('')}
+      </tr>
+    `;
 
-    tasks.sort((a, b) => {
-      const swA = statusWeight[a.status] || 2;
-      const swB = statusWeight[b.status] || 2;
-      if (swA !== swB) return swA - swB;
+    // Header Row 2 (Daily columns)
+    const headerRow2 = `
+      <tr>
+        ${days.map(d => `
+          <th class="excel-day-th ${d.isWeekend ? 'weekend' : ''} ${d.isToday ? 'today' : ''}" title="${d.dayNum} ${d.monthName} ${d.year} (${d.dayName})">
+            <div>${d.dayNum}</div>
+            <div style="font-size:0.62rem; font-weight:normal; opacity:0.85;">${d.dayName}</div>
+          </th>
+        `).join('')}
+      </tr>
+    `;
 
-      const pwA = priorityWeight[a.priority] || 3;
-      const pwB = priorityWeight[b.priority] || 3;
-      if (pwA !== pwB) return pwA - pwB;
+    // Calculate daily active crew count across the 30 days
+    const dailyActiveCounts = new Array(days.length).fill(0);
 
-      return (a.targetDate || '').localeCompare(b.targetDate || '');
+    // Build Task Rows
+    const canEdit = this.hasPermission('internal_plan', 'edit');
+
+    const bodyRows = tasks.map((task, idx) => {
+      const team = this.getTeamInfo(task.assignedTo);
+
+      // Determine matching day range
+      const tStart = task.startDate || '2026-10-28';
+      const tEnd = task.targetDate || task.startDate || '2026-10-31';
+
+      // Find indices of active days within the visible 30 days
+      const activeIndices = [];
+      days.forEach((day, dIdx) => {
+        if (day.iso >= tStart && day.iso <= tEnd) {
+          activeIndices.push(dIdx);
+          dailyActiveCounts[dIdx]++;
+        }
+      });
+
+      // Status badge
+      let statusBadge = '<span class="stage-val-badge badge-wait" style="font-size:0.68rem; padding:1px 5px;">⏳ Bekliyor</span>';
+      if (task.status === 'in_progress') {
+        statusBadge = '<span class="stage-val-badge badge-prog" style="font-size:0.68rem; padding:1px 5px;">🚀 Sürüyor</span>';
+      } else if (task.status === 'completed') {
+        statusBadge = '<span class="stage-val-badge badge-ok" style="font-size:0.68rem; padding:1px 5px;">✅ Bitti</span>';
+      }
+
+      // 30 Day Cells
+      const dayCellsHtml = days.map((day, dIdx) => {
+        const isActive = activeIndices.includes(dIdx);
+        const isStart = activeIndices.length > 0 && dIdx === activeIndices[0];
+        const isEnd = activeIndices.length > 0 && dIdx === activeIndices[activeIndices.length - 1];
+
+        if (isActive) {
+          const theme = task.status === 'completed' ? 'team-theme-completed' : team.themeClass;
+          const showLabel = isStart || (activeIndices.length > 3 && dIdx === activeIndices[Math.floor(activeIndices.length / 2)]);
+
+          return `
+            <td class="excel-day-td active-day ${day.isWeekend ? 'weekend' : ''} ${day.isToday ? 'today-col' : ''}" 
+                onclick="app.editInternalTask('${task.id}')" 
+                title="${this.escapeHtml(task.title)} | ${team.label} (${task.startDate} - ${task.targetDate})">
+              <div class="excel-bar-block ${theme} ${isStart ? 'excel-bar-start' : ''} ${isEnd ? 'excel-bar-end' : ''}">
+                ${showLabel ? `<span>${team.short}</span>` : (task.status === 'completed' ? '✓' : '•')}
+              </div>
+            </td>
+          `;
+        } else {
+          return `
+            <td class="excel-day-td ${day.isWeekend ? 'weekend' : ''} ${day.isToday ? 'today-col' : ''}"></td>
+          `;
+        }
+      }).join('');
+
+      return `
+        <tr class="excel-row">
+          <td class="excel-col-num">${idx + 1}</td>
+          <td class="excel-col-title" onclick="app.editInternalTask('${task.id}')" style="cursor:pointer;" title="Düzenlemek için tıklayınız">
+            <div style="font-weight:700; color:#0f172a; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;" title="${this.escapeHtml(task.title)}">
+              ${this.escapeHtml(task.title)}
+            </div>
+            <div style="font-size:0.7rem; color:#64748b; display:flex; gap:4px; align-items:center; margin-top:2px;">
+              <span>🏷️ ${task.category || 'Genel'}</span>
+              <span>•</span>
+              <span style="color:#0284c7;">%${task.progress || 0}</span>
+            </div>
+          </td>
+          <td class="excel-col-team">
+            <span class="team-col-badge ${team.badgeClass}">
+              <strong>${team.short}</strong>
+            </span>
+          </td>
+          <td style="text-align:center; font-size:0.75rem; color:#475569; padding:0 4px !important;">
+            ${task.targetDate ? task.targetDate.split('-').slice(1).reverse().join('/') : '-'}
+          </td>
+          <td style="text-align:center; padding:0 4px !important;">
+            ${statusBadge}
+          </td>
+          ${dayCellsHtml}
+        </tr>
+      `;
+    }).join('');
+
+    // Summary Footer Row (Daily Active Crews on Site)
+    const summaryRow = `
+      <tr style="background:#f8fafc; font-weight:700; border-top:2px solid #cbd5e1;">
+        <td class="excel-col-num" style="background:#f1f5f9;">∑</td>
+        <td class="excel-col-title" style="background:#f1f5f9; font-size:0.76rem; color:#334155;">
+          <strong>👷 Günlük Sahadaki Aktif Görev / Ekip Sayısı</strong>
+        </td>
+        <td class="excel-col-team" style="background:#f1f5f9; font-size:0.74rem; color:#64748b;">
+          Toplam ${tasks.length} Görev
+        </td>
+        <td colspan="2" style="background:#f1f5f9; text-align:center; font-size:0.72rem; color:#64748b;">
+          Yoğunluk
+        </td>
+        ${dailyActiveCounts.map((cnt, i) => {
+          const d = days[i];
+          const bg = cnt > 0 ? (cnt >= 3 ? '#fee2e2; color:#991b1b;' : '#e0f2fe; color:#0369a1;') : 'transparent; color:#94a3b8;';
+          return `
+            <td class="excel-day-td ${d.isWeekend ? 'weekend' : ''} ${d.isToday ? 'today-col' : ''}" style="font-size:0.72rem; font-weight:800; text-align:center;">
+              <span style="display:inline-block; padding:1px 4px; border-radius:4px; background:${bg}">${cnt}</span>
+            </td>
+          `;
+        }).join('')}
+      </tr>
+    `;
+
+    // Legend HTML
+    const legendHtml = `
+      <div style="display:flex; justify-content:space-between; align-items:center; padding:0.65rem 1rem; background:#f8fafc; border-top:1px solid #e2e8f0; flex-wrap:wrap; gap:0.5rem; font-size:0.76rem;">
+        <div style="display:flex; gap:0.75rem; align-items:center; flex-wrap:wrap;">
+          <span style="font-weight:700; color:#334155;">Ekip Lejantı:</span>
+          <span class="excel-legend-item team-col-test">⚡ Elektrik Test Ekibi</span>
+          <span class="excel-legend-item team-col-pano">🔌 Pano Montaj Ekibi</span>
+          <span class="excel-legend-item team-col-kablo">🪜 Kablo & Tava Ekibi</span>
+          <span class="excel-legend-item team-col-muh">📐 Saha Mühendisliği</span>
+          <span class="excel-legend-item" style="background:#dcfce7; color:#15803d; border-color:#86efac;">✅ Tamamlandı (✓)</span>
+        </div>
+        <div style="color:#64748b; font-size:0.74rem;">
+          💡 İpucu: Herhangi bir satıra veya renkli güne tıklayarak görevi düzenleyebilir ve alt kontrol listesini güncelleyebilirsiniz.
+        </div>
+      </div>
+    `;
+
+    container.innerHTML = `
+      <div class="excel-schedule-wrap">
+        <div class="excel-schedule-scroll">
+          <table class="excel-table">
+            <thead>
+              ${headerRow1}
+              ${headerRow2}
+            </thead>
+            <tbody>
+              ${tasks.length > 0 ? bodyRows : `
+                <tr>
+                  <td colspan="${5 + days.length}" style="padding:2.5rem; text-align:center; color:#64748b;">
+                    Seçili filtrelere uygun iş planı bulunmuyor. Yeni bir görev eklemek için 'Yeni İş / Görev Ekle' butonunu kullanabilirsiniz.
+                  </td>
+                </tr>
+              `}
+              ${tasks.length > 0 ? summaryRow : ''}
+            </tbody>
+          </table>
+        </div>
+        ${legendHtml}
+      </div>
+    `;
+  }
+
+  // --- KART GÖRÜNÜMÜ (SUB-CHECKLIST DETAYLI LİSTE) ---
+  renderInternalTasksCards() {
+    const container = document.getElementById('internalTasksCardsContainer');
+    if (!container) return;
+
+    const allTasks = [...(this.data?.internalWorkPlan || [])];
+    const teamFilter = document.getElementById('internalFilterTeam')?.value || 'all';
+    const statusFilter = document.getElementById('internalFilterStatus')?.value || 'all';
+    const catFilter = document.getElementById('internalFilterCategory')?.value || 'all';
+
+    let tasks = allTasks.filter(t => {
+      if (statusFilter !== 'all' && t.status !== statusFilter) return false;
+      if (catFilter !== 'all' && t.category !== catFilter) return false;
+      if (teamFilter !== 'all') {
+        const team = this.getTeamInfo(t.assignedTo);
+        if (teamFilter === 'test' && !team.badgeClass.includes('test')) return false;
+        if (teamFilter === 'pano' && !team.badgeClass.includes('pano')) return false;
+        if (teamFilter === 'kablo' && !team.badgeClass.includes('kablo')) return false;
+        if (teamFilter === 'muh' && !team.badgeClass.includes('muh')) return false;
+      }
+      return true;
     });
 
     if (tasks.length === 0) {
@@ -3166,9 +3477,6 @@ class SantiyeApp {
           <div style="font-size: 2.5rem; margin-bottom: 0.5rem;">📅</div>
           <h3 style="font-size: 1.1rem; font-weight: 700; color: #334155;">İç Görev Bulunamadı</h3>
           <p style="font-size: 0.85rem; color: #64748b; margin-top: 0.25rem;">Seçili filtrelere uygun görev bulunmuyor.</p>
-          <button class="btn btn-primary" onclick="app.openNewInternalTaskModal()" style="margin-top: 1rem;">
-            <span>➕ Yeni İç Görev Ekle</span>
-          </button>
         </div>
       `;
       return;
@@ -3177,24 +3485,12 @@ class SantiyeApp {
     const canEdit = this.hasPermission('internal_plan', 'edit');
 
     const html = tasks.map(t => {
+      const team = this.getTeamInfo(t.assignedTo);
       let statusBadge = '<span class="stage-val-badge badge-wait">⏳ Beklemede</span>';
       if (t.status === 'in_progress') {
         statusBadge = '<span class="stage-val-badge badge-prog">🚀 İmalat / Test Sürüyor</span>';
       } else if (t.status === 'completed') {
         statusBadge = '<span class="stage-val-badge badge-ok">✅ Tamamlandı</span>';
-      }
-
-      let pClass = 'priority-medium';
-      let pLabel = 'Normal';
-      if (t.priority === 'critical') {
-        pClass = 'priority-critical';
-        pLabel = '🔥 Kritik';
-      } else if (t.priority === 'high') {
-        pClass = 'priority-high';
-        pLabel = '⚡ Yüksek';
-      } else if (t.priority === 'low') {
-        pClass = 'priority-low';
-        pLabel = 'Düşük';
       }
 
       const chkList = t.checklist || [];
@@ -3214,20 +3510,15 @@ class SantiyeApp {
           <div class="internal-task-top">
             <div class="internal-task-title-row">
               <span class="todo-badge-week">📅 ${t.week || 44}. Hafta</span>
-              <span class="badge" style="background:#f1f5f9; color:#334155; font-size:0.72rem; font-weight:700;">🏷️ ${t.category || 'Genel'}</span>
-              <span class="priority-badge ${pClass}">${pLabel}</span>
+              <span class="team-col-badge ${team.badgeClass}"><strong>${team.short}</strong></span>
               <span class="internal-task-title">${this.escapeHtml(t.title || 'Başlıksız Görev')}</span>
             </div>
-
-            <div style="display:flex; align-items:center; gap:0.5rem;">
-              ${statusBadge}
-            </div>
+            <div>${statusBadge}</div>
           </div>
 
           <div class="internal-task-meta" style="margin-bottom: 0.6rem;">
-            <span>👷 <strong>Atanan:</strong> ${this.escapeHtml(t.assignedTo || 'Elektrik Test Ekibi')}</span>
-            <span>📅 <strong>Hedef:</strong> ${t.targetDate || '-'}</span>
-            ${t.startDate ? `<span>⏱️ <strong>Başlangıç:</strong> ${t.startDate}</span>` : ''}
+            <span>👷 <strong>Sorumlu:</strong> ${this.escapeHtml(t.assignedTo || 'Elektrik Test Ekibi')}</span>
+            <span>📅 <strong>Başlangıç - Hedef:</strong> ${t.startDate || '-'} ➔ ${t.targetDate || '-'}</span>
           </div>
 
           ${chkList.length > 0 ? `
@@ -3240,12 +3531,6 @@ class SantiyeApp {
                 <div class="kpi-bar" style="width: ${chkPct}%; background: ${chkPct === 100 ? '#22c55e' : '#0284c7'};"></div>
               </div>
               ${checklistHtml}
-            </div>
-          ` : ''}
-
-          ${t.notes ? `
-            <div style="font-size: 0.82rem; color: #475569; background: #fff; border: 1px dashed #cbd5e1; border-radius: 6px; padding: 0.5rem 0.75rem; margin-top: 0.5rem;">
-              💡 <strong>Not:</strong> ${this.escapeHtml(t.notes)}
             </div>
           ` : ''}
 
@@ -3291,19 +3576,35 @@ class SantiyeApp {
     container.innerHTML = html;
   }
 
-  setInternalPlanFilter(status) {
-    this.internalPlanFilterStatus = status;
-    document.querySelectorAll('#view-internal_plan .filter-chip').forEach(chip => {
-      chip.classList.toggle('active', chip.id === (
-        status === 'all' ? 'intFilterChipAll' :
-        status === 'in_progress' ? 'intFilterChipProgress' :
-        status === 'pending' ? 'intFilterChipPending' : 'intFilterChipCompleted'
-      ));
+  exportInternalScheduleToCSV() {
+    const tasks = this.data?.internalWorkPlan || [];
+    if (tasks.length === 0) {
+      this.showToast('İndirilecek iç görev bulunmuyor.', 'warning');
+      return;
+    }
+
+    let csvContent = '\uFEFF'; // UTF-8 BOM for Microsoft Excel
+    csvContent += 'No;İş / İmalat Başlığı;Sorumlu Ekip;Faaliyet Alanı;Öncelik;Başlangıç;Hedef Bitiş;Durum;İlerleme Yüzdesi;Notlar\n';
+
+    tasks.forEach((t, i) => {
+      const statusTR = t.status === 'completed' ? 'Tamamlandı' : t.status === 'in_progress' ? 'Sürüyor' : 'Beklemede';
+      const cleanTitle = (t.title || '').replace(/;/g, ',');
+      const cleanNotes = (t.notes || '').replace(/;/g, ',').replace(/\n/g, ' ');
+      csvContent += `${i + 1};"${cleanTitle}";"${t.assignedTo || ''}";"${t.category || ''}";"${t.priority || ''}";"${t.startDate || ''}";"${t.targetDate || ''}";"${statusTR}";%${t.progress || 0};"${cleanNotes}"\n`;
     });
-    this.renderInternalPlan();
+
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.setAttribute('download', `MESA_Santiye_1_Aylik_Is_Plani_${new Date().toISOString().split('T')[0]}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    this.showToast('1 Aylık İş Planı Excel/CSV dosyası başarıyla indirildi! 📥', 'success');
   }
 
-  openNewInternalTaskModal() {
+    openNewInternalTaskModal() {
     if (!this.hasPermission('internal_plan', 'edit')) {
       this.showToast('İç görev ekleme yetkiniz yok.', 'error');
       return;

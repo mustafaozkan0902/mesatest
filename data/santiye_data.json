@@ -3217,7 +3217,7 @@
       "week": 44,
       "title": "Blok 1 & 2 Kat Dağıtım Panoları İzolasyon (Megger) Ölçümleri",
       "category": "Test & Devreye Alma",
-      "assignedTo": "Elektrik Test Ekibi (Ahmet Usta & Ekibi)",
+      "assignedTo": "Elektrik Test Ekibi",
       "priority": "critical",
       "startDate": "2026-10-28",
       "targetDate": "2026-10-31",
@@ -3226,31 +3226,31 @@
       "checklist": [
         {
           "id": "chk_1",
-          "text": "Megger test cihazı ve probların kalibrasyon kontrolü",
+          "text": "Megger test cihazı kalibrasyon kontrolü",
           "done": true
         },
         {
           "id": "chk_2",
-          "text": "Blok 1 Kat 1-4 faz-nötr ve faz-toprak meğerleme testi",
+          "text": "Blok 1 Kat 1-4 faz-toprak izolasyon ölçümü",
           "done": true
         },
         {
           "id": "chk_3",
-          "text": "Blok 2 Çatı katı ana dağıtım besleme hattı sızdırmazlık testi",
+          "text": "Blok 2 Çatı katı ana besleme testi",
           "done": false
         }
       ],
-      "notes": "Ölçüm değerleri iç test takip formuna işlenecek. MESA öncesi tüm değerlerin 100 MΩ üzerinde olduğu teyit edilecek."
+      "notes": "Ölçüm değerleri iç test takip formuna işlenecek. MESA öncesi teyit edilecek."
     },
     {
       "id": "int_task_2",
       "week": 44,
-      "title": "Trafo ve AG Ana Dağıtım Odası Baralama & Tork Kontrolleri",
+      "title": "Trafo ve AG Ana Dağıtım Odası Baralama & Torklama Kontrolleri",
       "category": "Pano & Dağıtım",
-      "assignedTo": "Pano Montaj Ekibi (Kemal Usta)",
+      "assignedTo": "Pano Montaj Ekibi",
       "priority": "high",
       "startDate": "2026-10-29",
-      "targetDate": "2026-11-02",
+      "targetDate": "2026-11-03",
       "status": "in_progress",
       "progress": 33,
       "checklist": [
@@ -3261,12 +3261,7 @@
         },
         {
           "id": "chk_5",
-          "text": "Bara torklama işaretleme boyalarının çekilmesi",
-          "done": false
-        },
-        {
-          "id": "chk_6",
-          "text": "Hücre içi temizlik ve toz emiş işlemi",
+          "text": "Torklama işaret boyalarının çekilmesi",
           "done": false
         }
       ],
@@ -3277,25 +3272,150 @@
       "week": 44,
       "title": "Blok 3 & 4 Koridor Kablo Tavaları Topraklama Süreklilik Testi",
       "category": "Kablo & Tava Montajı",
-      "assignedTo": "Saha Kablolama Grubu",
+      "assignedTo": "Kablo & Tava Ekibi",
       "priority": "medium",
       "startDate": "2026-10-30",
-      "targetDate": "2026-11-04",
+      "targetDate": "2026-11-05",
+      "status": "pending",
+      "progress": 0,
+      "checklist": [
+        {
+          "id": "chk_6",
+          "text": "Tava ek noktalarında iletken köprüleme örgülerinin kontrolü",
+          "done": false
+        }
+      ],
+      "notes": "Eksik köprüleme olan katlar derhal tamamlanacak."
+    },
+    {
+      "id": "int_task_4",
+      "week": 45,
+      "title": "Blok 1 Kat 1-4 VRF ve Mekanik Besleme Hatları Enerjilendirme",
+      "category": "Test & Devreye Alma",
+      "assignedTo": "Elektrik Test Ekibi",
+      "priority": "high",
+      "startDate": "2026-11-02",
+      "targetDate": "2026-11-07",
       "status": "pending",
       "progress": 0,
       "checklist": [
         {
           "id": "chk_7",
-          "text": "Tava ek noktalarında iletken köprüleme örgülerinin kontrolü",
+          "text": "Mekanik ve VRF ana şalter giriş gerilim kontrolleri",
           "done": false
         },
         {
           "id": "chk_8",
-          "text": "Şaft inişleri topraklama iletkeni bağlantıları",
+          "text": "Faz sırası ve nötr bağlantı doğrulaması",
           "done": false
         }
       ],
-      "notes": "Eksik köprüleme olan katlar derhal tamamlanacak."
+      "notes": "Mekanik taşeronu ile ortak devreye alma yapılacak."
+    },
+    {
+      "id": "int_task_5",
+      "week": 45,
+      "title": "Jeneratör Senkronizasyon & Otomatik Transfer Şalteri (ATS) Testi",
+      "category": "Ölçüm & Raporlama",
+      "assignedTo": "Saha Mühendisliği",
+      "priority": "critical",
+      "startDate": "2026-11-05",
+      "targetDate": "2026-11-10",
+      "status": "pending",
+      "progress": 0,
+      "checklist": [
+        {
+          "id": "chk_9",
+          "text": "Şebeke kesinti simülasyonu ve jeneratör devreye girme süresi ölçümü",
+          "done": false
+        },
+        {
+          "id": "chk_10",
+          "text": "Transfer şalteri mekanik kilit kontrolü",
+          "done": false
+        }
+      ],
+      "notes": "MESA teknik koordinatörü teste davet edilecek."
+    },
+    {
+      "id": "int_task_6",
+      "week": 46,
+      "title": "Blok 5 & 6 Kat Panoları Faz-Toprak İzolasyon Ölçümleri",
+      "category": "Test & Devreye Alma",
+      "assignedTo": "Elektrik Test Ekibi",
+      "priority": "high",
+      "startDate": "2026-11-09",
+      "targetDate": "2026-11-14",
+      "status": "pending",
+      "progress": 0,
+      "checklist": [
+        {
+          "id": "chk_11",
+          "text": "Kat tali dağıtım panoları meğerleme testleri",
+          "done": false
+        }
+      ],
+      "notes": "Ön kabul belgeleri hazırlanacak."
+    },
+    {
+      "id": "int_task_7",
+      "week": 46,
+      "title": "Bodrum Katlar Yangın Pompaları MCC Panosu Bağlantıları",
+      "category": "Pano & Dağıtım",
+      "assignedTo": "Pano Montaj Ekibi",
+      "priority": "high",
+      "startDate": "2026-11-12",
+      "targetDate": "2026-11-17",
+      "status": "pending",
+      "progress": 0,
+      "checklist": [
+        {
+          "id": "chk_12",
+          "text": "Yumuşak yol verici (Soft starter) parametre ayarları",
+          "done": false
+        }
+      ],
+      "notes": "Yangın senaryosu testi için hazır hale getirilecek."
+    },
+    {
+      "id": "int_task_8",
+      "week": 47,
+      "title": "Blok 7 & 8 Sayaç Panoları Mühürleme & Ön Kabul Kontrolleri",
+      "category": "Kablo & Tava Montajı",
+      "assignedTo": "Kablo & Tava Ekibi",
+      "priority": "medium",
+      "startDate": "2026-11-16",
+      "targetDate": "2026-11-21",
+      "status": "pending",
+      "progress": 0,
+      "checklist": [
+        {
+          "id": "chk_13",
+          "text": "Akım trafosu oran kontrolleri ve kablo etiketleri",
+          "done": false
+        }
+      ],
+      "notes": "Dağıtım şirketi kabulü öncesi eksikler giderilecek."
+    },
+    {
+      "id": "int_task_9",
+      "week": 47,
+      "title": "Tüm Bloklar Kompanzasyon & Harmonik Filtre Devreye Alma",
+      "category": "Ölçüm & Raporlama",
+      "assignedTo": "Saha Mühendisliği",
+      "priority": "high",
+      "startDate": "2026-11-20",
+      "targetDate": "2026-11-26",
+      "status": "pending",
+      "progress": 0,
+      "checklist": [
+        {
+          "id": "chk_14",
+          "text": "Kondansatör kademeleri akım çekiş ve reaktif güç rölesi ayarları",
+          "done": false
+        }
+      ],
+      "notes": "Ceza sınırlarına girmemek için Cos phi 0.98 hedeflenecek."
     }
   ],
   "rolePermissions": {
