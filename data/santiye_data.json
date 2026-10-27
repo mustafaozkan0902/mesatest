@@ -3175,5 +3175,211 @@
         }
       ]
     }
+  ],
+  "privateNotes": [
+    {
+      "id": "note_1",
+      "title": "MESA 2. Hakediş Kesintisi & Blok 3 Mekanik İtirazı",
+      "content": "MESA Proje Direktörü ile yapılan birebir toplantıda, Blok 3'teki 2 haftalık mekanik ve VRF gecikmesi sebebiyle taşerona hakediş kesintisi uygulanacağı iletildi. Bizim elektrik kabul testlerimiz için önceliği Blok 1 ve Blok 2'ye kaydırarak kabul oranımızı %100'e çıkaralım.",
+      "category": "Hakediş & Bütçe",
+      "color": "amber",
+      "isPinned": true,
+      "createdAt": "2026-10-25 10:15",
+      "updatedAt": "2026-10-26 14:20",
+      "author": "Mustafa Özkan (Proje Müdürü)"
+    },
+    {
+      "id": "note_2",
+      "title": "İklim VRF Taşeronu Ekip Yetersizliği & İhtar Hazırlığı",
+      "content": "VRF borulama ve azot sızdırmazlık testlerinde taahhüt edilen takviye ekip sahaya inmedi. Cuma günkü toplantıya kadar kaynakçı sayısı 4'e çıkarılmazsa sözleşme gereği cezai madde işletilecek.",
+      "category": "Taşeron Durumu",
+      "color": "rose",
+      "isPinned": true,
+      "createdAt": "2026-10-26 09:30",
+      "updatedAt": "2026-10-26 09:30",
+      "author": "Mustafa Özkan (Proje Müdürü)"
+    },
+    {
+      "id": "note_3",
+      "title": "Test Cihazı Kalibrasyonu & MESA Onay Stratejisi",
+      "content": "Fluke ve Megger test cihazlarının yıllık kalibrasyon sertifikaları dosyalara eklendi. MESA kabul heyeti sahaya geldiğinde önce kalibrasyon evrakları gösterilerek güven tesis edilecek.",
+      "category": "Strateji & Riskler",
+      "color": "blue",
+      "isPinned": false,
+      "createdAt": "2026-10-27 11:00",
+      "updatedAt": "2026-10-27 11:00",
+      "author": "Mustafa Özkan (Proje Müdürü)"
+    }
+  ],
+  "internalWorkPlan": [
+    {
+      "id": "int_task_1",
+      "week": 44,
+      "title": "Blok 1 & 2 Kat Dağıtım Panoları İzolasyon (Megger) Ölçümleri",
+      "category": "Test & Devreye Alma",
+      "assignedTo": "Elektrik Test Ekibi (Ahmet Usta & Ekibi)",
+      "priority": "critical",
+      "startDate": "2026-10-28",
+      "targetDate": "2026-10-31",
+      "status": "in_progress",
+      "progress": 66,
+      "checklist": [
+        {
+          "id": "chk_1",
+          "text": "Megger test cihazı ve probların kalibrasyon kontrolü",
+          "done": true
+        },
+        {
+          "id": "chk_2",
+          "text": "Blok 1 Kat 1-4 faz-nötr ve faz-toprak meğerleme testi",
+          "done": true
+        },
+        {
+          "id": "chk_3",
+          "text": "Blok 2 Çatı katı ana dağıtım besleme hattı sızdırmazlık testi",
+          "done": false
+        }
+      ],
+      "notes": "Ölçüm değerleri iç test takip formuna işlenecek. MESA öncesi tüm değerlerin 100 MΩ üzerinde olduğu teyit edilecek."
+    },
+    {
+      "id": "int_task_2",
+      "week": 44,
+      "title": "Trafo ve AG Ana Dağıtım Odası Baralama & Tork Kontrolleri",
+      "category": "Pano & Dağıtım",
+      "assignedTo": "Pano Montaj Ekibi (Kemal Usta)",
+      "priority": "high",
+      "startDate": "2026-10-29",
+      "targetDate": "2026-11-02",
+      "status": "in_progress",
+      "progress": 33,
+      "checklist": [
+        {
+          "id": "chk_4",
+          "text": "Ana şalter bara cıvatalarının tork anahtarı ile sıkılması",
+          "done": true
+        },
+        {
+          "id": "chk_5",
+          "text": "Bara torklama işaretleme boyalarının çekilmesi",
+          "done": false
+        },
+        {
+          "id": "chk_6",
+          "text": "Hücre içi temizlik ve toz emiş işlemi",
+          "done": false
+        }
+      ],
+      "notes": "Tork değerleri 45 Nm olarak uygulanmalı ve etiketlenmeli."
+    },
+    {
+      "id": "int_task_3",
+      "week": 44,
+      "title": "Blok 3 & 4 Koridor Kablo Tavaları Topraklama Süreklilik Testi",
+      "category": "Kablo & Tava Montajı",
+      "assignedTo": "Saha Kablolama Grubu",
+      "priority": "medium",
+      "startDate": "2026-10-30",
+      "targetDate": "2026-11-04",
+      "status": "pending",
+      "progress": 0,
+      "checklist": [
+        {
+          "id": "chk_7",
+          "text": "Tava ek noktalarında iletken köprüleme örgülerinin kontrolü",
+          "done": false
+        },
+        {
+          "id": "chk_8",
+          "text": "Şaft inişleri topraklama iletkeni bağlantıları",
+          "done": false
+        }
+      ],
+      "notes": "Eksik köprüleme olan katlar derhal tamamlanacak."
+    }
+  ],
+  "rolePermissions": {
+    "admin": {
+      "name": "Yönetici (Proje Müdürü / Şantiye Şefi)",
+      "badge": "🛡️ Yönetici",
+      "canViewUnits": true,
+      "canEditUnits": true,
+      "canViewMeetings": true,
+      "canEditMeetings": true,
+      "canViewInternal": true,
+      "canEditInternal": true,
+      "canViewPrivate": true,
+      "canEditPrivate": true,
+      "canManageUsers": true
+    },
+    "internal_team": {
+      "name": "İç Şantiye Ekibi (Elektrik Saha & Mühendislik)",
+      "badge": "👷 İç Ekip",
+      "canViewUnits": true,
+      "canEditUnits": true,
+      "canViewMeetings": true,
+      "canEditMeetings": true,
+      "canViewInternal": true,
+      "canEditInternal": true,
+      "canViewPrivate": false,
+      "canEditPrivate": false,
+      "canManageUsers": false
+    },
+    "ana_firma": {
+      "name": "Ana Firma (MESA Kontrol & İşveren Sunum Modu)",
+      "badge": "🏢 Ana Firma (MESA)",
+      "canViewUnits": true,
+      "canEditUnits": false,
+      "canViewMeetings": true,
+      "canEditMeetings": false,
+      "canViewInternal": false,
+      "canEditInternal": false,
+      "canViewPrivate": false,
+      "canEditPrivate": false,
+      "canManageUsers": false
+    },
+    "viewer": {
+      "name": "İzleyici / Taşeron Firmalar",
+      "badge": "👁️ İzleyici",
+      "canViewUnits": true,
+      "canEditUnits": false,
+      "canViewMeetings": true,
+      "canEditMeetings": false,
+      "canViewInternal": false,
+      "canEditInternal": false,
+      "canViewPrivate": false,
+      "canEditPrivate": false,
+      "canManageUsers": false
+    }
+  },
+  "users": [
+    {
+      "id": "u1",
+      "username": "proje_muduru",
+      "name": "Mustafa Özkan (Proje Müdürü)",
+      "role": "admin",
+      "desc": "Tam yetkili şantiye yöneticisi"
+    },
+    {
+      "id": "u2",
+      "username": "saha_ekibi",
+      "name": "Elektrik Saha Ekibi & Mühendisler",
+      "role": "internal_team",
+      "desc": "İç planlama ve test icra ekibi"
+    },
+    {
+      "id": "u3",
+      "username": "mesa_kontrol",
+      "name": "MESA Kontrol & Kabul Heyeti",
+      "role": "ana_firma",
+      "desc": "Ana yüklenici kontrol ve sunum görünümü"
+    },
+    {
+      "id": "u4",
+      "username": "taseronlar",
+      "name": "Mekanik & Klima Taşeronları",
+      "role": "viewer",
+      "desc": "Saha ilerleme izleme"
+    }
   ]
 }

@@ -249,7 +249,101 @@ def generate_initial_data():
         "blocks": blocks,
         "floors": floors,
         "units": units,
-        "logs": logs
+        "logs": logs,
+        "meetingActions": [],
+        "privateNotes": [
+            {
+                "id": "note_1",
+                "title": "MESA 2. Hakediş Kesintisi & Blok 3 Mekanik İtirazı",
+                "content": "MESA Proje Direktörü ile yapılan birebir toplantıda, Blok 3'teki 2 haftalık mekanik ve VRF gecikmesi sebebiyle taşerona hakediş kesintisi uygulanacağı iletildi. Bizim elektrik kabul testlerimiz için önceliği Blok 1 ve Blok 2'ye kaydırarak kabul oranımızı %100'e çıkaralım.",
+                "category": "Hakediş & Bütçe",
+                "color": "amber",
+                "isPinned": True,
+                "createdAt": "2026-10-25 10:15",
+                "updatedAt": "2026-10-26 14:20",
+                "author": "Mustafa Özkan (Proje Müdürü)"
+            }
+        ],
+        "internalWorkPlan": [
+            {
+                "id": "int_task_1",
+                "week": 44,
+                "title": "Blok 1 & 2 Kat Dağıtım Panoları İzolasyon (Megger) Ölçümleri",
+                "category": "Test & Devreye Alma",
+                "assignedTo": "Elektrik Test Ekibi (Ahmet Usta & Ekibi)",
+                "priority": "critical",
+                "startDate": "2026-10-28",
+                "targetDate": "2026-10-31",
+                "status": "in_progress",
+                "progress": 66,
+                "checklist": [
+                    {"id": "chk_1", "text": "Megger test cihazı ve probların kalibrasyon kontrolü", "done": True},
+                    {"id": "chk_2", "text": "Blok 1 Kat 1-4 faz-nötr ve faz-toprak meğerleme testi", "done": True},
+                    {"id": "chk_3", "text": "Blok 2 Çatı katı ana dağıtım besleme hattı sızdırmazlık testi", "done": False}
+                ],
+                "notes": "Ölçüm değerleri iç test takip formuna işlenecek. MESA öncesi tüm değerlerin 100 MΩ üzerinde olduğu teyit edilecek."
+            }
+        ],
+        "rolePermissions": {
+            "admin": {
+                "name": "Yönetici (Proje Müdürü / Şantiye Şefi)",
+                "badge": "🛡️ Yönetici",
+                "canViewUnits": True,
+                "canEditUnits": True,
+                "canViewMeetings": True,
+                "canEditMeetings": True,
+                "canViewInternal": True,
+                "canEditInternal": True,
+                "canViewPrivate": True,
+                "canEditPrivate": True,
+                "canManageUsers": True
+            },
+            "internal_team": {
+                "name": "İç Şantiye Ekibi (Elektrik Saha & Mühendislik)",
+                "badge": "👷 İç Ekip",
+                "canViewUnits": True,
+                "canEditUnits": True,
+                "canViewMeetings": True,
+                "canEditMeetings": True,
+                "canViewInternal": True,
+                "canEditInternal": True,
+                "canViewPrivate": False,
+                "canEditPrivate": False,
+                "canManageUsers": False
+            },
+            "ana_firma": {
+                "name": "Ana Firma (MESA Kontrol & İşveren Sunum Modu)",
+                "badge": "🏢 Ana Firma (MESA)",
+                "canViewUnits": True,
+                "canEditUnits": False,
+                "canViewMeetings": True,
+                "canEditMeetings": False,
+                "canViewInternal": False,
+                "canEditInternal": False,
+                "canViewPrivate": False,
+                "canEditPrivate": False,
+                "canManageUsers": False
+            },
+            "viewer": {
+                "name": "İzleyici / Taşeron Firmalar",
+                "badge": "👁️ İzleyici",
+                "canViewUnits": True,
+                "canEditUnits": False,
+                "canViewMeetings": True,
+                "canEditMeetings": False,
+                "canViewInternal": False,
+                "canEditInternal": False,
+                "canViewPrivate": False,
+                "canEditPrivate": False,
+                "canManageUsers": False
+            }
+        },
+        "users": [
+            {"id": "u1", "username": "proje_muduru", "name": "Mustafa Özkan (Proje Müdürü)", "role": "admin", "desc": "Tam yetkili şantiye yöneticisi"},
+            {"id": "u2", "username": "saha_ekibi", "name": "Elektrik Saha Ekibi & Mühendisler", "role": "internal_team", "desc": "İç planlama ve test icra ekibi"},
+            {"id": "u3", "username": "mesa_kontrol", "name": "MESA Kontrol & Kabul Heyeti", "role": "ana_firma", "desc": "Ana yüklenici kontrol ve sunum görünümü"},
+            {"id": "u4", "username": "taseronlar", "name": "Mekanik & Klima Taşeronları", "role": "viewer", "desc": "Saha ilerleme izleme"}
+        ]
     }
     
     with open(DATA_FILE, "w", encoding="utf-8") as f:

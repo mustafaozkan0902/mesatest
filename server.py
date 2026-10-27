@@ -305,6 +305,14 @@ class SantiyeRequestHandler(http.server.SimpleHTTPRequestHandler):
             })
             return
 
+        elif path == '/api/data':
+            if body and isinstance(body, dict) and 'units' in body:
+                save_data(body)
+                self.send_json({"success": True, "message": "Veriler başarıyla kaydedildi."})
+            else:
+                self.send_json({"success": False, "message": "Geçersiz veri formatı!"}, status=400)
+            return
+
         elif path == '/api/reset':
             import init_data
             init_data.generate_initial_data()
