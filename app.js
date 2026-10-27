@@ -183,19 +183,51 @@ class SantiyeApp {
   }
 
   checkAdminStatus() {
-    const savedRole = localStorage.getItem('santiye_active_role');
+    const rawSession = localStorage.getItem('santiye_user_session');
+    if (rawSession) {
+      try {
+        this.currentUser = JSON.parse(rawSession);
+      } catch (e) {
+        this.currentUser = null;
+      }
+    } else {
+      this.currentUser = null;
+    }
+
     if (this.adminToken) {
-      this.currentRole = savedRole || 'admin';
+      this.currentRole = localStorage.getItem('santiye_active_role') || 'admin';
+      this.isAdmin = (this.currentRole === 'admin');
+    } else if (this.currentUser) {
+      this.currentRole = this.currentUser.role || 'viewer';
       this.isAdmin = (this.currentRole === 'admin');
     } else {
-      this.currentRole = savedRole && savedRole !== 'admin' ? savedRole : 'viewer';
+      // Giriş yapılmamışsa: KESİNLİKLE salt okunur izleyici modu
+      this.currentRole = 'viewer';
       this.isAdmin = false;
     }
     this.updateRoleUI();
   }
 
+  isLoggedIn() {
+    return !!(this.adminToken || this.currentUser);
+  }
+
+  requireLogin(msg = 'Değişiklik yapabilmek için lütfen giriş yapınız.') {
+    if (!this.isLoggedIn()) {
+      this.showToast(`🔒 ${msg}`, 'warning');
+      this.openLoginModal();
+      return false;
+    }
+    return true;
+  }
+
   hasPermission(section, action = 'view') {
-    const role = this.currentRole || 'viewer';
+    // Giriş yapılmamışsa hiçbir bölüme düzenleme/değişiklik izni verilmez!
+    if (action === 'edit' && !this.isLoggedIn()) {
+      return false;
+    }
+
+    const role = this.isLoggedIn() ? (this.currentRole || 'viewer') : 'viewer';
     if (role === 'admin') return true;
 
     const perms = this.data?.rolePermissions?.[role];
@@ -219,29 +251,34 @@ class SantiyeApp {
     }
     return false;
   }
-
   updateRoleUI() {
-    const role = this.currentRole || 'viewer';
+    const isAuth = this.isLoggedIn();
+    const role = isAuth ? (this.currentRole || 'viewer') : 'viewer';
     const roleBadge = document.getElementById('roleBadge');
     const roleSelectWrap = document.getElementById('profileModeSelectorWrap');
     const roleSelect = document.getElementById('activeRoleSelect');
     const btnLogin = document.getElementById('btnLoginModal');
+    const btnLogoutUser = document.getElementById('btnLogoutUser');
     const adminActions = document.getElementById('adminActions');
     const adminBlockControls = document.getElementById('adminBlockControls');
     const anaFirmaBanner = document.getElementById('anaFirmaModeBanner');
-    const tabBtnPrivate = document.getElementById('tabBtnPrivateNotes');
-    const tabBtnInternal = document.getElementById('tabBtnInternalPlan');
 
     if (roleBadge) {
-      if (role === 'admin') {
+      if (!isAuth) {
+        roleBadge.className = 'role-badge viewer';
+        roleBadge.innerHTML = '<span>👁️</span><span>Giriş Yapılmadı (Salt Okunur)</span>';
+      } else if (role === 'admin') {
         roleBadge.className = 'role-badge admin';
-        roleBadge.innerHTML = '<span>🛡️</span><span>Yönetici (Admin)</span>';
+        const name = this.currentUser?.name || 'Yönetici (Admin)';
+        roleBadge.innerHTML = `<span>🛡️</span><span>${this.escapeHtml(name)}</span>`;
       } else if (role === 'internal_team') {
         roleBadge.className = 'role-badge internal';
-        roleBadge.innerHTML = '<span>👷</span><span>İç Şantiye Ekibi</span>';
+        const name = this.currentUser?.name || 'İç Şantiye Ekibi';
+        roleBadge.innerHTML = `<span>👷</span><span>${this.escapeHtml(name)}</span>`;
       } else if (role === 'ana_firma') {
         roleBadge.className = 'role-badge ana-firma';
-        roleBadge.innerHTML = '<span>🏢</span><span>Ana Firma (MESA)</span>';
+        const name = this.currentUser?.name || 'Ana Firma (MESA)';
+        roleBadge.innerHTML = `<span>🏢</span><span>${this.escapeHtml(name)}</span>`;
       } else {
         roleBadge.className = 'role-badge viewer';
         roleBadge.innerHTML = '<span>👁️</span><span>İzleyici (Salt Okunur)</span>';
@@ -249,7 +286,7 @@ class SantiyeApp {
     }
 
     if (roleSelectWrap) {
-      if (this.adminToken) {
+      if (this.adminToken || (isAuth && role === 'admin')) {
         roleSelectWrap.style.display = 'inline-flex';
         if (roleSelect) roleSelect.value = role;
       } else {
@@ -258,42 +295,41 @@ class SantiyeApp {
     }
 
     if (btnLogin) {
-      btnLogin.style.display = (role === 'admin' || this.adminToken) ? 'none' : 'inline-flex';
+      btnLogin.style.display = isAuth ? 'none' : 'inline-flex';
     }
+    if (btnLogoutUser) {
+      btnLogoutUser.style.display = isAuth ? 'inline-flex' : 'none';
+    }
+
     if (adminActions) {
-      adminActions.style.display = (role === 'admin') ? 'flex' : 'none';
+      adminActions.style.display = (isAuth && role === 'admin') ? 'flex' : 'none';
     }
     if (adminBlockControls) {
-      adminBlockControls.style.display = (role === 'admin') ? 'block' : 'none';
+      adminBlockControls.style.display = (isAuth && role === 'admin') ? 'block' : 'none';
     }
 
     if (anaFirmaBanner) {
-      anaFirmaBanner.style.display = (role === 'ana_firma') ? 'block' : 'none';
+      anaFirmaBanner.style.display = (isAuth && role === 'ana_firma') ? 'block' : 'none';
     }
 
-    if (tabBtnPrivate) {
-      tabBtnPrivate.style.display = this.hasPermission('private_notes', 'view') ? 'inline-flex' : 'none';
-    }
-    if (tabBtnInternal) {
-      tabBtnInternal.style.display = this.hasPermission('internal_plan', 'view') ? 'inline-flex' : 'none';
-    }
-
+    // 2. Kısım: İnternal İş Planı & Özel Notlarım sekmesi
+    // Yalnızca giriş yapmış Admin veya İç Ekip görebilir!
     const btnMasterInternal = document.getElementById('btnMasterInternal');
     const subTabBtnPrivate = document.getElementById('subTabBtn-private_notes');
     const subTabBtnInternal = document.getElementById('subTabBtn-internal_plan');
-    const canSeeInternal = this.hasPermission('internal_plan', 'view') || this.hasPermission('private_notes', 'view');
+    const canSeeInternal = isAuth && (this.hasPermission('internal_plan', 'view') || this.hasPermission('private_notes', 'view'));
 
     if (btnMasterInternal) {
       btnMasterInternal.style.display = canSeeInternal ? 'flex' : 'none';
     }
     if (subTabBtnPrivate) {
-      subTabBtnPrivate.style.display = this.hasPermission('private_notes', 'view') ? 'inline-flex' : 'none';
+      subTabBtnPrivate.style.display = (isAuth && this.hasPermission('private_notes', 'view')) ? 'inline-flex' : 'none';
     }
     if (subTabBtnInternal) {
-      subTabBtnInternal.style.display = this.hasPermission('internal_plan', 'view') ? 'inline-flex' : 'none';
+      subTabBtnInternal.style.display = (isAuth && this.hasPermission('internal_plan', 'view')) ? 'inline-flex' : 'none';
     }
 
-    // Ana firma / MESA veya salt okunur izleyici moduna gecildiyse ve secili sekme 2. Kisim ise test sekmesine dondur
+    // Giriş yapılmadıysa veya yetkisiz profile geçildiyse ve şu an 2. Kısım açıksa güvenle 1. Kısma aktar
     if (!canSeeInternal && this.currentMasterTab === 'internal') {
       this.switchMasterTab('test');
     }
@@ -306,358 +342,6 @@ class SantiyeApp {
     const internalCountEl = document.getElementById('internalPlanTabCount');
     if (internalCountEl) internalCountEl.innerText = internalActiveCount;
   }
-
-  updateAdminUI(isAdmin) {
-    this.updateRoleUI();
-  }
-
-  switchActiveRole(targetRole) {
-    if (targetRole === 'admin') {
-      if (!this.adminToken) {
-        this.openLoginModal();
-        return;
-      }
-      this.currentRole = 'admin';
-      this.isAdmin = true;
-      localStorage.setItem('santiye_active_role', 'admin');
-      this.updateRoleUI();
-      this.renderAll();
-      this.showToast('Yönetici moduna geçildi (Tüm yetkiler aktif). 🛡️', 'success');
-      return;
-    }
-
-    this.currentRole = targetRole;
-    this.isAdmin = false;
-    localStorage.setItem('santiye_active_role', targetRole);
-
-    if (
-      (this.currentTab === 'private_notes' && !this.hasPermission('private_notes', 'view')) ||
-      (this.currentTab === 'internal_plan' && !this.hasPermission('internal_plan', 'view'))
-    ) {
-      this.switchTab('meetings');
-    }
-
-    this.updateRoleUI();
-    this.renderAll();
-
-    if (targetRole === 'ana_firma') {
-      this.showToast('🏢 Ana Firma (MESA) Sunum Modu Açıldı. Özel notlarınız ve iç planlarınız ekrandan gizlendi!', 'info');
-    } else if (targetRole === 'internal_team') {
-      this.showToast('👷 İç Şantiye Ekibi Görünümüne Geçildi.', 'info');
-    } else {
-      this.showToast('👁️ İzleyici Görünümüne Geçildi.', 'info');
-    }
-  }
-
-  returnToAdminMode() {
-    const pwdInput = document.getElementById('adminVerifyPasswordInput');
-    if (pwdInput) pwdInput.value = '';
-    this.openModal('modalAdminVerify');
-  }
-
-  async verifyAdminPassword() {
-    const pwd = document.getElementById('adminVerifyPasswordInput').value;
-    if (!pwd) {
-      this.showToast('Lütfen şifre giriniz.', 'warning');
-      return;
-    }
-
-    let isValid = false;
-    if (pwd === 'admin123') {
-      isValid = true;
-    } else {
-      try {
-        const res = await fetch(`${this.apiUrl}/api/auth/login`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ password: pwd })
-        });
-        const data = await res.json();
-        if (res.ok && data.success) isValid = true;
-      } catch(e) {}
-    }
-
-    if (isValid) {
-      this.adminToken = this.adminToken || 'local-admin-token';
-      localStorage.setItem('santiye_admin_token', this.adminToken);
-      this.closeModal('modalAdminVerify');
-      this.switchActiveRole('admin');
-      this.showToast('Yönetici moduna başarıyla dönüldü! 🛡️', 'success');
-    } else {
-      this.showToast('Hatalı şifre! Yönetici moduna geçilemedi.', 'error');
-    }
-  }
-
-  async loadData(isSilent = false) {
-    // 1. Try Firebase Firestore if active
-    if (this.isCloudActive && this.db) {
-      try {
-        const doc = await this.db.collection('santiye_elektrik_test').doc('main_data').get();
-        if (doc.exists) {
-          const cloudData = doc.data();
-          if (cloudData && cloudData.units) {
-            this.data = cloudData;
-            this.ensureDataIntegrity();
-            localStorage.setItem(this.fallbackKey, JSON.stringify(this.data));
-            this.updateSyncUI('bulut');
-            if (!isSilent) this.renderAll();
-            return;
-          }
-        }
-      } catch (e) {
-        console.warn('Firestore get uyarısı:', e);
-      }
-    }
-
-    // 2. Try Python server API (/api/data)
-    try {
-      const response = await fetch(`${this.apiUrl}/api/data`, { cache: 'no-store' });
-      const contentType = response.headers.get('content-type') || '';
-      if (response.ok && contentType.includes('application/json')) {
-        const serverData = await response.json();
-        if (serverData && serverData.units) {
-          this.data = serverData;
-          localStorage.setItem(this.fallbackKey, JSON.stringify(this.data));
-          this.updateSyncUI('yerel_sunucu');
-          if (!isSilent) this.renderAll();
-          return;
-        }
-      }
-    } catch (e) {
-      // Python server not reachable (e.g. static hosting on Cloudflare/Netlify)
-    }
-
-    // 3. Try static JSON file (data/santiye_data.json)
-    try {
-      const staticRes = await fetch('data/santiye_data.json', { cache: 'no-store' });
-      const contentType = staticRes.headers.get('content-type') || '';
-      if (staticRes.ok && (contentType.includes('application/json') || contentType.includes('text/plain'))) {
-        const staticData = await staticRes.json();
-        if (staticData && staticData.units) {
-          const cached = localStorage.getItem(this.fallbackKey);
-          this.data = cached ? JSON.parse(cached) : staticData;
-          this.updateSyncUI('yerel_hafiza');
-          if (!isSilent) this.renderAll();
-          return;
-        }
-      }
-    } catch (e) {
-      console.warn('Statik JSON okunamadı:', e);
-    }
-
-    // 4. Try localStorage fallback or built-in default
-    const cached = localStorage.getItem(this.fallbackKey);
-    if (cached) {
-      try { this.data = JSON.parse(cached); } catch(e) {}
-    }
-    if (!this.data && window.DEFAULT_SANTIYE_DATA) {
-      this.data = JSON.parse(JSON.stringify(window.DEFAULT_SANTIYE_DATA));
-    }
-    this.updateSyncUI('yerel_hafiza');
-    if (!isSilent && this.data) this.renderAll();
-  }
-
-  async saveData(updatedData) {
-    this.data = updatedData;
-    localStorage.setItem(this.fallbackKey, JSON.stringify(this.data));
-
-    let savedToCloud = false;
-
-    // 1. Save to Firebase Firestore (Netlify real-time broadcast to all devices)
-    if (this.db) {
-      try {
-        await this.db.collection('santiye_elektrik_test').doc('main_data').set(this.data);
-        this.isCloudActive = true;
-        this.updateSyncUI('bulut');
-        savedToCloud = true;
-        this.showToast('Buluta kaydedildi ve tüm cihazlara anında yansıtıldı! ✅', 'success');
-      } catch (e) {
-        console.warn('Buluta kaydedilemedi:', e);
-        if (e.code === 'permission-denied') {
-          this.showToast('⚠️ Firebase izin kuralı bekleniyor: Değişiklik telefonun hafızasına kaydedildi ancak diğer cihazlara yansıması için Firebase kuralı açılmalıdır.', 'warning');
-        } else {
-          this.showToast('Değişiklik bu cihaza kaydedildi.', 'info');
-        }
-      }
-    }
-
-    // 2. Save to Python server API if running locally
-    if (!savedToCloud && (window.location.origin.includes('localhost') || window.location.origin.includes('127.0.0.1'))) {
-      try {
-        await fetch(`${this.apiUrl}/api/data`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${this.adminToken}`
-          },
-          body: JSON.stringify(this.data)
-        });
-      } catch (e) {
-        // Python server not active
-      }
-    }
-  }
-
-  bindEvents() {
-    // Setup bulk fields default
-    this.handleBulkFieldChange();
-
-    // Close modals on overlay click
-    document.querySelectorAll('.modal-overlay').forEach(overlay => {
-      overlay.addEventListener('click', (e) => {
-        if (e.target === overlay) {
-          overlay.classList.remove('active');
-        }
-      });
-    });
-  }
-
-  renderAll() {
-    if (!this.data || !this.data.units) return;
-    this.ensureDataIntegrity();
-    this.updateRoleUI();
-
-    this.renderKPIs();
-    this.renderMatrix();
-    this.renderBuilding();
-    this.renderTable();
-    this.renderMeetings();
-    this.renderInternalPlan();
-    this.renderPrivateNotes();
-    this.renderStats();
-    this.renderLogs();
-  }
-
-  // --- MASTER & SUB-TAB SWITCHING ---
-  switchMasterTab(masterTabId) {
-    if (masterTabId === 'internal') {
-      if (!this.hasPermission('internal_plan', 'view') && !this.hasPermission('private_notes', 'view')) {
-        this.showToast('İnternal alana erişim yetkiniz bulunmamaktadır.', 'warning');
-        return;
-      }
-    }
-
-    this.currentMasterTab = masterTabId;
-    try {
-      localStorage.setItem('santiye_active_master_tab', masterTabId);
-    } catch(e) {}
-
-    // Master Tab Buttons
-    document.querySelectorAll('.master-tab-btn').forEach(btn => btn.classList.remove('active'));
-    const masterBtnMap = {
-      test: 'btnMasterTest',
-      internal: 'btnMasterInternal',
-      meetings: 'btnMasterMeetings'
-    };
-    const targetBtn = document.getElementById(masterBtnMap[masterTabId]);
-    if (targetBtn) targetBtn.classList.add('active');
-
-    // Master Sections
-    document.querySelectorAll('.master-section-panel').forEach(panel => {
-      panel.classList.remove('active');
-      panel.style.display = 'none';
-    });
-    const targetPanel = document.getElementById(`masterSection-${masterTabId}`);
-    if (targetPanel) {
-      targetPanel.classList.add('active');
-      targetPanel.style.display = 'block';
-    }
-
-    // Trigger proper sub-view rendering
-    if (masterTabId === 'test') {
-      const sub = this.currentTestSubTab || 'matrix';
-      this.switchTestSubTab(sub);
-    } else if (masterTabId === 'internal') {
-      let sub = this.currentInternalSubTab || 'internal_plan';
-      if (sub === 'private_notes' && !this.hasPermission('private_notes', 'view')) {
-        sub = 'internal_plan';
-      }
-      this.switchInternalSubTab(sub);
-    } else if (masterTabId === 'meetings') {
-      this.renderMeetings();
-    }
-  }
-
-  switchTestSubTab(subTabId) {
-    this.currentTestSubTab = subTabId;
-    try {
-      localStorage.setItem('santiye_active_test_sub_tab', subTabId);
-    } catch(e) {}
-
-    const testSection = document.getElementById('masterSection-test');
-    if (testSection) {
-      testSection.querySelectorAll('.sub-tab-btn').forEach(b => b.classList.remove('active'));
-      const activeBtn = document.getElementById(`subTabBtn-${subTabId}`);
-      if (activeBtn) activeBtn.classList.add('active');
-
-      testSection.querySelectorAll('.view-panel').forEach(p => p.classList.remove('active'));
-      const panel = document.getElementById(`view-${subTabId}`);
-      if (panel) panel.classList.add('active');
-    }
-
-    if (subTabId === 'building') {
-      this.renderBuilding();
-    } else if (subTabId === 'table') {
-      this.renderTable();
-    } else if (subTabId === 'stats') {
-      this.renderStats();
-    } else if (subTabId === 'logs') {
-      this.renderLogs();
-    } else if (subTabId === 'matrix') {
-      this.renderMatrix();
-    }
-  }
-
-  switchInternalSubTab(subTabId) {
-    if (subTabId === 'private_notes' && !this.hasPermission('private_notes', 'view')) {
-      this.showToast('Özel Notlar alanına yalnızca şantiye yöneticisi erişebilir.', 'warning');
-      this.switchInternalSubTab('internal_plan');
-      return;
-    }
-    if (subTabId === 'internal_plan' && !this.hasPermission('internal_plan', 'view')) {
-      this.showToast('İnternal İş Planı alanına erişim yetkiniz bulunmamaktadır.', 'warning');
-      this.switchMasterTab('meetings');
-      return;
-    }
-
-    this.currentInternalSubTab = subTabId;
-    try {
-      localStorage.setItem('santiye_active_internal_sub_tab', subTabId);
-    } catch(e) {}
-
-    const internalSection = document.getElementById('masterSection-internal');
-    if (internalSection) {
-      internalSection.querySelectorAll('.sub-tab-btn').forEach(b => b.classList.remove('active'));
-      const activeBtn = document.getElementById(`subTabBtn-${subTabId}`);
-      if (activeBtn) activeBtn.classList.add('active');
-
-      internalSection.querySelectorAll('.view-panel').forEach(p => p.classList.remove('active'));
-      const panel = document.getElementById(`view-${subTabId}`);
-      if (panel) panel.classList.add('active');
-    }
-
-    if (subTabId === 'internal_plan') {
-      this.renderInternalPlan();
-    } else if (subTabId === 'private_notes') {
-      this.renderPrivateNotes();
-    }
-  }
-
-  // Backwards compatibility for any legacy callers
-  switchTab(tabId) {
-    if (['matrix', 'building', 'table', 'stats', 'logs'].includes(tabId)) {
-      this.currentTestSubTab = tabId;
-      this.switchMasterTab('test');
-      this.switchTestSubTab(tabId);
-    } else if (['internal_plan', 'private_notes'].includes(tabId)) {
-      this.currentInternalSubTab = tabId;
-      this.switchMasterTab('internal');
-      this.switchInternalSubTab(tabId);
-    } else if (tabId === 'meetings') {
-      this.switchMasterTab('meetings');
-    }
-  }
-
   // --- KPI CALCULATIONS ---
   renderKPIs() {
     const units = Object.values(this.data.units);
@@ -1248,15 +932,18 @@ class SantiyeApp {
     document.getElementById('editElkReport').value = u.elektrikTest?.reportNo || '';
     document.getElementById('editElkNote').value = u.elektrikTest?.note || '';
 
-    // Role check for save button
+    // Role & Login check for save button
+    const canEdit = this.isLoggedIn() && (this.isAdmin || this.hasPermission('units', 'edit'));
     const btnSave = document.getElementById('btnSaveUnit');
-    if (this.isAdmin) {
-      btnSave.style.display = 'inline-flex';
-      this.enableModalInputs(true);
-    } else {
-      btnSave.style.display = 'none';
-      this.enableModalInputs(false);
+    const readOnlyAlert = document.getElementById('unitModalReadOnlyAlert');
+
+    if (readOnlyAlert) {
+      readOnlyAlert.style.display = canEdit ? 'none' : 'flex';
     }
+    if (btnSave) {
+      btnSave.style.display = canEdit ? 'inline-flex' : 'none';
+    }
+    this.enableModalInputs(canEdit);
 
     this.renderUnitMeetingActions(unitId);
     this.handleModalStateChange();
@@ -1359,9 +1046,11 @@ class SantiyeApp {
   }
 
   async saveUnitData() {
-    if (!this.isAdmin) {
-      this.showToast('Değişiklik yapabilmek için yönetici girişi yapmalısınız.', 'warning');
-      this.openLoginModal();
+    if (!this.requireLogin('Kat durumlarını güncellemek için lütfen yetkili girişi yapınız.')) {
+      return;
+    }
+    if (!this.isAdmin && !this.hasPermission('units', 'edit')) {
+      this.showToast('Kat durumlarını düzenleme yetkiniz bulunmamaktadır.', 'error');
       return;
     }
 
@@ -1637,7 +1326,14 @@ class SantiyeApp {
       const expectedAdminPw = adminUser?.password || 'admin123';
       if (pw === 'admin123' || pw === expectedAdminPw) {
         this.adminToken = 'local-admin-token';
+        this.currentUser = {
+          id: adminUser?.id || 'u1',
+          name: adminUser?.name || 'Mustafa Özkan (Proje Müdürü)',
+          role: 'admin',
+          username: adminUser?.username || 'proje_muduru'
+        };
         localStorage.setItem('santiye_admin_token', this.adminToken);
+        localStorage.setItem('santiye_user_session', JSON.stringify(this.currentUser));
         this.currentRole = 'admin';
         localStorage.setItem('santiye_active_role', 'admin');
         this.isAdmin = true;
@@ -1654,15 +1350,25 @@ class SantiyeApp {
     if (user) {
       const expectedPw = user.password || (user.role === 'admin' ? 'admin123' : user.role === 'internal_team' ? 'saha123' : user.role === 'ana_firma' ? 'mesa123' : 'izleyici123');
       if (pw === expectedPw || (user.role === 'admin' && pw === 'admin123')) {
+        this.currentUser = {
+          id: user.id,
+          name: user.name,
+          role: user.role,
+          username: user.username
+        };
+        localStorage.setItem('santiye_user_session', JSON.stringify(this.currentUser));
+        localStorage.setItem('santiye_active_role', user.role);
+
         if (user.role === 'admin') {
           this.adminToken = 'local-admin-token';
+          localStorage.setItem('santiye_admin_token', this.adminToken);
           this.isAdmin = true;
         } else {
           this.adminToken = null;
+          localStorage.removeItem('santiye_admin_token');
           this.isAdmin = false;
         }
         this.currentRole = user.role;
-        localStorage.setItem('santiye_active_role', user.role);
         this.updateRoleUI();
         this.closeModal('modalLogin');
         this.showToast(`Hoş geldiniz, ${user.name}! (${user.role} yetkisi ile giriş yapıldı)`, 'success');
@@ -1904,6 +1610,13 @@ class SantiyeApp {
   }
 
   async toggleActionComplete(actionId) {
+    if (!this.requireLogin('To-Do maddesinin durumunu değiştirmek için lütfen giriş yapınız.')) {
+      return;
+    }
+    if (!this.hasPermission('meetings', 'edit')) {
+      this.showToast('Toplantı kararlarını düzenleme yetkiniz bulunmamaktadır.', 'error');
+      return;
+    }
     const action = (this.data.meetingActions || []).find(a => a.id === actionId);
     if (!action) return;
 
@@ -2467,7 +2180,7 @@ class SantiyeApp {
             </div>
 
             <div style="display: flex; gap: 0.5rem; align-items: center;">
-              ${!m.isCompleted ? `
+              ${this.isLoggedIn() && this.hasPermission('meetings', 'edit') ? (!m.isCompleted ? `
                 <button class="btn btn-revise btn-sm" onclick="app.openReviseMeetingModal('${action.id}')">
                   <span>🔄</span>
                   <span>Erteleme & Mazeret Ekle</span>
@@ -2478,6 +2191,8 @@ class SantiyeApp {
                 </button>
               ` : `
                 <span class="stage-val-badge badge-ok">Tamamlandı ✓</span>
+              `) : `
+                <span style="font-size:0.75rem; color:#64748b; background:#f8fafc; padding:0.25rem 0.5rem; border-radius:4px; border:1px solid #e2e8f0;">👁️ Salt Okunur</span>
               `}
 
               ${this.isAdmin ? `
@@ -2729,7 +2444,7 @@ class SantiyeApp {
         </div>
         <div style="display:flex; gap:0.5rem; align-items:center;">
           <button class="btn btn-secondary" onclick="app.closeModal('modalActionDetail')">Kapat</button>
-          ${!m.isCompleted ? `
+          ${this.isLoggedIn() && this.hasPermission('meetings', 'edit') ? (!m.isCompleted ? `
             <button class="btn btn-revise" onclick="app.closeModal('modalActionDetail'); app.openReviseMeetingModal('${action.id}')">
               <span>🔄</span>
               <span>Erteleme & Mazeret Ekle</span>
@@ -2738,7 +2453,12 @@ class SantiyeApp {
               <span>✅</span>
               <span>Söz Tutuldu (Tamamla)</span>
             </button>
-          ` : ''}
+          ` : '') : `
+            <button class="btn btn-outline btn-sm" onclick="app.closeModal('modalActionDetail'); app.openLoginModal();">
+              <span>🔑</span>
+              <span>Düzenlemek İçin Giriş Yap</span>
+            </button>
+          `}
         </div>
       </div>
     `;
@@ -2749,6 +2469,13 @@ class SantiyeApp {
 
   // --- MODAL: NEW MEETING ACTION ---
   openNewMeetingModal(preselectedBlockId = 'all', preselectedFloorId = 'all') {
+    if (!this.requireLogin('Yeni toplantı kararı eklemek için lütfen giriş yapınız.')) {
+      return;
+    }
+    if (!this.hasPermission('meetings', 'edit')) {
+      this.showToast('Toplantı kararlarını düzenleme yetkiniz bulunmamaktadır.', 'error');
+      return;
+    }
     const todayStr = new Date().toISOString().split('T')[0];
     document.getElementById('newActionDate').value = todayStr;
     document.getElementById('newActionInitialDate').value = todayStr;
@@ -2771,6 +2498,13 @@ class SantiyeApp {
   }
 
   async saveNewMeetingAction() {
+    if (!this.requireLogin('Toplantı kararı kaydetmek için lütfen giriş yapınız.')) {
+      return;
+    }
+    if (!this.hasPermission('meetings', 'edit')) {
+      this.showToast('Toplantı kararlarını düzenleme yetkiniz bulunmamaktadır.', 'error');
+      return;
+    }
     const title = document.getElementById('newActionTitle').value.trim();
     const initialDate = document.getElementById('newActionInitialDate').value;
     if (!title) {
@@ -2841,6 +2575,13 @@ class SantiyeApp {
 
   // --- MODAL: REVISE MEETING ACTION (Erteleme & Mazeret) ---
   openReviseMeetingModal(actionId) {
+    if (!this.requireLogin('Söz erteleme ve mazeret güncellemek için lütfen giriş yapınız.')) {
+      return;
+    }
+    if (!this.hasPermission('meetings', 'edit')) {
+      this.showToast('Toplantı kararlarını düzenleme yetkiniz bulunmamaktadır.', 'error');
+      return;
+    }
     const action = (this.data.meetingActions || []).find(a => a.id === actionId);
     if (!action) return;
 
@@ -2923,6 +2664,13 @@ class SantiyeApp {
 
   // --- MODAL: COMPLETE MEETING ACTION ---
   openCompleteMeetingModal(actionId) {
+    if (!this.requireLogin('Tamamlandı onayı vermek için lütfen giriş yapınız.')) {
+      return;
+    }
+    if (!this.hasPermission('meetings', 'edit')) {
+      this.showToast('Toplantı kararlarını düzenleme yetkiniz bulunmamaktadır.', 'error');
+      return;
+    }
     const action = (this.data.meetingActions || []).find(a => a.id === actionId);
     if (!action) return;
 
