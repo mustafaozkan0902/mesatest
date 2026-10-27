@@ -9,6 +9,7 @@ class SantiyeApp {
     this.currentTab = 'matrix';
     this.matrixFilter = 'all';
     this.currentMeetingFilter = 'all';
+    this.meetingViewMode = 'todo';
     this.activeBlockId = 1;
     this.isAdmin = false;
     this.adminToken = localStorage.getItem('santiye_admin_token') || null;
@@ -1504,6 +1505,20 @@ class SantiyeApp {
     this.renderMeetings();
   }
 
+  setMeetingViewMode(mode) {
+    this.meetingViewMode = mode;
+    const btnTodo = document.getElementById('btnViewModeTodo');
+    const btnCards = document.getElementById('btnViewModeCards');
+    if (mode === 'todo') {
+      btnTodo?.classList.add('active');
+      btnCards?.classList.remove('active');
+    } else {
+      btnCards?.classList.add('active');
+      btnTodo?.classList.remove('active');
+    }
+    this.renderMeetings();
+  }
+
   renderMeetings() {
     if (!this.data) return;
     if (!this.data.meetingActions) this.data.meetingActions = [];
@@ -1532,6 +1547,7 @@ class SantiyeApp {
     const elDone = document.getElementById('meetingKpiDone');
     const elTotal = document.getElementById('meetingKpiTotal');
     const elTabCount = document.getElementById('meetingTabCount');
+    const elSummaryBadge = document.getElementById('todoSummaryBadge');
 
     if (elOverdue) elOverdue.innerText = overdueCount;
     if (elPending) elPending.innerText = pendingCount;
@@ -1541,6 +1557,9 @@ class SantiyeApp {
       elTabCount.innerText = overdueCount > 0 ? `${overdueCount} Gecikme` : totalCount;
       elTabCount.style.background = overdueCount > 0 ? '#fee2e2' : '#e2e8f0';
       elTabCount.style.color = overdueCount > 0 ? '#b91c1c' : '#475569';
+    }
+    if (elSummaryBadge) {
+      elSummaryBadge.innerText = `${totalCount} Madde • ${overdueCount} Geciken • ${doneCount} Tamamlanan`;
     }
 
     // Filter by selected criteria
@@ -1589,14 +1608,101 @@ class SantiyeApp {
       container.innerHTML = `
         <div style="text-align: center; padding: 3rem 1.5rem; background: white; border: 1.5px dashed #cbd5e1; border-radius: 10px; color: #64748b;">
           <div style="font-size: 2.5rem; margin-bottom: 0.75rem;">📋</div>
-          <h3 style="font-size: 1.1rem; font-weight: 700; color: #334155; margin-bottom: 0.35rem;">Kriterlere Uygun Toplantı Kararı Bulunamadı</h3>
-          <p style="font-size: 0.85rem; max-width: 480px; margin: 0 auto 1.25rem;">Şu an seçilen filtrelerde herhangi bir karar bulunmuyor. Yeni bir karar ekleyebilir veya filtreleri temizleyebilirsiniz.</p>
-          <button class="btn btn-primary btn-sm" onclick="app.openNewMeetingModal()">➕ Yeni Toplantı Kararı Ekle</button>
+          <h3 style="font-size: 1.1rem; font-weight: 700; color: #334155; margin-bottom: 0.35rem;">Kriterlere Uygun To-Do Maddesi Bulunamadı</h3>
+          <p style="font-size: 0.85rem; max-width: 480px; margin: 0 auto 1.25rem;">Şu an seçilen filtrelerde herhangi bir karar bulunmuyor. Yeni bir madde ekleyebilir veya filtreleri temizleyebilirsiniz.</p>
+          <button class="btn btn-primary btn-sm" onclick="app.openNewMeetingModal()">➕ Yeni Madde / Karar Ekle</button>
         </div>
       `;
       return;
     }
 
+    // --- VIEW MODE 1: TO-DO CHECKLIST (BÜYÜK RESİM & SAĞINDA TİK) ---
+    if (this.meetingViewMode === 'todo') {
+      let todoHtml = '<div class="todo-list-container">';
+      filtered.forEach((action, idx) => {
+        const m = this.getActionDelayMetrics(action);
+        let rowClass = 'todo-item-card';
+        if (m.isCompleted) rowClass += ' done';
+        else if (m.diffDaysFromInitial > 0) rowClass += ' overdue';
+        else if (m.revisionCount > 0) rowClass += ' pending';
+
+        // Location label
+        let locLabel = '🏢 Genel Şantiye';
+        if (action.blockId && action.blockId !== 'all') {
+          const b = this.data.blocks?.find(x => String(x.id) === String(action.blockId));
+          const bName = b ? b.name : `Blok ${action.blockId}`;
+          const f = this.data.floors?.find(x => x.id === action.floorId);
+          const fName = f ? f.name : (action.floorId === 'all' ? 'Tüm Katlar' : action.floorId);
+          locLabel = `🏢 ${bName} • ${fName}`;
+        }
+
+        // Sağdaki Tik / Durum Butonu
+        let tickHtml = '';
+        if (m.isCompleted) {
+          tickHtml = `
+            <button class="todo-tick-badge tick-done" title="Söz Tamamlandı ✓ (Detaylar için tıklayın)" onclick="event.stopPropagation(); app.openActionDetailModal('${action.id}')">
+              <span style="font-size: 1.1rem;">✅</span>
+              <span>TAMAMLANDI</span>
+            </button>
+          `;
+        } else if (m.diffDaysFromInitial > 0) {
+          tickHtml = `
+            <button class="todo-tick-badge tick-overdue" title="İşi tamamlandı olarak işaretle veya mazeret ekle" onclick="event.stopPropagation(); app.openActionDetailModal('${action.id}')">
+              <span style="font-size: 1.1rem;">⚠️</span>
+              <span>${m.diffDaysFromInitial} GÜN GECİKTİ (${m.revisionCount > 0 ? m.revisionCount + '. Erteleme' : 'Gecikmede'})</span>
+            </button>
+          `;
+        } else {
+          tickHtml = `
+            <button class="todo-tick-badge tick-pending" title="İşi tamamlandı olarak işaretle" onclick="event.stopPropagation(); app.openCompleteMeetingModal('${action.id}')">
+              <span style="font-size: 1.1rem;">⏳</span>
+              <span>SÜRESİNDE (${this.formatDateTR(action.currentPromiseDate)})</span>
+            </button>
+          `;
+        }
+
+        todoHtml += `
+          <div class="${rowClass}" onclick="app.openActionDetailModal('${action.id}')">
+            <div class="todo-left-content">
+              <div class="todo-num-badge">${m.isCompleted ? '✓' : (idx + 1)}</div>
+              <div class="todo-body-wrap">
+                <div class="todo-tags-row">
+                  <span class="todo-badge-loc">${locLabel}</span>
+                  <span class="todo-badge-disc">${action.discipline || 'Genel'}</span>
+                  <span class="todo-badge-resp">👷 <strong>${this.escapeHtml(action.responsible || 'Sorumlu Belirtilmedi')}</strong></span>
+                </div>
+                <div class="todo-title-text" title="${this.escapeHtml(action.title)}">
+                  ${this.escapeHtml(action.title)}
+                </div>
+                <div class="todo-sub-meta">
+                  <span>🔒 İlk Hedef: <strong>${this.formatDateTR(action.initialPromiseDate)}</strong></span>
+                  <span>➔ Güncel Plan: <strong style="color:${m.diffDaysFromCurrent > 0 && !m.isCompleted ? '#dc2626' : '#0284c7'};">${this.formatDateTR(action.currentPromiseDate)}</strong></span>
+                  ${m.revisionCount > 0 && !m.isCompleted ? `<span style="color:#b45309; font-weight:700;">(${m.revisionCount} Kez Ertelendi)</span>` : ''}
+                  ${action.history && action.history.length > 1 && action.history[action.history.length - 1].reason && !m.isCompleted ? `
+                    <span style="color:#b91c1c; background:#fee2e2; padding:0.1rem 0.45rem; border-radius:4px; font-weight:600;">
+                      Son Mazeret: ${this.escapeHtml(action.history[action.history.length - 1].reason)}
+                    </span>
+                  ` : ''}
+                </div>
+              </div>
+            </div>
+
+            <div class="todo-right-status">
+              ${tickHtml}
+              <button class="todo-open-detail-btn" onclick="event.stopPropagation(); app.openActionDetailModal('${action.id}')">
+                <span>🔍</span>
+                <span>Detay & Geçmiş</span>
+              </button>
+            </div>
+          </div>
+        `;
+      });
+      todoHtml += '</div>';
+      container.innerHTML = todoHtml;
+      return;
+    }
+
+    // --- VIEW MODE 2: GENİŞ KARTLAR GÖRÜNÜMÜ ---
     let html = '';
     filtered.forEach(action => {
       const m = this.getActionDelayMetrics(action);
@@ -1750,6 +1856,152 @@ class SantiyeApp {
     });
 
     container.innerHTML = html;
+  }
+
+  // --- MODAL: ACTION DETAIL POP-UP (AÇILIR PENCERE İLE DETAY İNCELEME) ---
+  openActionDetailModal(actionId) {
+    const action = (this.data.meetingActions || []).find(a => a.id === actionId);
+    if (!action) return;
+
+    const m = this.getActionDelayMetrics(action);
+
+    // Location label
+    let locLabel = '🏢 Genel Şantiye';
+    if (action.blockId && action.blockId !== 'all') {
+      const b = this.data.blocks?.find(x => String(x.id) === String(action.blockId));
+      const bName = b ? b.name : `Blok ${action.blockId}`;
+      const f = this.data.floors?.find(x => x.id === action.floorId);
+      const fName = f ? f.name : (action.floorId === 'all' ? 'Tüm Katlar' : action.floorId);
+      locLabel = `🏢 ${bName} • ${fName}`;
+    }
+
+    document.getElementById('actionDetailModalTitle').innerText = action.title;
+    document.getElementById('actionDetailModalSubtitle').innerText = `${locLabel} • [${action.discipline}] Sorumlu: ${action.responsible || 'Belirtilmedi'}`;
+
+    // Timeline Steps HTML
+    let timelineHtml = '<div class="action-timeline">';
+    (action.history || []).forEach((step, idx) => {
+      const isFirst = idx === 0;
+      const isLast = idx === (action.history.length - 1);
+      const isFailed = step.status === 'tutulmadi' || (!isFirst && step.reason);
+      const isDone = step.status === 'tamamlandi';
+
+      let stepClass = 'action-timeline-step';
+      if (isDone) stepClass += ' done';
+      else if (isFailed) stepClass += ' failed';
+      else if (isFirst) stepClass += ' initial';
+
+      timelineHtml += `
+        <div class="${stepClass}">
+          <div class="action-timeline-dot"></div>
+          <div class="timeline-step-header">
+            <span style="font-weight: 700; color: #1e293b;">
+              ${isFirst ? '📌 1. Toplantı Kararı' : `🔄 ${idx + 1}. Toplantı Kararı`} • ${this.formatDateTR(step.meetingDate)}
+              ${step.meetingTitle ? `<span style="font-weight: normal; color: #64748b; margin-left: 4px;">(${this.escapeHtml(step.meetingTitle)})</span>` : ''}
+            </span>
+            <span style="font-size: 0.78rem; color: #475569;">
+              Hedef: <strong style="color: #0284c7;">${this.formatDateTR(step.targetDate)}</strong>
+            </span>
+          </div>
+
+          ${step.reason ? `
+            <div class="timeline-step-reason">
+              <strong>⚠️ Neden Yapılamadı? (Gecikme Gerekçesi / Mazeret):</strong>
+              <div>${this.escapeHtml(step.reason)}</div>
+            </div>
+          ` : ''}
+
+          ${step.note ? `
+            <div class="timeline-step-note">
+              <strong>${isFirst ? 'İlk Alınan Söz / Detay:' : 'Bu Toplantıda Verilen Yeni Söz:'}</strong>
+              ${this.escapeHtml(step.note)}
+            </div>
+          ` : ''}
+        </div>
+      `;
+    });
+    timelineHtml += '</div>';
+
+    let bodyHtml = `
+      <!-- Durum Bandı -->
+      <div style="margin-bottom: 1rem;">
+        ${this.getDelayStatusBadge(action)}
+      </div>
+
+      <!-- Karşılaştırma Kutusu -->
+      <div class="action-meta-box">
+        <div class="action-meta-col">
+          <span class="meta-lbl">🔒 İlk Söz Verilen Tarih</span>
+          <span class="meta-val" style="color: #0284c7;">${this.formatDateTR(action.initialPromiseDate)}</span>
+          <span style="font-size: 0.7rem; color: #94a3b8;">(Sistemde kalıcı referans)</span>
+        </div>
+
+        <div class="action-meta-col">
+          <span class="meta-lbl">⏱️ Gecikme Süresi</span>
+          <span class="meta-val" style="color: ${m.diffDaysFromInitial > 0 ? '#dc2626' : '#16a34a'};">
+            ${m.isCompleted ? '✅ Tamamlandı' : (m.diffDaysFromInitial > 0 ? `⚠️ ${m.diffDaysFromInitial} Gün Geçti` : '⏳ Süresinde')}
+          </span>
+          <span style="font-size: 0.7rem; color: #94a3b8;">
+            ${m.revisionCount > 0 ? `${m.revisionCount} Kez Ertelendi` : 'İlk taahhüt'}
+          </span>
+        </div>
+
+        <div class="action-meta-col">
+          <span class="meta-lbl">🎯 Güncel Hedef Plan</span>
+          <span class="meta-val" style="color: ${m.diffDaysFromCurrent > 0 ? '#dc2626' : '#b45309'};">
+            ${this.formatDateTR(action.currentPromiseDate)}
+          </span>
+          <span style="font-size: 0.7rem; color: #94a3b8;">(Son revize hedef)</span>
+        </div>
+
+        <div class="action-meta-col">
+          <span class="meta-lbl">👷 Sorumlu Taşeron</span>
+          <span class="meta-val" style="font-size:0.85rem; color: #1e293b;">${this.escapeHtml(action.responsible || '-')}</span>
+          <span style="font-size: 0.7rem; color: #94a3b8;">Disiplin: ${action.discipline}</span>
+        </div>
+      </div>
+
+      <!-- Kronolojik Geçmiş & Mazeretler -->
+      <div class="action-timeline-wrapper">
+        <div class="action-timeline-title">
+          <span>📜</span>
+          <span>Toplantı Kararları, Eski Sözler & Gecikme Mazeretleri (${(action.history || []).length} Toplantı)</span>
+        </div>
+        ${timelineHtml}
+      </div>
+    `;
+
+    document.getElementById('actionDetailModalBody').innerHTML = bodyHtml;
+
+    // Footer buttons
+    let footerHtml = `
+      <div style="display:flex; justify-content:space-between; width:100%; align-items:center; flex-wrap:wrap; gap:0.5rem;">
+        <div>
+          ${this.isAdmin ? `
+            <button class="btn btn-secondary btn-sm" style="color:#dc2626;" onclick="app.closeModal('modalActionDetail'); app.deleteMeetingAction('${action.id}')">
+              <span>🗑️</span>
+              <span>Kaydı Sil</span>
+            </button>
+          ` : ''}
+        </div>
+        <div style="display:flex; gap:0.5rem; align-items:center;">
+          <button class="btn btn-secondary" onclick="app.closeModal('modalActionDetail')">Kapat</button>
+          ${!m.isCompleted ? `
+            <button class="btn btn-revise" onclick="app.closeModal('modalActionDetail'); app.openReviseMeetingModal('${action.id}')">
+              <span>🔄</span>
+              <span>Erteleme & Mazeret Ekle</span>
+            </button>
+            <button class="btn btn-primary" style="background:#16a34a;" onclick="app.closeModal('modalActionDetail'); app.openCompleteMeetingModal('${action.id}')">
+              <span>✅</span>
+              <span>Söz Tutuldu (Tamamla)</span>
+            </button>
+          ` : ''}
+        </div>
+      </div>
+    `;
+
+    document.getElementById('actionDetailModalFooter').innerHTML = footerHtml;
+    this.openModal('modalActionDetail');
   }
 
   // --- MODAL: NEW MEETING ACTION ---

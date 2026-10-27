@@ -1431,14 +1431,271 @@ body {
   #view-meetings {
     display: block !important;
   }
-  .meeting-action-card {
+  .meeting-action-card, .todo-item-card {
     border: 1px solid #94a3b8 !important;
     box-shadow: none !important;
     page-break-inside: avoid;
     margin-bottom: 1.5rem !important;
   }
-  .action-card-footer {
+  .action-card-footer, .todo-open-detail-btn {
     display: none !important;
+  }
+}
+
+/* ==========================================================================
+   TO-DO CHECKLIST & BÜYÜK RESİM ÖZET LİSTESİ STİLLERİ
+   ========================================================================== */
+.view-mode-toggle {
+  display: inline-flex;
+  background: #e2e8f0;
+  border-radius: 8px;
+  padding: 3px;
+  gap: 3px;
+}
+
+.view-mode-btn {
+  border: none;
+  background: transparent;
+  padding: 0.4rem 0.85rem;
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: #475569;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.view-mode-btn.active {
+  background: white;
+  color: #0284c7;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.12);
+}
+
+.todo-list-container {
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+  margin-top: 1rem;
+}
+
+.todo-item-card {
+  background: white;
+  border: 1.5px solid #e2e8f0;
+  border-radius: 10px;
+  padding: 0.85rem 1.25rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  transition: all 0.15s ease;
+  cursor: pointer;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.03);
+  position: relative;
+}
+
+.todo-item-card:hover {
+  border-color: #0284c7;
+  box-shadow: 0 4px 14px rgba(2, 132, 199, 0.1);
+  transform: translateY(-1px);
+}
+
+.todo-item-card.overdue {
+  border-left: 5px solid #ef4444;
+  background: #fffdfd;
+}
+
+.todo-item-card.pending {
+  border-left: 5px solid #0284c7;
+}
+
+.todo-item-card.done {
+  border-left: 5px solid #10b981;
+  background: #fcfdfc;
+  opacity: 0.9;
+}
+
+.todo-left-content {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  flex: 1;
+  min-width: 0;
+}
+
+.todo-num-badge {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: #f1f5f9;
+  color: #475569;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.8rem;
+  font-weight: 800;
+  flex-shrink: 0;
+  border: 1px solid #e2e8f0;
+}
+
+.todo-item-card.overdue .todo-num-badge {
+  background: #fee2e2;
+  color: #dc2626;
+  border-color: #fca5a5;
+}
+
+.todo-item-card.done .todo-num-badge {
+  background: #dcfce7;
+  color: #16a34a;
+  border-color: #86efac;
+}
+
+.todo-body-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  min-width: 0;
+  flex: 1;
+}
+
+.todo-tags-row {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  flex-wrap: wrap;
+}
+
+.todo-badge-loc {
+  background: #f1f5f9;
+  color: #1e293b;
+  font-size: 0.72rem;
+  font-weight: 700;
+  padding: 0.15rem 0.5rem;
+  border-radius: 4px;
+  border: 1px solid #cbd5e1;
+}
+
+.todo-badge-disc {
+  background: #e0f2fe;
+  color: #0369a1;
+  font-size: 0.72rem;
+  font-weight: 700;
+  padding: 0.15rem 0.5rem;
+  border-radius: 4px;
+  border: 1px solid #bae6fd;
+}
+
+.todo-badge-resp {
+  font-size: 0.75rem;
+  color: #475569;
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+}
+
+.todo-title-text {
+  font-size: 1rem;
+  font-weight: 700;
+  color: #0f172a;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.todo-item-card.done .todo-title-text {
+  text-decoration: line-through;
+  color: #64748b;
+}
+
+.todo-sub-meta {
+  font-size: 0.76rem;
+  color: #64748b;
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  flex-wrap: wrap;
+}
+
+.todo-right-status {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  flex-shrink: 0;
+}
+
+.todo-tick-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.45rem 0.85rem;
+  border-radius: 8px;
+  font-size: 0.82rem;
+  font-weight: 700;
+  border: 1.5px solid transparent;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  white-space: nowrap;
+}
+
+.todo-tick-badge.tick-done {
+  background: #dcfce7;
+  color: #15803d;
+  border-color: #86efac;
+}
+.todo-tick-badge.tick-done:hover {
+  background: #bbf7d0;
+}
+
+.todo-tick-badge.tick-overdue {
+  background: #fee2e2;
+  color: #b91c1c;
+  border-color: #fca5a5;
+}
+.todo-tick-badge.tick-overdue:hover {
+  background: #fecaca;
+}
+
+.todo-tick-badge.tick-pending {
+  background: #e0f2fe;
+  color: #0369a1;
+  border-color: #bae6fd;
+}
+.todo-tick-badge.tick-pending:hover {
+  background: #bae6fd;
+}
+
+.todo-open-detail-btn {
+  background: #f8fafc;
+  border: 1px solid #cbd5e1;
+  color: #475569;
+  padding: 0.45rem 0.75rem;
+  border-radius: 6px;
+  font-size: 0.78rem;
+  font-weight: 700;
+  transition: all 0.15s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+.todo-open-detail-btn:hover {
+  background: #0284c7;
+  color: white;
+  border-color: #0284c7;
+}
+
+@media (max-width: 768px) {
+  .todo-item-card {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.75rem;
+  }
+  .todo-right-status {
+    width: 100%;
+    justify-content: space-between;
+    border-top: 1px solid #f1f5f9;
+    padding-top: 0.5rem;
   }
 }
 
@@ -1902,14 +2159,36 @@ body {
           </button>
           <button class="btn btn-primary btn-sm" onclick="app.openNewMeetingModal()">
             <span>➕</span>
-            <span>Yeni Toplantı Kararı Ekle</span>
+            <span>Yeni Karar Ekle</span>
           </button>
         </div>
       </div>
 
-      <!-- Kararlar Kartları Listesi -->
-      <div id="meetingCardsContainer" class="meeting-cards-container">
-        <!-- Rendered dynamically -->
+      <!-- Görünüm Seçici & Başlık Barı (Büyük Resim / To-Do Listesi) -->
+      <div class="todo-view-controls">
+        <div style="display:flex; align-items:center; gap:0.75rem;">
+          <h3 style="font-size: 1.05rem; font-weight: 800; color: #1e293b; margin: 0; display:flex; align-items:center; gap: 6px;">
+            <span>📋</span>
+            <span>Şantiye To-Do Listesi (Gözden Kaçmayan Maddeler)</span>
+          </h3>
+          <span style="font-size:0.78rem; color:#64748b; background:#f1f5f9; padding:0.2rem 0.6rem; border-radius:12px; font-weight:600;" id="todoSummaryBadge">Maddeleri incelemek için tıklayın</span>
+        </div>
+
+        <div class="view-mode-toggle">
+          <button class="view-mode-btn active" id="btnViewModeTodo" onclick="app.setMeetingViewMode('todo')">
+            <span>✅</span>
+            <span>To-Do Liste (Büyük Resim)</span>
+          </button>
+          <button class="view-mode-btn" id="btnViewModeCards" onclick="app.setMeetingViewMode('cards')">
+            <span>📑</span>
+            <span>Geniş Kartlar</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Kararlar Kartları & To-Do Listesi Kapsayıcısı -->
+      <div id="meetingCardsContainer" class="todo-list-container">
+        <!-- Rendered dynamically as compact checklist rows or full cards -->
       </div>
     </section>
 
@@ -2485,6 +2764,25 @@ body {
           <span>✅</span>
           <span>Tamamlandı Olarak İşaretle</span>
         </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL 10: Toplantı Kararı & Mazeret Detayları (Açılır Pencere) -->
+  <div id="modalActionDetail" class="modal-overlay">
+    <div class="modal-box" style="max-width: 680px;">
+      <div class="modal-header">
+        <div>
+          <h2 class="modal-title" id="actionDetailModalTitle">Toplantı Karar Detayları</h2>
+          <div style="font-size: 0.8rem; color: #64748b;" id="actionDetailModalSubtitle">Geçmiş sözler, gecikme süreleri ve mazeretler</div>
+        </div>
+        <button class="modal-close" onclick="app.closeModal('modalActionDetail')">&times;</button>
+      </div>
+      <div class="modal-body" id="actionDetailModalBody">
+        <!-- Rendered dynamically with full immutable timeline and excuses -->
+      </div>
+      <div class="modal-footer" id="actionDetailModalFooter">
+        <!-- Rendered dynamically -->
       </div>
     </div>
   </div>
