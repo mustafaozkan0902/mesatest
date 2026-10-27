@@ -42,6 +42,9 @@ class SantiyeApp {
       this.renderAll();
     }
 
+    const initialTab = localStorage.getItem('santiye_active_tab') || 'meetings';
+    this.switchTab(initialTab);
+
     // 2. Then attempt cloud or local server background sync
     this.initFirebase();
     await this.loadData(true);
@@ -299,14 +302,30 @@ class SantiyeApp {
   // --- TAB SWITCHING ---
   switchTab(tabId) {
     this.currentTab = tabId;
+    try {
+      localStorage.setItem('santiye_active_tab', tabId);
+    } catch(e) {}
+
     document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
     document.querySelectorAll('.view-panel').forEach(panel => panel.classList.remove('active'));
 
-    const btn = Array.from(document.querySelectorAll('.tab-btn')).find(b => b.getAttribute('onclick')?.includes(tabId));
+    const btn = Array.from(document.querySelectorAll('.tab-btn')).find(b => b.getAttribute('onclick')?.includes(`'${tabId}'`));
     if (btn) btn.classList.add('active');
 
     const panel = document.getElementById(`view-${tabId}`);
     if (panel) panel.classList.add('active');
+
+    // Space optimization: Toplantı Kararları & To-Do genel koordinasyon konusu olduğu için
+    // elektrik testi kabul zinciri ve 6 test KPI kartını gizleyip tam ekran To-Do görünümü sağla
+    const workflowBanner = document.querySelector('.workflow-banner');
+    const kpiGrid = document.querySelector('.kpi-grid');
+    if (tabId === 'meetings') {
+      if (workflowBanner) workflowBanner.style.display = 'none';
+      if (kpiGrid) kpiGrid.style.display = 'none';
+    } else {
+      if (workflowBanner) workflowBanner.style.display = '';
+      if (kpiGrid) kpiGrid.style.display = '';
+    }
 
     if (tabId === 'building') {
       this.renderBuilding();
@@ -1584,6 +1603,49 @@ class SantiyeApp {
     this.renderMeetings();
   }
 
+  // --- ISO WEEK & MEETING UTILITIES ---
+  getISOWeek(dateStr) {
+    if (!dateStr) return null;
+    const parts = String(dateStr).split('T')[0].split('-');
+    if (parts.length < 3) return null;
+    const d = new Date(parseInt(parts[0], 10), parseInt(parts[1], 10) - 1, parseInt(parts[2], 10));
+    if (isNaN(d.getTime())) return null;
+    // Set to Thursday in current week to decide the year
+    d.setDate(d.getDate() + 3 - (d.getDay() + 6) % 7);
+    const week1 = new Date(d.getFullYear(), 0, 4);
+    return 1 + Math.round(((d.getTime() - week1.getTime()) / 86400000 - 3 + (week1.getDay() + 6) % 7) / 7);
+  }
+
+  getActionWeek(action) {
+    if (!action) return 'Toplantı';
+    if (action.week) return action.week;
+    const dateStr = action.history?.[0]?.meetingDate || action.createdAt || action.initialPromiseDate;
+    const w = this.getISOWeek(dateStr);
+    return w ? `${w}. Hafta` : 'Toplantı';
+  }
+
+  handleNewMeetingDateChange() {
+    const dVal = document.getElementById('newActionDate')?.value;
+    const w = this.getISOWeek(dVal);
+    const badge = document.getElementById('newActionWeekBadge');
+    if (badge) badge.innerText = w ? `📅 ${w}. Hafta` : '-';
+    const titleInput = document.getElementById('newActionMeetingTitle');
+    if (titleInput && (!titleInput.value || titleInput.value.includes('Hafta') || titleInput.value.includes('Koordinasyon'))) {
+      titleInput.value = w ? `${w}. Hafta Koordinasyon Toplantısı` : 'Haftalık Koordinasyon Toplantısı';
+    }
+  }
+
+  handleReviseMeetingDateChange() {
+    const dVal = document.getElementById('reviseActionDate')?.value;
+    const w = this.getISOWeek(dVal);
+    const badge = document.getElementById('reviseActionWeekBadge');
+    if (badge) badge.innerText = w ? `📅 ${w}. Hafta` : '-';
+    const titleInput = document.getElementById('reviseActionMeetingTitle');
+    if (titleInput && (!titleInput.value || titleInput.value.includes('Hafta') || titleInput.value.includes('Koordinasyon'))) {
+      titleInput.value = w ? `${w}. Hafta Koordinasyon Toplantısı` : 'Koordinasyon Toplantısı';
+    }
+  }
+
   renderMeetings() {
     if (!this.data) return;
     if (!this.data.meetingActions) this.data.meetingActions = [];
@@ -1627,7 +1689,40 @@ class SantiyeApp {
       elSummaryBadge.innerText = `${totalCount} Madde • ${overdueCount} Geciken • ${doneCount} Tamamlanan`;
     }
 
+    // Dynamic Week Options
+    const weekSelect = document.getElementById('meetingFilterWeek');
+    if (weekSelect) {
+      const currentSelectedWeek = weekSelect.value || 'all';
+      const weeks = [];
+      actions.forEach(a => {
+        const w = this.getActionWeek(a);
+        if (w && !weeks.includes(w)) weeks.push(w);
+        (a.history || []).forEach(h => {
+          const hw = h.week || (this.getISOWeek(h.meetingDate) ? `${this.getISOWeek(h.meetingDate)}. Hafta` : null);
+          if (hw && !weeks.includes(hw)) weeks.push(hw);
+        });
+      });
+      // Sort numerically descending (e.g. 44, 43, 42)
+      weeks.sort((a, b) => (parseInt(b) || 0) - (parseInt(a) || 0));
+
+      const optionsKey = weeks.join(',');
+      if (weekSelect.dataset.weeksKey !== optionsKey) {
+        weekSelect.dataset.weeksKey = optionsKey;
+        let optHtml = '<option value="all">📅 Tüm Haftalar</option>';
+        weeks.forEach(w => {
+          optHtml += `<option value="${w}">${w} Toplantıları</option>`;
+        });
+        weekSelect.innerHTML = optHtml;
+        if (weeks.includes(currentSelectedWeek)) {
+          weekSelect.value = currentSelectedWeek;
+        } else {
+          weekSelect.value = 'all';
+        }
+      }
+    }
+
     // Filter by selected criteria
+    const weekFilter = document.getElementById('meetingFilterWeek')?.value || 'all';
     const blockFilter = document.getElementById('meetingFilterBlock')?.value || 'all';
     const discFilter = document.getElementById('meetingFilterDiscipline')?.value || 'all';
     const searchText = (document.getElementById('meetingSearchInput')?.value || '').toLowerCase().trim();
@@ -1639,6 +1734,16 @@ class SantiyeApp {
       if (this.currentMeetingFilter === 'overdue' && (!m.isOverdue || m.isCompleted)) return false;
       if (this.currentMeetingFilter === 'pending' && (m.isCompleted || m.isOverdue)) return false;
       if (this.currentMeetingFilter === 'done' && !m.isCompleted) return false;
+
+      // Week filter
+      if (weekFilter !== 'all') {
+        const initialW = this.getActionWeek(a);
+        const hadRevisionInWeek = (a.history || []).some(h => {
+          const hw = h.week || (this.getISOWeek(h.meetingDate) ? `${this.getISOWeek(h.meetingDate)}. Hafta` : '');
+          return hw === weekFilter;
+        });
+        if (initialW !== weekFilter && !hadRevisionInWeek) return false;
+      }
 
       // Block filter
       if (blockFilter !== 'all') {
@@ -1655,12 +1760,14 @@ class SantiyeApp {
         const titleMatch = (a.title || '').toLowerCase().includes(searchText);
         const respMatch = (a.responsible || '').toLowerCase().includes(searchText);
         const noteMatch = (a.note || '').toLowerCase().includes(searchText);
+        const weekMatch = (this.getActionWeek(a) || '').toLowerCase().includes(searchText);
         const historyMatch = (a.history || []).some(h => 
           (h.reason || '').toLowerCase().includes(searchText) || 
           (h.note || '').toLowerCase().includes(searchText) ||
-          (h.meetingTitle || '').toLowerCase().includes(searchText)
+          (h.meetingTitle || '').toLowerCase().includes(searchText) ||
+          (h.week || '').toLowerCase().includes(searchText)
         );
-        if (!titleMatch && !respMatch && !noteMatch && !historyMatch) return false;
+        if (!titleMatch && !respMatch && !noteMatch && !weekMatch && !historyMatch) return false;
       }
 
       return true;
@@ -1690,6 +1797,8 @@ class SantiyeApp {
         if (m.isCompleted) rowClass += ' done';
         else if (m.diffDaysFromInitial > 0) rowClass += ' overdue';
         else if (m.revisionCount > 0) rowClass += ' pending';
+
+        const weekLabel = this.getActionWeek(action);
 
         // Location label
         let locLabel = '🏢 Genel Şantiye';
@@ -1732,6 +1841,7 @@ class SantiyeApp {
               <div class="todo-num-badge">${m.isCompleted ? '✓' : (idx + 1)}</div>
               <div class="todo-body-wrap">
                 <div class="todo-tags-row">
+                  <span class="todo-badge-week">📅 ${weekLabel}</span>
                   <span class="todo-badge-loc">${locLabel}</span>
                   <span class="todo-badge-disc">${action.discipline || 'Genel'}</span>
                   <span class="todo-badge-resp">👷 <strong>${this.escapeHtml(action.responsible || 'Sorumlu Belirtilmedi')}</strong></span>
@@ -1740,7 +1850,7 @@ class SantiyeApp {
                   ${this.escapeHtml(action.title)}
                 </div>
                 <div class="todo-sub-meta">
-                  <span>🔒 İlk Hedef: <strong>${this.formatDateTR(action.initialPromiseDate)}</strong></span>
+                  <span>🔒 İlk Hedef: <strong>${this.formatDateTR(action.initialPromiseDate)}</strong> (${weekLabel})</span>
                   <span>➔ Güncel Plan: <strong style="color:${m.diffDaysFromCurrent > 0 && !m.isCompleted ? '#dc2626' : '#0284c7'};">${this.formatDateTR(action.currentPromiseDate)}</strong></span>
                   ${m.revisionCount > 0 && !m.isCompleted ? `<span style="color:#b45309; font-weight:700;">(${m.revisionCount} Kez Ertelendi)</span>` : ''}
                   ${action.history && action.history.length > 1 && action.history[action.history.length - 1].reason && !m.isCompleted ? `
@@ -1776,6 +1886,8 @@ class SantiyeApp {
       else if (m.diffDaysFromInitial > 0) cardStatusClass += ' status-overdue';
       else if (m.revisionCount > 0) cardStatusClass += ' status-delayed';
 
+      const weekLabel = this.getActionWeek(action);
+
       // Location label
       let locLabel = '🏢 Genel Şantiye';
       if (action.blockId && action.blockId !== 'all') {
@@ -1794,6 +1906,9 @@ class SantiyeApp {
         const isFailed = step.status === 'tutulmadi' || (!isFirst && step.reason);
         const isDone = step.status === 'tamamlandi';
 
+        const stepDate = step.meetingDate || action.createdAt;
+        const stepWeek = step.week || (this.getISOWeek(stepDate) ? `${this.getISOWeek(stepDate)}. Hafta` : '');
+
         let stepClass = 'action-timeline-step';
         if (isDone) stepClass += ' done';
         else if (isFailed) stepClass += ' failed';
@@ -1804,7 +1919,7 @@ class SantiyeApp {
             <div class="action-timeline-dot"></div>
             <div class="timeline-step-header">
               <span style="font-weight: 700; color: #1e293b;">
-                ${isFirst ? '📌 1. Toplantı Sözü' : `🔄 ${idx + 1}. Toplantı Kararı`} • ${this.formatDateTR(step.meetingDate)}
+                ${isFirst ? '📌 1. Toplantı Sözü' : `🔄 ${idx + 1}. Toplantı Kararı`} • ${stepWeek ? `<strong>${stepWeek}</strong> • ` : ''}${this.formatDateTR(step.meetingDate)}
                 ${step.meetingTitle ? `<span style="font-weight: normal; color: #64748b; margin-left: 4px;">(${this.escapeHtml(step.meetingTitle)})</span>` : ''}
               </span>
               <span style="font-size: 0.78rem; color: #475569;">
@@ -1834,6 +1949,7 @@ class SantiyeApp {
         <div class="${cardStatusClass}">
           <div class="action-card-header">
             <div class="action-tags">
+              <span class="todo-badge-week">📅 ${weekLabel}</span>
               <span class="action-tag-loc">${locLabel}</span>
               <span class="action-tag-disc">${action.discipline || 'Genel'}</span>
               <span class="action-tag-resp">👷 ${this.escapeHtml(action.responsible || 'Sorumlu Belirtilmedi')}</span>
@@ -1850,7 +1966,7 @@ class SantiyeApp {
             <div class="action-meta-col">
               <span class="meta-lbl">🔒 İlk Söz Verilen Tarih</span>
               <span class="meta-val" style="color: #0284c7;">${this.formatDateTR(action.initialPromiseDate)}</span>
-              <span style="font-size: 0.7rem; color: #94a3b8;">(Kalıcı referans tarih)</span>
+              <span style="font-size: 0.7rem; color: #94a3b8;">(${weekLabel} - Kalıcı Referans)</span>
             </div>
 
             <div class="action-meta-col">
@@ -1929,6 +2045,7 @@ class SantiyeApp {
     if (!action) return;
 
     const m = this.getActionDelayMetrics(action);
+    const weekLabel = this.getActionWeek(action);
 
     // Location label
     let locLabel = '🏢 Genel Şantiye';
@@ -1941,7 +2058,7 @@ class SantiyeApp {
     }
 
     document.getElementById('actionDetailModalTitle').innerText = action.title;
-    document.getElementById('actionDetailModalSubtitle').innerText = `${locLabel} • [${action.discipline}] Sorumlu: ${action.responsible || 'Belirtilmedi'}`;
+    document.getElementById('actionDetailModalSubtitle').innerText = `📅 ${weekLabel} Toplantısı • ${locLabel} • [${action.discipline}] Sorumlu: ${action.responsible || 'Belirtilmedi'}`;
 
     // Timeline Steps HTML
     let timelineHtml = '<div class="action-timeline">';
@@ -1950,6 +2067,9 @@ class SantiyeApp {
       const isLast = idx === (action.history.length - 1);
       const isFailed = step.status === 'tutulmadi' || (!isFirst && step.reason);
       const isDone = step.status === 'tamamlandi';
+
+      const stepDate = step.meetingDate || action.createdAt;
+      const stepWeek = step.week || (this.getISOWeek(stepDate) ? `${this.getISOWeek(stepDate)}. Hafta` : '');
 
       let stepClass = 'action-timeline-step';
       if (isDone) stepClass += ' done';
@@ -1961,7 +2081,7 @@ class SantiyeApp {
           <div class="action-timeline-dot"></div>
           <div class="timeline-step-header">
             <span style="font-weight: 700; color: #1e293b;">
-              ${isFirst ? '📌 1. Toplantı Kararı' : `🔄 ${idx + 1}. Toplantı Kararı`} • ${this.formatDateTR(step.meetingDate)}
+              ${isFirst ? '📌 1. Toplantı Kararı' : `🔄 ${idx + 1}. Toplantı Kararı`} • ${stepWeek ? `<strong>${stepWeek}</strong> • ` : ''}${this.formatDateTR(step.meetingDate)}
               ${step.meetingTitle ? `<span style="font-weight: normal; color: #64748b; margin-left: 4px;">(${this.escapeHtml(step.meetingTitle)})</span>` : ''}
             </span>
             <span style="font-size: 0.78rem; color: #475569;">
@@ -1997,7 +2117,7 @@ class SantiyeApp {
       <div class="action-meta-box">
         <div class="action-meta-col">
           <span class="meta-lbl">🔒 İlk Söz Verilen Tarih</span>
-          <span class="meta-val" style="color: #0284c7;">${this.formatDateTR(action.initialPromiseDate)}</span>
+          <span class="meta-val" style="color: #0284c7;">${this.formatDateTR(action.initialPromiseDate)} <span style="font-size:0.75rem; font-weight:normal; color:#0369a1;">(${weekLabel})</span></span>
           <span style="font-size: 0.7rem; color: #94a3b8;">(Sistemde kalıcı referans)</span>
         </div>
 
@@ -2074,12 +2194,12 @@ class SantiyeApp {
     const todayStr = new Date().toISOString().split('T')[0];
     document.getElementById('newActionDate').value = todayStr;
     document.getElementById('newActionInitialDate').value = todayStr;
-    document.getElementById('newActionMeetingTitle').value = 'Haftalık Şantiye Koordinasyon Toplantısı';
     document.getElementById('newActionTargetBlock').value = preselectedBlockId || 'all';
     document.getElementById('newActionTargetFloor').value = preselectedFloorId || 'all';
     document.getElementById('newActionTitle').value = '';
     document.getElementById('newActionResponsible').value = '';
     document.getElementById('newActionNote').value = '';
+    this.handleNewMeetingDateChange();
     this.openModal('modalNewMeetingAction');
   }
 
@@ -2105,7 +2225,8 @@ class SantiyeApp {
     }
 
     const meetingDate = document.getElementById('newActionDate').value || new Date().toISOString().split('T')[0];
-    const meetingTitle = document.getElementById('newActionMeetingTitle').value.trim() || 'Haftalık Koordinasyon Toplantısı';
+    const week = this.getISOWeek(meetingDate) ? `${this.getISOWeek(meetingDate)}. Hafta` : 'Toplantı';
+    const meetingTitle = document.getElementById('newActionMeetingTitle').value.trim() || `${week} Koordinasyon Toplantısı`;
     const blockId = document.getElementById('newActionTargetBlock').value;
     const floorId = document.getElementById('newActionTargetFloor').value;
     const discipline = document.getElementById('newActionDiscipline').value;
@@ -2121,6 +2242,7 @@ class SantiyeApp {
       id: 'act_' + Date.now() + '_' + Math.floor(Math.random() * 1000),
       createdAt: meetingDate,
       createdBy: this.isAdmin ? 'Şantiye Yöneticisi' : 'Sistem',
+      week: week,
       meetingTitle: meetingTitle,
       blockId: blockId,
       floorId: floorId,
@@ -2135,6 +2257,7 @@ class SantiyeApp {
       history: [
         {
           id: 'rev_' + Date.now(),
+          week: week,
           meetingDate: meetingDate,
           meetingTitle: meetingTitle,
           targetDate: initialDate,
@@ -2149,7 +2272,7 @@ class SantiyeApp {
     this.data.meetingActions.unshift(newAction);
 
     // Add audit log
-    this.addLog('Toplantı Sözü Eklendi', `[${discipline}] ${responsible}: "${title}" (İlk Hedef: ${this.formatDateTR(initialDate)})`, 'primary', unitId);
+    this.addLog('Toplantı Sözü Eklendi', `[${week} - ${discipline}] ${responsible}: "${title}" (İlk Hedef: ${this.formatDateTR(initialDate)})`, 'primary', unitId);
 
     await this.saveData(this.data);
     this.closeModal('modalNewMeetingAction');
@@ -2164,18 +2287,19 @@ class SantiyeApp {
     if (!action) return;
 
     const m = this.getActionDelayMetrics(action);
+    const weekLabel = this.getActionWeek(action);
 
     document.getElementById('reviseActionId').value = actionId;
     document.getElementById('reviseActionSummary').innerText = `${action.discipline} • ${action.responsible} ➔ "${action.title}"`;
     document.getElementById('reviseActionOriginalInfo').innerHTML = `
-      🔒 <strong>İlk Verilen Söz Tarihi:</strong> ${this.formatDateTR(action.initialPromiseDate)} (Asla Silinmez)<br>
+      🔒 <strong>İlk Verilen Söz Tarihi:</strong> ${this.formatDateTR(action.initialPromiseDate)} (${weekLabel}) (Asla Silinmez)<br>
       ⏱️ <strong>Durum:</strong> ${m.diffDaysFromInitial > 0 ? `<span style="color:#dc2626; font-weight:700;">${m.diffDaysFromInitial} gündür yapılamadı</span>` : 'Süresinde'} 
       • Bugüne kadar <strong>${m.revisionCount} kez</strong> toplantıda ertelendi.
     `;
 
     const todayStr = new Date().toISOString().split('T')[0];
     document.getElementById('reviseActionDate').value = todayStr;
-    document.getElementById('reviseActionMeetingTitle').value = `${m.revisionCount + 2}. Hafta Koordinasyon Toplantısı`;
+    this.handleReviseMeetingDateChange();
     document.getElementById('reviseActionReason').value = '';
     
     // Default next target: today + 7 days
@@ -2194,8 +2318,9 @@ class SantiyeApp {
 
     const reason = document.getElementById('reviseActionReason').value.trim();
     const newDate = document.getElementById('reviseActionNewDate').value;
-    const meetingTitle = document.getElementById('reviseActionMeetingTitle').value.trim() || 'Koordinasyon Toplantısı';
     const meetingDate = document.getElementById('reviseActionDate').value || new Date().toISOString().split('T')[0];
+    const week = this.getISOWeek(meetingDate) ? `${this.getISOWeek(meetingDate)}. Hafta` : 'Toplantı';
+    const meetingTitle = document.getElementById('reviseActionMeetingTitle').value.trim() || `${week} Koordinasyon Toplantısı`;
     const newNote = document.getElementById('reviseActionNewNote').value.trim();
 
     if (!reason) {
@@ -2215,6 +2340,7 @@ class SantiyeApp {
     // Append new revision to history (OLD PROMISES ARE PRESERVED)
     action.history.push({
       id: 'rev_' + Date.now(),
+      week: week,
       meetingDate: meetingDate,
       meetingTitle: meetingTitle,
       targetDate: newDate,
@@ -2227,7 +2353,7 @@ class SantiyeApp {
     action.status = 'gecikmede';
 
     // Add audit log
-    this.addLog('Toplantı Sözü Ertelendi', `"${action.title}" yeni hedefe (${this.formatDateTR(newDate)}) ertelendi. Mazeret: ${reason}`, 'warning', action.unitId || 'all');
+    this.addLog('Toplantı Sözü Ertelendi', `[${week}] "${action.title}" yeni hedefe (${this.formatDateTR(newDate)}) ertelendi. Mazeret: ${reason}`, 'warning', action.unitId || 'all');
 
     await this.saveData(this.data);
     this.closeModal('modalReviseMeetingAction');

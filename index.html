@@ -1474,6 +1474,111 @@ body {
   box-shadow: 0 1px 3px rgba(0,0,0,0.12);
 }
 
+/* Compact 1-Line Meeting / To-Do KPI Bar */
+.meeting-compact-kpi-bar {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  margin-bottom: 0.85rem;
+  flex-wrap: wrap;
+}
+
+.kpi-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.4rem 0.75rem;
+  border-radius: 8px;
+  font-size: 0.8rem;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  border: 1.5px solid transparent;
+  background: white;
+}
+.kpi-pill:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 2px 6px rgba(0,0,0,0.06);
+}
+.kpi-pill .pill-label {
+  color: #64748b;
+  font-weight: 600;
+}
+.kpi-pill .pill-val {
+  font-weight: 800;
+  font-size: 0.95rem;
+}
+
+.kpi-pill.kpi-pill-danger {
+  background: #fff5f5;
+  border-color: #fecaca;
+}
+.kpi-pill.kpi-pill-danger .pill-val {
+  color: #dc2626;
+}
+
+.kpi-pill.kpi-pill-warning {
+  background: #fffbeb;
+  border-color: #fde68a;
+}
+.kpi-pill.kpi-pill-warning .pill-val {
+  color: #d97706;
+}
+
+.kpi-pill.kpi-pill-success {
+  background: #f0fdf4;
+  border-color: #bbf7d0;
+}
+.kpi-pill.kpi-pill-success .pill-val {
+  color: #16a34a;
+}
+
+.kpi-pill.kpi-pill-info {
+  background: #f8fafc;
+  border-color: #cbd5e1;
+}
+.kpi-pill.kpi-pill-info .pill-val {
+  color: #0284c7;
+}
+
+.kpi-pill-rule-hint {
+  margin-left: auto;
+  font-size: 0.75rem;
+  color: #64748b;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.tab-nav-divider {
+  width: 1px;
+  height: 24px;
+  background: #cbd5e1;
+  margin: 0 0.35rem;
+}
+
+.main-tab-btn {
+  font-weight: 700 !important;
+  color: #1e293b;
+  position: relative;
+}
+.main-tab-btn.active {
+  color: #0284c7 !important;
+  border-bottom: 3px solid #0284c7 !important;
+}
+
+.todo-badge-week {
+  background: #ede9fe;
+  color: #5b21b6;
+  border: 1px solid #ddd6fe;
+  font-size: 0.72rem;
+  font-weight: 700;
+  padding: 0.15rem 0.5rem;
+  border-radius: 4px;
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+}
+
 .todo-list-container {
   display: flex;
   flex-direction: column;
@@ -1890,7 +1995,13 @@ body {
 
     <!-- Navigation Tabs -->
     <nav class="tabs-nav">
-      <button class="tab-btn active" onclick="app.switchTab('matrix')">
+      <button class="tab-btn main-tab-btn active" onclick="app.switchTab('meetings')">
+        <span>📋</span>
+        <span>Şantiye To-Do & Toplantı Kararları</span>
+        <span class="tab-count" id="meetingTabCount" style="background: #fee2e2; color: #b91c1c;">0</span>
+      </button>
+      <div class="tab-nav-divider"></div>
+      <button class="tab-btn" onclick="app.switchTab('matrix')">
         <span>🗺️</span>
         <span>Şantiye Isı Haritası (Matris)</span>
       </button>
@@ -1899,14 +2010,9 @@ body {
         <span>Blok Kesiti & Kat Kartları</span>
       </button>
       <button class="tab-btn" onclick="app.switchTab('table')">
-        <span>📋</span>
+        <span>📑</span>
         <span>Detaylı Liste & Tablo</span>
         <span class="tab-count" id="tableTabCount">80</span>
-      </button>
-      <button class="tab-btn" onclick="app.switchTab('meetings')">
-        <span>🗓️</span>
-        <span>Toplantı Kararları & Gecikmeler</span>
-        <span class="tab-count" id="meetingTabCount" style="background: #fee2e2; color: #b91c1c;">0</span>
       </button>
       <button class="tab-btn" onclick="app.switchTab('stats')">
         <span>📊</span>
@@ -1920,7 +2026,7 @@ body {
     </nav>
 
     <!-- TAB 1: Şantiye Isı Haritası / Matrix Grid -->
-    <section id="view-matrix" class="view-panel active">
+    <section id="view-matrix" class="view-panel">
       <div class="toolbar">
         <div class="filter-group">
           <span style="font-size: 0.8rem; font-weight: 700; color: #475569;">Filtrele:</span>
@@ -2084,36 +2190,31 @@ body {
     </section>
 
     <!-- TAB 6: Toplantı Kararları & Gecikme Takip Sistemi -->
-    <section id="view-meetings" class="view-panel">
-      <!-- Toplantı KPI Özeti -->
-      <div class="meeting-kpi-grid">
-        <div class="meeting-kpi-card danger">
-          <div class="meeting-kpi-label">Tutulmayan / Geciken Sözler</div>
-          <div class="meeting-kpi-val" id="meetingKpiOverdue">0</div>
-          <div class="meeting-kpi-sub">İlk hedefi geçmiş veya ertelenmiş</div>
+    <section id="view-meetings" class="view-panel active">
+      <!-- Kompakt 1 Satır Toplantı & To-Do KPI Barı -->
+      <div class="meeting-compact-kpi-bar">
+        <div class="kpi-pill kpi-pill-danger" onclick="app.setMeetingFilter('overdue')" title="Tutulmayan ve geciken sözleri filtrele">
+          <span>⚠️</span>
+          <span class="pill-label">Geciken / Tutulmayan:</span>
+          <strong class="pill-val" id="meetingKpiOverdue">0</strong>
         </div>
-        <div class="meeting-kpi-card warning">
-          <div class="meeting-kpi-label">Devam Eden Taahhütler</div>
-          <div class="meeting-kpi-val" id="meetingKpiPending">0</div>
-          <div class="meeting-kpi-sub">Süresi devam eden kararlar</div>
+        <div class="kpi-pill kpi-pill-warning" onclick="app.setMeetingFilter('pending')" title="Devam eden taahhütleri filtrele">
+          <span>⏳</span>
+          <span class="pill-label">Devam Eden:</span>
+          <strong class="pill-val" id="meetingKpiPending">0</strong>
         </div>
-        <div class="meeting-kpi-card success">
-          <div class="meeting-kpi-label">Söz Tutuldu / Tamamlandı</div>
-          <div class="meeting-kpi-val" id="meetingKpiDone">0</div>
-          <div class="meeting-kpi-sub">Başarıyla bitirilen taahhütler</div>
+        <div class="kpi-pill kpi-pill-success" onclick="app.setMeetingFilter('done')" title="Tamamlanan sözleri filtrele">
+          <span>✅</span>
+          <span class="pill-label">Tamamlandı:</span>
+          <strong class="pill-val" id="meetingKpiDone">0</strong>
         </div>
-        <div class="meeting-kpi-card info">
-          <div class="meeting-kpi-label">Toplam Toplantı Kararı</div>
-          <div class="meeting-kpi-val" id="meetingKpiTotal">0</div>
-          <div class="meeting-kpi-sub">Kayıt altındaki aksiyonlar</div>
+        <div class="kpi-pill kpi-pill-info" onclick="app.setMeetingFilter('all')" title="Tüm toplantı kararlarını göster">
+          <span>📋</span>
+          <span class="pill-label">Toplam Karar:</span>
+          <strong class="pill-val" id="meetingKpiTotal">0</strong>
         </div>
-      </div>
-
-      <!-- Bilgi Notu Kutusu -->
-      <div style="background: #eff6ff; border: 1.5px solid #bfdbfe; border-radius: 8px; padding: 0.85rem 1.1rem; display: flex; align-items: flex-start; gap: 0.75rem; margin-bottom: 1.25rem;">
-        <span style="font-size: 1.3rem;">📌</span>
-        <div style="font-size: 0.82rem; color: #1e40af; line-height: 1.45;">
-          <strong>Şantiye Toplantı & Taahhüt İlkesi:</strong> Haftalık koordinasyon toplantılarında taşeron veya ekiplerce verilen sözler ve bitiş tarihleri <strong>asla silinmez</strong>. Söz tutulmadığında yeni toplantı mazereti ve revize hedef tarih eklenir; böylece hangi tarihten beri yapılamadığı, kaç kez ertelendiği ve neden bitirilemediği şeffaf olarak takip edilir.
+        <div class="kpi-pill-rule-hint" title="Toplantılarda verilen sözler ve eski tarihler silinmez; mazeretler ve yeni tarihler şeffaf olarak listelenir.">
+          🔒 <em>Eski sözler silinmez, şeffaf takip edilir</em>
         </div>
       </div>
 
@@ -2126,6 +2227,10 @@ body {
           <button class="filter-chip chip-pending" id="chipMeetingPending" onclick="app.setMeetingFilter('pending')">⏳ Devam Edenler</button>
           <button class="filter-chip chip-done" id="chipMeetingDone" onclick="app.setMeetingFilter('done')">✅ Tamamlananlar</button>
           
+          <select id="meetingFilterWeek" class="form-select" style="width: auto; padding: 0.35rem 0.65rem; font-size: 0.8rem;" onchange="app.renderMeetings()">
+            <option value="all">📅 Tüm Haftalar</option>
+          </select>
+
           <select id="meetingFilterBlock" class="form-select" style="width: auto; padding: 0.35rem 0.65rem; font-size: 0.8rem;" onchange="app.renderMeetings()">
             <option value="all">🏢 Tüm Bloklar / Genel</option>
             <option value="1">Blok 1</option>
@@ -2586,12 +2691,15 @@ body {
       <div class="modal-body">
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem;">
           <div class="form-group">
-            <label class="form-label">Toplantı Başlığı / No:</label>
-            <input type="text" id="newActionMeetingTitle" class="form-control" placeholder="Örn: 27 Ekim Şantiye Koordinasyon Toplantısı">
+            <label class="form-label">Toplantı Başlığı & No:</label>
+            <input type="text" id="newActionMeetingTitle" class="form-control" placeholder="Örn: 44. Hafta Şantiye Koordinasyon Toplantısı">
           </div>
           <div class="form-group">
-            <label class="form-label">Toplantı Tarihi:</label>
-            <input type="date" id="newActionDate" class="form-control">
+            <label class="form-label">Toplantı Tarihi & Haftası:</label>
+            <div style="display:flex; gap:0.5rem; align-items:center;">
+              <input type="date" id="newActionDate" class="form-control" onchange="app.handleNewMeetingDateChange()">
+              <span id="newActionWeekBadge" style="background:#e0e7ff; color:#3730a3; font-weight:700; font-size:0.75rem; padding:0.4rem 0.6rem; border-radius:6px; white-space:nowrap;">-</span>
+            </div>
           </div>
         </div>
 
@@ -2695,12 +2803,15 @@ body {
 
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem;">
           <div class="form-group">
-            <label class="form-label">Bu Haftaki Toplantı Adı:</label>
-            <input type="text" id="reviseActionMeetingTitle" class="form-control" placeholder="Örn: 2. Hafta Koordinasyon Toplantısı">
+            <label class="form-label">Bu Haftaki Toplantı Adı & No:</label>
+            <input type="text" id="reviseActionMeetingTitle" class="form-control" placeholder="Örn: 44. Hafta Koordinasyon Toplantısı">
           </div>
           <div class="form-group">
-            <label class="form-label">Toplantı Tarihi:</label>
-            <input type="date" id="reviseActionDate" class="form-control">
+            <label class="form-label">Toplantı Tarihi & Haftası:</label>
+            <div style="display:flex; gap:0.5rem; align-items:center;">
+              <input type="date" id="reviseActionDate" class="form-control" onchange="app.handleReviseMeetingDateChange()">
+              <span id="reviseActionWeekBadge" style="background:#e0e7ff; color:#3730a3; font-weight:700; font-size:0.75rem; padding:0.4rem 0.6rem; border-radius:6px; white-space:nowrap;">-</span>
+            </div>
           </div>
         </div>
 
