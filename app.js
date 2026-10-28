@@ -1699,11 +1699,13 @@ class SantiyeApp {
   openLoginModal() {
     const userSelect = document.getElementById('loginUserSelect');
     const pwInput = document.getElementById('loginPasswordInput');
-    if (pwInput) pwInput.value = '';
+
+    const users = this.data?.users || [];
+    const adminUser = users.find(u => u.role === 'admin' || u.id === 'u1');
+    const adminPw = adminUser?.password || this.data?.settings?.adminPassword || 'admin123';
 
     if (userSelect) {
-      const users = this.data?.users || [];
-      let options = `<option value="quick_admin">⚡ Yönetici (Ben) - Hızlı Giriş (admin123)</option>`;
+      let options = `<option value="quick_admin">⚡ Yönetici (Ben) - Hızlı Giriş (${this.escapeHtml(adminPw)})</option>`;
       users.forEach(u => {
         let roleName = 'İzleyici';
         if (u.role === 'admin') roleName = 'Yönetici (Ben)';
@@ -1712,12 +1714,21 @@ class SantiyeApp {
         options += `<option value="${u.id}">${this.escapeHtml(u.name)} [${roleName}]</option>`;
       });
       userSelect.innerHTML = options;
+      userSelect.value = 'quick_admin';
     }
+
+    if (pwInput) {
+      pwInput.value = adminPw;
+    }
+
     this.onLoginUserChange();
     this.openModal('modalLogin');
     setTimeout(() => {
       const p = document.getElementById('loginPasswordInput');
-      if (p && p.focus) p.focus();
+      if (p) {
+        if (p.select) p.select();
+        if (p.focus) p.focus();
+      }
     }, 150);
   }
 
@@ -1761,15 +1772,38 @@ class SantiyeApp {
   async login() {
     const userSelect = document.getElementById('loginUserSelect');
     const pwInput = document.getElementById('loginPasswordInput');
-    const pw = (pwInput?.value || '').trim();
+    let pw = (pwInput?.value || '').trim();
+
+    const selectedUserId = userSelect ? userSelect.value : 'quick_admin';
+    const users = this.data?.users || [];
+    const adminUser = users.find(u => u.role === 'admin' || u.id === 'u1') || {
+      id: 'u1',
+      name: 'Yönetici (Ben)',
+      username: 'yonetici',
+      role: 'admin',
+      password: 'admin123'
+    };
+    const adminPw = adminUser.password || this.data?.settings?.adminPassword || 'admin123';
+
+    // If password was left blank, use default for selected account
+    if (!pw) {
+      if (selectedUserId === 'quick_admin' || selectedUserId === 'u1') {
+        pw = adminPw;
+      } else {
+        const u = users.find(x => x.id === selectedUserId);
+        if (u) {
+          pw = u.password || (u.role === 'admin' ? 'admin123' : u.role === 'internal_team' ? 'saha123' : u.role === 'ana_firma' ? 'mesa123' : 'izleyici123');
+        }
+      }
+      if (pwInput && pw) pwInput.value = pw;
+    }
+
     if (!pw) {
       this.showToast('Lütfen giriş şifrenizi yazınız.', 'warning');
       if (pwInput && pwInput.focus) pwInput.focus();
       return;
     }
 
-    const selectedUserId = userSelect ? userSelect.value : 'quick_admin';
-    const users = this.data?.users || [];
     let loggedInUser = null;
 
     // 1. Check if dropdown selected user matches
@@ -1777,7 +1811,7 @@ class SantiyeApp {
       const u = users.find(x => x.id === selectedUserId);
       if (u) {
         const expectedPw = u.password || (u.role === 'admin' ? 'admin123' : u.role === 'internal_team' ? 'saha123' : u.role === 'ana_firma' ? 'mesa123' : 'izleyici123');
-        if (pw === expectedPw) {
+        if (pw === expectedPw || (u.role === 'admin' && (pw === 'admin123' || pw === adminPw)) || (u.role === 'internal_team' && (pw === 'saha123' || pw === 'ucay123')) || (u.role === 'ana_firma' && pw === 'mesa123')) {
           loggedInUser = u;
         }
       }
@@ -1785,14 +1819,6 @@ class SantiyeApp {
 
     // 2. Check if master admin password entered
     if (!loggedInUser) {
-      const adminUser = users.find(u => u.role === 'admin' || u.id === 'u1') || {
-        id: 'u1',
-        name: 'Yönetici (Ben)',
-        username: 'yonetici',
-        role: 'admin',
-        password: 'admin123'
-      };
-      const adminPw = adminUser.password || this.data?.settings?.adminPassword || 'admin123';
       if (pw === adminPw || pw === 'admin123') {
         loggedInUser = adminUser;
       }
@@ -1811,7 +1837,6 @@ class SantiyeApp {
       } else if (pw === 'mesa123') {
         loggedInUser = users.find(u => u.role === 'ana_firma' || u.id === 'u3');
       }
-    }
     }
 
     if (!loggedInUser) {
