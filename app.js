@@ -456,16 +456,17 @@ class SantiyeApp {
   }
 
   async verifyAdminPassword() {
-    const pwd = document.getElementById('adminVerifyPasswordInput').value;
+    const pwd = (document.getElementById('adminVerifyPasswordInput')?.value || '').trim();
     if (!pwd) {
       this.showToast('Lütfen şifre giriniz.', 'warning');
       return;
     }
 
-    let isValid = false;
-    if (pwd === 'admin123') {
-      isValid = true;
-    } else {
+    const adminUser = (this.data?.users || []).find(u => u.role === 'admin' || u.id === 'u1');
+    const expectedAdminPw = adminUser?.password || this.data?.settings?.adminPassword || 'admin123';
+
+    let isValid = (pwd === expectedAdminPw || pwd === 'admin123');
+    if (!isValid && window.location.origin.includes('localhost')) {
       try {
         const res = await fetch(`${this.apiUrl}/api/auth/login`, {
           method: 'POST',
@@ -478,7 +479,7 @@ class SantiyeApp {
     }
 
     if (isValid) {
-      this.adminToken = this.adminToken || 'local-admin-token';
+      this.adminToken = this.adminToken || 'local-admin-token-' + Date.now();
       localStorage.setItem('santiye_admin_token', this.adminToken);
       this.closeModal('modalAdminVerify');
       this.switchActiveRole('admin');
@@ -557,8 +558,11 @@ class SantiyeApp {
     if (!isSilent && this.data) this.renderAll();
   }
 
-  async saveData(updatedData) {
-    this.data = updatedData;
+  async saveData(updatedData, showCloudToast = true) {
+    if (updatedData) {
+      this.data = updatedData;
+    }
+    if (!this.data) return;
     localStorage.setItem(this.fallbackKey, JSON.stringify(this.data));
 
     let savedToCloud = false;
@@ -570,12 +574,14 @@ class SantiyeApp {
         this.isCloudActive = true;
         this.updateSyncUI('bulut');
         savedToCloud = true;
-        this.showToast('Buluta kaydedildi ve tüm cihazlara anında yansıtıldı! ✅', 'success');
+        if (showCloudToast) {
+          this.showToast('Buluta kaydedildi ve tüm cihazlara anında yansıtıldı! ✅', 'success');
+        }
       } catch (e) {
         console.warn('Buluta kaydedilemedi:', e);
         if (e.code === 'permission-denied') {
-          this.showToast('⚠️ Firebase izin kuralı bekleniyor: Değişiklik telefonun hafızasına kaydedildi ancak diğer cihazlara yansıması için Firebase kuralı açılmalıdır.', 'warning');
-        } else {
+          this.showToast('⚠️ Firebase izin kuralı bekleniyor: Değişiklik cihaz hafızasına kaydedildi ancak diğer cihazlara yansıması için Firebase kuralı açılmalıdır.', 'warning');
+        } else if (showCloudToast) {
           this.showToast('Değişiklik bu cihaza kaydedildi.', 'info');
         }
       }
@@ -1737,15 +1743,17 @@ class SantiyeApp {
 
     const val = userSelect.value;
     if (val === 'quick_admin') {
+      const adminUser = (this.data?.users || []).find(u => u.role === 'admin' || u.id === 'u1');
+      const adminPw = adminUser?.password || this.data?.settings?.adminPassword || 'admin123';
       if (pwLabel) pwLabel.innerText = 'Yönetici Şifresi:';
-      hintBox.innerHTML = '<span>💡 Yönetici şifresi: <code>admin123</code></span>';
+      hintBox.innerHTML = `<span>💡 Yönetici şifresi: <code>${this.escapeHtml(adminPw)}</code></span>`;
     } else {
       const u = (this.data?.users || []).find(x => x.id === val);
       if (u) {
         if (pwLabel) pwLabel.innerText = `${u.name} Giriş Şifresi:`;
         const defaultHint = u.role === 'admin' ? 'admin123' : u.role === 'internal_team' ? 'saha123' : u.role === 'ana_firma' ? 'mesa123' : 'izleyici123';
         const displayHint = u.password || defaultHint;
-        hintBox.innerHTML = `<span>👤 <strong>${this.escapeHtml(u.name)}</strong> (@${this.escapeHtml(u.username || u.id)}) hesabına ait şifrenizi giriniz. (Varsayılan: <code>${this.escapeHtml(displayHint)}</code>)</span>`;
+        hintBox.innerHTML = `<span>👤 <strong>${this.escapeHtml(u.name)}</strong> (@${this.escapeHtml(u.username || u.id)}) hesabına ait şifrenizi giriniz. (Şifre: <code>${this.escapeHtml(displayHint)}</code>)</span>`;
       }
     }
   }
@@ -1769,7 +1777,7 @@ class SantiyeApp {
       const u = users.find(x => x.id === selectedUserId);
       if (u) {
         const expectedPw = u.password || (u.role === 'admin' ? 'admin123' : u.role === 'internal_team' ? 'saha123' : u.role === 'ana_firma' ? 'mesa123' : 'izleyici123');
-        if (pw === expectedPw || (u.role === 'admin' && pw === 'admin123') || (u.role === 'internal_team' && pw === 'ucay123')) {
+        if (pw === expectedPw) {
           loggedInUser = u;
         }
       }
@@ -1777,46 +1785,33 @@ class SantiyeApp {
 
     // 2. Check if master admin password entered
     if (!loggedInUser) {
-      const adminUser = users.find(u => u.role === 'admin') || {
+      const adminUser = users.find(u => u.role === 'admin' || u.id === 'u1') || {
         id: 'u1',
         name: 'Yönetici (Ben)',
         username: 'yonetici',
         role: 'admin',
         password: 'admin123'
       };
-      const adminPw = adminUser.password || 'admin123';
-      if (pw === 'admin123' || pw === adminPw) {
+      const adminPw = adminUser.password || this.data?.settings?.adminPassword || 'admin123';
+      if (pw === adminPw || pw === 'admin123') {
         loggedInUser = adminUser;
       }
     }
 
     // 3. Match against known team passwords directly
     if (!loggedInUser) {
-      if (pw === 'saha123' || pw === 'ucay123') {
-        loggedInUser = users.find(u => u.role === 'internal_team' || u.id === 'u2') || {
-          id: 'u2',
-          name: 'Üçay Elektrik Ekibi',
-          username: 'ucay_elektrik',
-          role: 'internal_team',
-          password: 'saha123'
-        };
+      const matched = users.find(u => {
+        const expected = u.password || (u.role === 'admin' ? 'admin123' : u.role === 'internal_team' ? 'saha123' : u.role === 'ana_firma' ? 'mesa123' : 'izleyici123');
+        return u.password === pw || expected === pw;
+      });
+      if (matched) {
+        loggedInUser = matched;
+      } else if (pw === 'saha123' || pw === 'ucay123') {
+        loggedInUser = users.find(u => u.role === 'internal_team' || u.id === 'u2');
       } else if (pw === 'mesa123') {
-        loggedInUser = users.find(u => u.role === 'ana_firma' || u.id === 'u3') || {
-          id: 'u3',
-          name: 'MESA Ekibi',
-          username: 'mesa_ekibi',
-          role: 'ana_firma',
-          password: 'mesa123'
-        };
-      } else {
-        const matched = users.find(u => {
-          const expected = u.password || (u.role === 'admin' ? 'admin123' : u.role === 'internal_team' ? 'saha123' : u.role === 'ana_firma' ? 'mesa123' : 'izleyici123');
-          return u.password === pw || expected === pw;
-        });
-        if (matched) {
-          loggedInUser = matched;
-        }
+        loggedInUser = users.find(u => u.role === 'ana_firma' || u.id === 'u3');
       }
+    }
     }
 
     if (!loggedInUser) {
@@ -1893,43 +1888,108 @@ class SantiyeApp {
   }
 
   openChangePasswordModal() {
-    document.getElementById('currentPwInput').value = '';
-    document.getElementById('newPwInput').value = '';
-    document.getElementById('confirmPwInput').value = '';
+    const curEl = document.getElementById('currentPwInput');
+    const newEl = document.getElementById('newPwInput');
+    const confEl = document.getElementById('confirmPwInput');
+    if (curEl) curEl.value = '';
+    if (newEl) newEl.value = '';
+    if (confEl) confEl.value = '';
+
+    const titleEl = document.querySelector('#modalChangePassword .modal-title');
+    const targetUser = (this.currentUser && this.data?.users)
+      ? this.data.users.find(u => u.id === this.currentUser.id)
+      : (this.data?.users || []).find(u => u.role === 'admin' || u.id === 'u1');
+
+    if (titleEl) {
+      if (targetUser && targetUser.role !== 'admin') {
+        titleEl.textContent = `🔒 ${targetUser.name} Şifresini Değiştir`;
+      } else {
+        titleEl.textContent = '🔒 Yönetici Şifresini Değiştir';
+      }
+    }
+
     this.openModal('modalChangePassword');
   }
 
   async changePassword() {
-    const curPw = document.getElementById('currentPwInput').value;
-    const newPw = document.getElementById('newPwInput').value;
-    const confPw = document.getElementById('confirmPwInput').value;
+    const curPw = (document.getElementById('currentPwInput')?.value || '').trim();
+    const newPw = (document.getElementById('newPwInput')?.value || '').trim();
+    const confPw = (document.getElementById('confirmPwInput')?.value || '').trim();
 
     if (!curPw || !newPw) {
-      this.showToast('Lütfen alanları doldurunuz.', 'warning');
+      this.showToast('Lütfen mevcut şifrenizi ve yeni şifrenizi yazınız.', 'warning');
+      return;
+    }
+    if (newPw.length < 3) {
+      this.showToast('Yeni şifre en az 3 karakter olmalıdır.', 'warning');
       return;
     }
     if (newPw !== confPw) {
-      this.showToast('Yeni şifreler uyuşmuyor!', 'error');
+      this.showToast('Yeni şifreler birbiriyle uyuşmuyor!', 'error');
       return;
     }
 
-    try {
-      const res = await fetch(`${this.apiUrl}/api/auth/change-password`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ currentPassword: curPw, newPassword: newPw })
-      });
-
-      const resData = await res.json();
-      if (res.ok && resData.success) {
-        this.showToast('Şifreniz başarıyla değiştirildi.', 'success');
-        this.closeModal('modalChangePassword');
-      } else {
-        this.showToast(resData.message || 'Şifre değiştirilemedi!', 'error');
-      }
-    } catch (e) {
-      this.showToast('Sunucu hatası!', 'error');
+    if (!this.data) {
+      this.showToast('Veri yüklenemedi. Lütfen sayfayı yenileyiniz.', 'error');
+      return;
     }
+    if (!this.data.users || !Array.isArray(this.data.users)) {
+      this.data.users = [];
+    }
+
+    // Determine which user password is being changed (current logged in user, or admin)
+    let targetUser = (this.currentUser && this.data.users)
+      ? this.data.users.find(u => u.id === this.currentUser.id)
+      : this.data.users.find(u => u.role === 'admin' || u.id === 'u1');
+
+    if (!targetUser) {
+      targetUser = {
+        id: 'u1',
+        username: 'yonetici',
+        name: 'Yönetici (Ben)',
+        role: 'admin',
+        desc: 'Tam yetkili yönetici',
+        password: 'admin123'
+      };
+      this.data.users.push(targetUser);
+    }
+
+    const currentExpectedPw = targetUser.password || (targetUser.role === 'admin' ? 'admin123' : targetUser.role === 'internal_team' ? 'saha123' : targetUser.role === 'ana_firma' ? 'mesa123' : 'izleyici123');
+
+    // Verify current password (allow admin123 as recovery for admin)
+    const isPwCorrect = (curPw === currentExpectedPw) || (targetUser.role === 'admin' && curPw === 'admin123');
+
+    if (!isPwCorrect) {
+      this.showToast('Mevcut şifreniz hatalı! Lütfen kontrol ediniz.', 'error');
+      const curEl = document.getElementById('currentPwInput');
+      if (curEl) { curEl.select(); curEl.focus(); }
+      return;
+    }
+
+    // Update password in data
+    targetUser.password = newPw;
+    if (targetUser.role === 'admin' || targetUser.id === 'u1') {
+      if (!this.data.settings) this.data.settings = {};
+      this.data.settings.adminPassword = newPw;
+    }
+
+    // Save to Firestore and localStorage
+    await this.saveData(this.data, false);
+
+    // If running with local python backend, update backend session in background
+    if (window.location.origin.includes('localhost') && (targetUser.role === 'admin' || targetUser.id === 'u1')) {
+      try {
+        fetch(`${this.apiUrl}/api/auth/change-password`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ currentPassword: curPw, newPassword: newPw })
+        }).catch(() => {});
+      } catch (e) {}
+    }
+
+    this.closeModal('modalChangePassword');
+    this.renderUsersList();
+    this.showToast(`Şifreniz başarıyla güncellendi! Yeni şifre: "${newPw}" ✅`, 'success');
   }
 
   // --- EXPORT TO EXCEL / CSV ---
@@ -4334,7 +4394,7 @@ class SantiyeApp {
       else if (u.role === 'ana_firma') roleBadge = '<span class="badge" style="background:#dcfce7; color:#15803d; font-weight:700;">🏢 MESA Ekibi</span>';
       else roleBadge = '<span class="badge" style="background:#f1f5f9; color:#475569; font-weight:700;">👁️ İzleyici</span>';
 
-      const pwText = u.password || 'admin123';
+      const pwText = u.password || (u.role === 'admin' ? 'admin123' : u.role === 'internal_team' ? 'saha123' : u.role === 'ana_firma' ? 'mesa123' : 'izleyici123');
 
       return `
         <div class="user-item-card" style="display:flex; flex-direction:column; gap:0.6rem; align-items:stretch; background:#ffffff; border:1px solid #e2e8f0; border-radius:10px; padding:0.85rem 1rem; box-shadow:0 1px 3px rgba(0,0,0,0.03);">
@@ -4431,7 +4491,7 @@ class SantiyeApp {
     };
 
     this.data.users.push(newUser);
-    await this.saveData();
+    await this.saveData(this.data);
 
     this.closeModal('modalNewUser');
     this.renderUsersList();
@@ -4463,14 +4523,21 @@ class SantiyeApp {
     }
 
     const user = (this.data?.users || []).find(u => u.id === userId);
-    if (!user) return;
+    if (!user) {
+      this.showToast('Kullanıcı bulunamadı!', 'error');
+      return;
+    }
 
     user.password = newPassword;
-    await this.saveData();
+    if (user.role === 'admin' || user.id === 'u1') {
+      if (!this.data.settings) this.data.settings = {};
+      this.data.settings.adminPassword = newPassword;
+    }
+    await this.saveData(this.data, false);
 
     this.closeModal('modalChangeUserPassword');
     this.renderUsersList();
-    this.showToast(`"${user.name}" kullanıcısının şifresi "${newPassword}" olarak güncellendi!`, 'success');
+    this.showToast(`"${user.name}" kullanıcısının şifresi "${newPassword}" olarak güncellendi! ✅`, 'success');
   }
 
   async deleteUser(userId) {
@@ -4487,7 +4554,7 @@ class SantiyeApp {
     }
 
     this.data.users = this.data.users.filter(u => u.id !== userId);
-    await this.saveData();
+    await this.saveData(this.data);
 
     this.renderUsersList();
     this.showToast(`"${user.name}" kullanıcısı silindi.`, 'info');
@@ -4525,7 +4592,7 @@ class SantiyeApp {
   }
 
   async savePermissionsMatrix() {
-    await this.saveData();
+    await this.saveData(this.data);
     this.showToast('Rol ve kullanıcı yetkileri kaydedildi! 👥', 'success');
     this.closeModal('modalPermissions');
     this.updateRoleUI();
