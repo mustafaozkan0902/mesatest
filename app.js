@@ -233,6 +233,20 @@ class SantiyeApp {
         }
       });
     }
+
+    // Ensure asmaTavan exists on all units
+    if (this.data.units) {
+      Object.values(this.data.units).forEach(u => {
+        if (!u.asmaTavan) {
+          u.asmaTavan = {
+            status: (u.elektrikTest?.status === 'tamamlandi' ? 'hazir' : 'kilitli'),
+            date: '',
+            company: 'Asma Tavan & Alçıpan Ekibi',
+            note: ''
+          };
+        }
+      });
+    }
   }
 
   checkAdminStatus() {
@@ -793,6 +807,7 @@ class SantiyeApp {
     let mesaDone = 0;
     let testReady = 0;
     let testDone = 0;
+    let tavanDone = 0;
 
     units.forEach(u => {
       if (u.mekanik?.status === 'tamamlandi') mekanikDone++;
@@ -800,6 +815,7 @@ class SantiyeApp {
       if (u.mesa?.status === 'onaylandi') mesaDone++;
       if (u.elektrikTest?.status === 'hazir') testReady++;
       if (u.elektrikTest?.status === 'tamamlandi') testDone++;
+      if (u.asmaTavan?.status === 'tamamlandi') tavanDone++;
     });
 
     document.getElementById('kpiTotalUnits').innerText = total;
@@ -830,6 +846,15 @@ class SantiyeApp {
     document.getElementById('kpiTestDone').innerText = testDone;
     document.getElementById('kpiTestDonePct').innerText = `%${testPct}`;
     document.getElementById('barTestDone').style.width = `${testPct}%`;
+
+    // Asma Tavan Done
+    const tavanPct = Math.round((tavanDone / total) * 100);
+    const kpiTavanDoneEl = document.getElementById('kpiTavanDone');
+    const kpiTavanPctEl = document.getElementById('kpiTavanPct');
+    const barTavanEl = document.getElementById('barTavan');
+    if (kpiTavanDoneEl) kpiTavanDoneEl.innerText = tavanDone;
+    if (kpiTavanPctEl) kpiTavanPctEl.innerText = `%${tavanPct}`;
+    if (barTavanEl) barTavanEl.style.width = `${tavanPct}%`;
   }
 
   // --- TAB 1: MATRIX / HEATMAP ---
@@ -842,6 +867,7 @@ class SantiyeApp {
   }
 
   getUnitOverallStatus(u) {
+    if (u.asmaTavan?.status === 'tamamlandi') return 'tavan_done';
     if (u.elektrikTest?.status === 'tamamlandi') return 'done';
     if (u.elektrikTest?.status === 'hazir') return 'ready';
     if (u.mesa?.status === 'onaylandi') return 'ready';
@@ -882,11 +908,12 @@ class SantiyeApp {
         let isFilteredIn = true;
         if (this.matrixFilter === 'ready' && overall !== 'ready') isFilteredIn = false;
         if (this.matrixFilter === 'mesa_wait' && overall !== 'mesa_wait') isFilteredIn = false;
-        if (this.matrixFilter === 'prereq_wait' && (overall === 'done' || overall === 'ready' || overall === 'mesa_wait')) isFilteredIn = false;
-        if (this.matrixFilter === 'done' && overall !== 'done') isFilteredIn = false;
+        if (this.matrixFilter === 'prereq_wait' && (overall === 'done' || overall === 'ready' || overall === 'mesa_wait' || overall === 'tavan_done')) isFilteredIn = false;
+        if (this.matrixFilter === 'done' && overall !== 'done' && overall !== 'tavan_done') isFilteredIn = false;
 
         let cellClass = 'matrix-cell';
-        if (overall === 'done') cellClass += ' status-test-done';
+        if (overall === 'tavan_done') cellClass += ' status-tavan-done';
+        else if (overall === 'done') cellClass += ' status-test-done';
         else if (overall === 'ready') cellClass += ' status-test-ready';
         else if (overall === 'mesa_wait') cellClass += ' status-mesa-wait';
         else if (overall === 'in_progress') cellClass += ' status-in-progress';
@@ -894,14 +921,16 @@ class SantiyeApp {
 
         const opacityStyle = isFilteredIn ? 'opacity: 1;' : 'opacity: 0.25; filter: grayscale(80%);';
 
-        // Badges for the 4 stages
+        // Badges for the 5 stages
         const bMek = u.mekanik?.status === 'tamamlandi' ? 'ok' : (u.mekanik?.status === 'devam' ? 'prog' : 'wait');
         const bKli = u.klima?.status === 'tamamlandi' ? 'ok' : (u.klima?.status === 'devam' ? 'prog' : 'wait');
         const bMesa = u.mesa?.status === 'onaylandi' ? 'ok' : (u.mesa?.status === 'revizyon' ? 'rev' : 'wait');
         const bTest = u.elektrikTest?.status === 'tamamlandi' ? 'test-ok' : (u.elektrikTest?.status === 'hazir' ? 'test-ready' : 'wait');
+        const bTavan = u.asmaTavan?.status === 'tamamlandi' ? 'tavan-ok' : (u.asmaTavan?.status === 'devam' ? 'prog' : (u.elektrikTest?.status === 'tamamlandi' ? 'tavan-ready' : 'wait'));
 
         let mainLabel = 'Başlanmadı';
-        if (overall === 'done') mainLabel = '⚡ Test Bitti';
+        if (overall === 'tavan_done') mainLabel = '🏗️ Tavan Kapandı';
+        else if (overall === 'done') mainLabel = '⚡ Test Bitti';
         else if (overall === 'ready') mainLabel = '⚡ TESTE HAZIR';
         else if (overall === 'mesa_wait') mainLabel = '🏢 MESA Bekliyor';
         else if (overall === 'in_progress') mainLabel = '🚧 İmalat Sürüyor';
@@ -914,6 +943,7 @@ class SantiyeApp {
               <span class="sub-badge ${bKli}" title="2. Klima: ${u.klima?.status || 'bekliyor'}">K</span>
               <span class="sub-badge ${bMesa}" title="3. MESA: ${u.mesa?.status || 'bekliyor'}">MS</span>
               <span class="sub-badge ${bTest}" title="4. Test: ${u.elektrikTest?.status || 'kilitli'}">T</span>
+              <span class="sub-badge ${bTavan}" title="5. Asma Tavan: ${u.asmaTavan?.status || 'kilitli'}">AT</span>
             </div>
           </td>
         `;
@@ -989,7 +1019,10 @@ class SantiyeApp {
       let cardClass = 'floor-card';
       let overallBadge = '<span class="floor-status-badge badge-wait">Başlanmadı</span>';
 
-      if (overall === 'done') {
+      if (overall === 'tavan_done') {
+        cardClass += ' card-tavan-done';
+        overallBadge = '<span class="floor-status-badge badge-ok" style="background:#ecfdf5; color:#059669; border:1px solid #a7f3d0;">🏗️ ASMA TAVAN KAPATILDI</span>';
+      } else if (overall === 'done') {
         cardClass += ' card-test-done';
         overallBadge = '<span class="floor-status-badge badge-ok">✅ TEST BAŞARILI / BİTTİ</span>';
       } else if (overall === 'ready') {
@@ -1028,6 +1061,13 @@ class SantiyeApp {
       if (isTestDone) testBadge = '<span class="stage-val-badge badge-ok">Başarılı ✓</span>';
       else if (u.elektrikTest?.status === 'hazir') testBadge = '<span class="stage-val-badge badge-ready">⚡ TESTE HAZIR</span>';
       else if (u.elektrikTest?.status === 'suruyor') testBadge = '<span class="stage-val-badge badge-prog">Test Yapılıyor</span>';
+
+      // Asma Tavan format
+      const isTavanDone = u.asmaTavan?.status === 'tamamlandi';
+      let tavanBadge = '<span class="stage-val-badge badge-locked">🔒 Test Bekleniyor</span>';
+      if (isTavanDone) tavanBadge = '<span class="stage-val-badge badge-ok" style="background:#ecfdf5; color:#059669;">Tavan Kapandı ✓</span>';
+      else if (u.asmaTavan?.status === 'devam') tavanBadge = '<span class="stage-val-badge badge-prog">Kapatılıyor</span>';
+      else if (isTestDone) tavanBadge = '<span class="stage-val-badge badge-ready">⚡ Kapatmaya Hazır</span>';
 
       // Check for meeting actions on this unit
       const unitActions = (this.data.meetingActions || []).filter(a => 
@@ -1110,6 +1150,18 @@ class SantiyeApp {
                 ${u.elektrikTest?.reportNo ? ` • Rapor: ${u.elektrikTest.reportNo}` : ''}
               </div>
             </div>
+
+            <!-- 5. Asma Tavan -->
+            <div class="stage-box" style="background: #ecfdf5;">
+              <div class="stage-header">
+                <span class="stage-name" style="color: #059669;">🏗️ 5. Asma Tavan</span>
+                ${tavanBadge}
+              </div>
+              <div class="stage-detail" title="${u.asmaTavan?.note || ''}">
+                ${u.asmaTavan?.date ? `📅 ${u.asmaTavan.date}` : (isTestDone ? '⚡ Tavan Kapatmaya Hazır' : 'Elektrik testi bekleniyor')}
+                ${u.asmaTavan?.company ? ` • ${u.asmaTavan.company}` : ''}
+              </div>
+            </div>
           </div>
 
           <div class="floor-card-footer">
@@ -1179,11 +1231,17 @@ class SantiyeApp {
       const isKliDone = u.klima?.status === 'tamamlandi';
       const isMesaApproved = u.mesa?.status === 'onaylandi';
       const isTestDone = u.elektrikTest?.status === 'tamamlandi';
+      const isTavanDone = u.asmaTavan?.status === 'tamamlandi';
 
       let testBadge = '<span class="stage-val-badge badge-locked">🔒 Kilitli</span>';
       if (isTestDone) testBadge = '<span class="stage-val-badge badge-ok">✅ Başarılı</span>';
       else if (u.elektrikTest?.status === 'hazir') testBadge = '<span class="stage-val-badge badge-ready">⚡ TESTE HAZIR</span>';
       else if (u.elektrikTest?.status === 'suruyor') testBadge = '<span class="stage-val-badge badge-prog">🔄 Test Ediliyor</span>';
+
+      let tavanBadge = '<span class="stage-val-badge badge-locked">🔒 Test Bekleniyor</span>';
+      if (isTavanDone) tavanBadge = '<span class="stage-val-badge badge-ok" style="background:#ecfdf5; color:#059669;">✅ Tavan Kapandı</span>';
+      else if (u.asmaTavan?.status === 'devam') tavanBadge = '<span class="stage-val-badge badge-prog">🚧 Kapatılıyor</span>';
+      else if (isTestDone) tavanBadge = '<span class="stage-val-badge badge-ready">⚡ Kapatmaya Hazır</span>';
 
       html += `
         <tr>
@@ -1205,6 +1263,10 @@ class SantiyeApp {
           <td>
             ${testBadge}
             <div style="font-size:0.7rem; color:#64748b;">${u.elektrikTest?.reportNo ? `Rapor: ${u.elektrikTest.reportNo}` : ''}</div>
+          </td>
+          <td>
+            ${tavanBadge}
+            <div style="font-size:0.7rem; color:#64748b;">${u.asmaTavan?.date || ''}</div>
           </td>
           <td style="font-size: 0.78rem; color: #64748b;">
             ${u.updatedAt || '-'}
@@ -1228,7 +1290,7 @@ class SantiyeApp {
 
     let html = '';
     this.data.blocks.forEach(b => {
-      let bMek = 0, bKli = 0, bMesa = 0, bReady = 0, bTest = 0;
+      let bMek = 0, bKli = 0, bMesa = 0, bReady = 0, bTest = 0, bTavan = 0;
 
       this.data.floors.forEach(f => {
         const u = this.data.units[`${b.id}_${f.id}`];
@@ -1238,6 +1300,7 @@ class SantiyeApp {
           if (u.mesa?.status === 'onaylandi') bMesa++;
           if (u.elektrikTest?.status === 'hazir') bReady++;
           if (u.elektrikTest?.status === 'tamamlandi') bTest++;
+          if (u.asmaTavan?.status === 'tamamlandi') bTavan++;
         }
       });
 
@@ -1245,13 +1308,14 @@ class SantiyeApp {
       const kliPct = Math.round((bKli / 8) * 100);
       const mesaPct = Math.round((bMesa / 8) * 100);
       const testPct = Math.round((bTest / 8) * 100);
+      const tavanPct = Math.round((bTavan / 8) * 100);
 
       html += `
         <div style="background: #ffffff; border: 1.5px solid #e2e8f0; border-radius: 12px; padding: 1.25rem; box-shadow: 0 1px 3px rgba(0,0,0,0.05);">
           <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 0.75rem;">
             <h3 style="font-size: 1.1rem; font-weight: 800; color: #0f172a;">🏢 ${b.name}</h3>
             <span style="font-size: 0.75rem; background: #e0f2fe; color: #0369a1; padding: 0.2rem 0.5rem; border-radius: 4px; font-weight: 700;">
-              ${bTest}/8 Kat Tamamlandı
+              ${bTest}/8 Test • ${bTavan}/8 Tavan
             </span>
           </div>
 
@@ -1286,6 +1350,14 @@ class SantiyeApp {
                 <strong style="color: #16a34a;">${bTest}/8 Kat (%${testPct})</strong>
               </div>
               <div class="kpi-progress"><div class="kpi-bar" style="width: ${testPct}%; background: #22c55e;"></div></div>
+            </div>
+
+            <div>
+              <div style="display:flex; justify-content:space-between; margin-bottom: 2px;">
+                <span style="color: #059669; font-weight: 700;">5. Asma Tavan Kapatma:</span>
+                <strong style="color: #059669;">${bTavan}/8 Kat (%${tavanPct})</strong>
+              </div>
+              <div class="kpi-progress"><div class="kpi-bar" style="width: ${tavanPct}%; background: #059669;"></div></div>
             </div>
           </div>
 
@@ -1372,6 +1444,17 @@ class SantiyeApp {
     document.getElementById('editElkTester').value = u.elektrikTest?.tester || '';
     document.getElementById('editElkReport').value = u.elektrikTest?.reportNo || '';
     document.getElementById('editElkNote').value = u.elektrikTest?.note || '';
+
+    // 5. Asma Tavan
+    const tavanStatus = u.asmaTavan?.status || (u.elektrikTest?.status === 'tamamlandi' ? 'hazir' : 'kilitli');
+    const tavanEl = document.getElementById('editAsmaTavanStatus');
+    if (tavanEl) tavanEl.value = tavanStatus;
+    const tavanDateEl = document.getElementById('editAsmaTavanDate');
+    if (tavanDateEl) tavanDateEl.value = u.asmaTavan?.date || '';
+    const tavanCompanyEl = document.getElementById('editAsmaTavanCompany');
+    if (tavanCompanyEl) tavanCompanyEl.value = u.asmaTavan?.company || 'Asma Tavan & Alçıpan Ekibi';
+    const tavanNoteEl = document.getElementById('editAsmaTavanNote');
+    if (tavanNoteEl) tavanNoteEl.value = u.asmaTavan?.note || '';
 
     // Role check for save button & read-only guard
     const btnSave = document.getElementById('btnSaveUnit');
@@ -1486,6 +1569,49 @@ class SantiyeApp {
         elkBadge.innerText = '❌ UYGUNSUZLUK';
       }
     }
+
+    // Asma Tavan Rule Enforcement
+    const tavanAlert = document.getElementById('tavanPrereqWarning');
+    const tavanBadge = document.getElementById('tavanBadgeStatus');
+    const tavanSelect = document.getElementById('editAsmaTavanStatus');
+
+    if (tavanSelect && tavanBadge) {
+      const isTestDone = elkSelect.value === 'tamamlandi';
+      const optTavanHazir = tavanSelect.querySelector('option[value="hazir"]');
+      const optTavanDevam = tavanSelect.querySelector('option[value="devam"]');
+      const optTavanTamam = tavanSelect.querySelector('option[value="tamamlandi"]');
+
+      if (!isTestDone) {
+        if (tavanAlert) tavanAlert.style.display = 'flex';
+        if (optTavanHazir) optTavanHazir.disabled = true;
+        if (optTavanDevam) optTavanDevam.disabled = true;
+        if (optTavanTamam) optTavanTamam.disabled = true;
+        tavanSelect.value = 'kilitli';
+        tavanBadge.className = 'stage-val-badge badge-locked';
+        tavanBadge.innerText = '🔒 TEST BEKLENİYOR';
+      } else {
+        if (tavanAlert) tavanAlert.style.display = 'none';
+        if (optTavanHazir) optTavanHazir.disabled = false;
+        if (optTavanDevam) optTavanDevam.disabled = false;
+        if (optTavanTamam) optTavanTamam.disabled = false;
+
+        if (tavanSelect.value === 'kilitli') {
+          tavanSelect.value = 'hazir';
+        }
+
+        const curTavan = tavanSelect.value;
+        if (curTavan === 'tamamlandi') {
+          tavanBadge.className = 'stage-val-badge badge-ok';
+          tavanBadge.innerText = '✅ TAVAN KAPATILDI';
+        } else if (curTavan === 'devam') {
+          tavanBadge.className = 'stage-val-badge badge-prog';
+          tavanBadge.innerText = '🚧 TAVAN KAPATILIYOR';
+        } else {
+          tavanBadge.className = 'stage-val-badge badge-ready';
+          tavanBadge.innerText = '⚡ KAPATMAYA HAZIR';
+        }
+      }
+    }
   }
 
   async saveUnitData() {
@@ -1505,6 +1631,7 @@ class SantiyeApp {
     const kliStatus = document.getElementById('editKlimaStatus').value;
     const mesaStatus = document.getElementById('editMesaStatus').value;
     const elkStatus = document.getElementById('editElkStatus').value;
+    const tavanStatus = document.getElementById('editAsmaTavanStatus')?.value || 'kilitli';
 
     // Strict validation
     if (mesaStatus === 'onaylandi' && (mekStatus !== 'tamamlandi' || kliStatus !== 'tamamlandi')) {
@@ -1514,6 +1641,11 @@ class SantiyeApp {
 
     if (elkStatus !== 'kilitli' && mesaStatus !== 'onaylandi') {
       this.showToast('HATA: MESA onayı olmadan Elektrik Testine başlanamaz!', 'error');
+      return;
+    }
+
+    if (tavanStatus === 'tamamlandi' && elkStatus !== 'tamamlandi') {
+      this.showToast('HATA: Elektrik testi tamamlanmadan Asma Tavan kapatılamaz!', 'error');
       return;
     }
 
@@ -1544,6 +1676,12 @@ class SantiyeApp {
         reportNo: document.getElementById('editElkReport').value,
         note: document.getElementById('editElkNote').value
       },
+      asmaTavan: {
+        status: tavanStatus,
+        date: document.getElementById('editAsmaTavanDate')?.value || (tavanStatus === 'tamamlandi' ? new Date().toISOString().split('T')[0] : ''),
+        company: document.getElementById('editAsmaTavanCompany')?.value || 'Asma Tavan & Alçıpan Ekibi',
+        note: document.getElementById('editAsmaTavanNote')?.value || ''
+      },
       updatedAt: new Date().toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' }),
       updatedBy: 'Admin'
     };
@@ -1557,7 +1695,7 @@ class SantiyeApp {
       blockName: u.blockName,
       floorName: u.floorName,
       action: 'Kat Güncellendi',
-      details: `Mekanik: ${mekStatus}, Klima: ${kliStatus}, MESA: ${mesaStatus}, Test: ${elkStatus}`,
+      details: `Mekanik: ${mekStatus}, Klima: ${kliStatus}, MESA: ${mesaStatus}, Test: ${elkStatus}, Tavan: ${tavanStatus}`,
       badgeType: 'success'
     });
 
@@ -1602,6 +1740,12 @@ class SantiyeApp {
         <option value="suruyor">🔄 Test Aşamasında (Sürüyor)</option>
         <option value="hazir">⚡ Teste Hazır</option>
       `;
+    } else if (field === 'asmaTavan') {
+      options = `
+        <option value="tamamlandi">✅ Asma Tavan Kapatıldı (Tamamlandı)</option>
+        <option value="devam">🚧 Asma Tavan Kapatılıyor (Sürüyor)</option>
+        <option value="hazir">⚡ Kapatmaya Hazır (Test Tamamlandı)</option>
+      `;
     }
 
     statusSelect.innerHTML = options;
@@ -1639,7 +1783,11 @@ class SantiyeApp {
       if (field === 'elektrikTest' && ['hazir', 'suruyor', 'tamamlandi'].includes(status)) {
         if (u.mesa?.status !== 'onaylandi') return;
       }
+      if (field === 'asmaTavan' && ['devam', 'tamamlandi'].includes(status)) {
+        if (u.elektrikTest?.status !== 'tamamlandi') return;
+      }
 
+      if (!u[field]) u[field] = {};
       u[field].status = status;
       u[field].date = nowStr;
       if (note) u[field].note = note;
@@ -1648,6 +1796,12 @@ class SantiyeApp {
         u.elektrikTest.status = 'hazir';
       } else if (u.mesa?.status !== 'onaylandi') {
         u.elektrikTest.status = 'kilitli';
+      }
+
+      if (u.elektrikTest?.status === 'tamamlandi' && u.asmaTavan?.status === 'kilitli') {
+        u.asmaTavan.status = 'hazir';
+      } else if (u.elektrikTest?.status !== 'tamamlandi' && u.asmaTavan?.status !== 'tamamlandi') {
+        u.asmaTavan.status = 'kilitli';
       }
 
       u.updatedAt = timeStr;
@@ -2023,7 +2177,7 @@ class SantiyeApp {
 
     const units = Object.values(this.data.units);
     let csv = '\uFEFF'; // UTF-8 BOM for proper Turkish characters in Excel
-    csv += 'Blok;Kat;Mekanik Durumu;Mekanik Bitiş;Mekanik Not;Klima Durumu;Klima Bitiş;Klima Not;MESA Durumu;MESA Onay Tarihi;MESA Yetkilisi;MESA Tutanak No;MESA Not;Elektrik Test Durumu;Test Tarihi;Test Ekibi;Test Rapor No;Test Sonuç Notu;Son Güncelleme\n';
+    csv += 'Blok;Kat;Mekanik Durumu;Mekanik Bitiş;Mekanik Not;Klima Durumu;Klima Bitiş;Klima Not;MESA Durumu;MESA Onay Tarihi;MESA Yetkilisi;MESA Tutanak No;MESA Not;Elektrik Test Durumu;Test Tarihi;Test Ekibi;Test Rapor No;Test Sonuç Notu;Asma Tavan Durumu;Asma Tavan Tarih;Asma Tavan Ekip;Asma Tavan Not;Son Güncelleme\n';
 
     units.forEach(u => {
       const row = [
@@ -2045,6 +2199,10 @@ class SantiyeApp {
         `"${(u.elektrikTest?.tester || '').replace(/"/g, '""')}"`,
         `"${(u.elektrikTest?.reportNo || '').replace(/"/g, '""')}"`,
         `"${(u.elektrikTest?.note || '').replace(/"/g, '""')}"`,
+        u.asmaTavan?.status || '',
+        u.asmaTavan?.date || '',
+        `"${(u.asmaTavan?.company || '').replace(/"/g, '""')}"`,
+        `"${(u.asmaTavan?.note || '').replace(/"/g, '""')}"`,
         u.updatedAt || ''
       ];
       csv += row.join(';') + '\n';

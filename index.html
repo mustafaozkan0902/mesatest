@@ -574,6 +574,11 @@ body {
 }
 
 /* Matrix Cell Status Styling */
+.matrix-cell.status-tavan-done {
+  background: #ecfdf5;
+  border-color: #059669;
+  box-shadow: 0 0 0 1px #059669;
+}
 .matrix-cell.status-test-done {
   background: #dcfce7;
   border-color: #22c55e;
@@ -626,6 +631,8 @@ body {
 .sub-badge.rev { background: #dc2626; }
 .sub-badge.test-ok { background: #15803d; }
 .sub-badge.test-ready { background: #0284c7; }
+.sub-badge.tavan-ok { background: #059669; }
+.sub-badge.tavan-ready { background: #0284c7; }
 
 .cell-main-title {
   font-size: 0.72rem;
@@ -3079,6 +3086,11 @@ body {
           <span>⚡ 4. Elektrik Testi</span>
           <span style="font-size: 0.7rem; color: #0284c7; font-weight: 800;">[TESTE HAZIR]</span>
         </div>
+        <span class="step-arrow">➔</span>
+        <div class="step-item tavan" style="border-left: 3px solid #059669; background: #ecfdf5;">
+          <span>🏗️ 5. Asma Tavan Kapatma</span>
+          <span style="font-size: 0.7rem; color: #047857; font-weight: 800;">[KAPATMAYA HAZIR]</span>
+        </div>
       </div>
     </div>
   </aside>
@@ -3162,6 +3174,19 @@ body {
           <div class="kpi-progress"><div id="barTestDone" class="kpi-bar" style="background: #22c55e;"></div></div>
         </div>
       </div>
+
+      <!-- 5. Asma Tavan Kapanan -->
+      <div class="kpi-card">
+        <div class="kpi-icon" style="background: #ecfdf5; color: #059669;">🏗️</div>
+        <div class="kpi-info">
+          <div class="kpi-title">Asma Tavanı Kapanan</div>
+          <div class="kpi-value-row">
+            <span class="kpi-value" id="kpiTavanDone">0</span>
+            <span class="kpi-sub" id="kpiTavanPct">%0</span>
+          </div>
+          <div class="kpi-progress"><div id="barTavan" class="kpi-bar" style="background: #059669;"></div></div>
+        </div>
+      </div>
     </section>
 
       <!-- Section 1 Sub-Navigation Bar -->
@@ -3202,7 +3227,8 @@ body {
           <button class="filter-chip chip-done" onclick="app.setMatrixFilter('done')">✅ Testi Tamamlananlar</button>
         </div>
 
-        <div style="display: flex; align-items: center; gap: 0.75rem; font-size: 0.78rem;">
+        <div style="display: flex; align-items: center; gap: 0.75rem; font-size: 0.78rem; flex-wrap: wrap;">
+          <span style="display: flex; align-items: center; gap: 4px;"><span class="sub-badge tavan-ok" style="background:#059669;">🏗️</span> Tavan Kapandı</span>
           <span style="display: flex; align-items: center; gap: 4px;"><span class="sub-badge test-ok">✓</span> Test Tamam</span>
           <span style="display: flex; align-items: center; gap: 4px;"><span class="sub-badge test-ready">⚡</span> Teste Hazır</span>
           <span style="display: flex; align-items: center; gap: 4px;"><span class="sub-badge" style="background:#a855f7;">🏢</span> MESA Bekliyor</span>
@@ -3313,6 +3339,7 @@ body {
                 <th>2. Klima Durumu</th>
                 <th>3. MESA Kabul & Onay</th>
                 <th>4. Elektrik Testi Durumu</th>
+                <th>5. Asma Tavan Durumu</th>
                 <th>Son Güncelleme</th>
                 <th style="text-align: right;">İşlem</th>
               </tr>
@@ -3839,6 +3866,45 @@ body {
           </div>
         </div>
 
+        <!-- 5. Asma Tavan Kapatma İmalatı -->
+        <div style="background: #ecfdf5; border: 1.5px solid #a7f3d0; border-radius: 8px; padding: 1rem; margin-top: 1rem;">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 0.5rem;">
+            <strong style="color: #059669;">🏗️ 5. Aşama: Asma Tavan Kapatma İmalatı</strong>
+            <span id="tavanBadgeStatus" class="stage-val-badge badge-locked">🔒 TEST BEKLENİYOR</span>
+          </div>
+
+          <div id="tavanPrereqWarning" class="form-rule-alert warn" style="display:none;">
+            <span>🔒</span>
+            <span>Elektrik Testi başarıyla tamamlanmadan (Tamamlandı) Asma Tavan kapatılamaz!</span>
+          </div>
+
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem;">
+            <div class="form-group" style="margin-bottom: 0;">
+              <label class="form-label">Asma Tavan Durumu:</label>
+              <select id="editAsmaTavanStatus" class="form-select" onchange="app.handleModalStateChange()">
+                <option value="kilitli">🔒 Kilitli (Elektrik Testi Bekleniyor)</option>
+                <option value="hazir">⚡ Kapatmaya Hazır (Test Bitti)</option>
+                <option value="devam">🚧 Asma Tavan Kapatılıyor (Sürüyor)</option>
+                <option value="tamamlandi">✅ Asma Tavan Kapatıldı (Tamamlandı)</option>
+              </select>
+            </div>
+            <div class="form-group" style="margin-bottom: 0;">
+              <label class="form-label">Kapatma / Bitiş Tarihi:</label>
+              <input type="date" id="editAsmaTavanDate" class="form-control">
+            </div>
+          </div>
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; margin-top: 0.5rem;">
+            <div class="form-group" style="margin-bottom: 0;">
+              <label class="form-label">Tavan Yüklenicisi / Ekip:</label>
+              <input type="text" id="editAsmaTavanCompany" class="form-control" placeholder="Örn: Asma Tavan & Alçıpan Ekibi">
+            </div>
+            <div class="form-group" style="margin-bottom: 0;">
+              <label class="form-label">Kapatma Notu / Tutanak:</label>
+              <input type="text" id="editAsmaTavanNote" class="form-control" placeholder="Tavan kapatma kontrol notu veya tutanak bilgisi">
+            </div>
+          </div>
+        </div>
+
         <!-- 5. Bu Kata Ait Toplantı Kararları & Verilen Sözler -->
         <div style="background: #fffbeb; border: 1.5px solid #fde68a; border-radius: 8px; padding: 1rem; margin-top: 1rem;">
           <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 0.5rem; flex-wrap:wrap; gap:0.5rem;">
@@ -3950,6 +4016,7 @@ body {
             <option value="klima">❄️ 2. Klima İmalatı</option>
             <option value="mesa">🏢 3. MESA Teslim Onayı (Ön şartı tamam olanlar için)</option>
             <option value="elektrikTest">⚡ 4. Elektrik Test Durumu (MESA onaylı olanlar için)</option>
+            <option value="asmaTavan">🏗️ 5. Asma Tavan Kapatma (Elektrik testi tamamlananlar için)</option>
           </select>
         </div>
 
