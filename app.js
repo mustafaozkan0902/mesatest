@@ -70,6 +70,52 @@ class SantiyeApp {
     if (!this.data && window.DEFAULT_SANTIYE_DATA) {
       this.data = JSON.parse(JSON.stringify(window.DEFAULT_SANTIYE_DATA));
     }
+
+    // Soft & readable default stage colors (light pastel tints with crisp text & borders)
+    this.defaultStageColors = {
+      tavan: { bg: '#ccfbf1', border: '#0d9488', text: '#0f766e', label: '🏗️ Asma Tavan Kapandı' },
+      test_done: { bg: '#dcfce7', border: '#16a34a', text: '#15803d', label: '⚡ Test Tamamlandı' },
+      test_ready: { bg: '#e0f2fe', border: '#0284c7', text: '#0369a1', label: '🚀 Teste Hazır' },
+      mesa_wait: { bg: '#f3e8ff', border: '#9333ea', text: '#6b21a8', label: '🏢 MESA Onay Bekliyor' },
+      in_progress: { bg: '#fef3c7', border: '#f59e0b', text: '#b45309', label: '🚧 İmalat Sürüyor' },
+      waiting: { bg: '#f8fafc', border: '#cbd5e1', text: '#64748b', label: '⏳ Başlanmadı / Bekliyor' }
+    };
+
+    this.colorPresets = {
+      pastel: {
+        tavan: { bg: '#ccfbf1', border: '#0d9488', text: '#0f766e' },
+        test_done: { bg: '#dcfce7', border: '#16a34a', text: '#15803d' },
+        test_ready: { bg: '#e0f2fe', border: '#0284c7', text: '#0369a1' },
+        mesa_wait: { bg: '#f3e8ff', border: '#9333ea', text: '#6b21a8' },
+        in_progress: { bg: '#fef3c7', border: '#f59e0b', text: '#b45309' },
+        waiting: { bg: '#f8fafc', border: '#cbd5e1', text: '#64748b' }
+      },
+      vivid: {
+        tavan: { bg: '#99f6e4', border: '#0f766e', text: '#042f2e' },
+        test_done: { bg: '#bbf7d0', border: '#15803d', text: '#14532d' },
+        test_ready: { bg: '#bae6fd', border: '#0369a1', text: '#0c4a6e' },
+        mesa_wait: { bg: '#e9d5ff', border: '#7e22ce', text: '#581c87' },
+        in_progress: { bg: '#fde68a', border: '#d97706', text: '#78350f' },
+        waiting: { bg: '#e2e8f0', border: '#94a3b8', text: '#334155' }
+      },
+      mesa_corporate: {
+        tavan: { bg: '#d1fae5', border: '#059669', text: '#065f46' },
+        test_done: { bg: '#cffafe', border: '#0891b2', text: '#155e75' },
+        test_ready: { bg: '#dbeafe', border: '#2563eb', text: '#1e40af' },
+        mesa_wait: { bg: '#ede9fe', border: '#8b5cf6', text: '#5b21b6' },
+        in_progress: { bg: '#ffedd5', border: '#ea580c', text: '#9a3412' },
+        waiting: { bg: '#f1f5f9', border: '#cbd5e1', text: '#475569' }
+      },
+      contrast: {
+        tavan: { bg: '#5eead4', border: '#134e4a', text: '#042f2e' },
+        test_done: { bg: '#86efac', border: '#14532d', text: '#052e16' },
+        test_ready: { bg: '#7dd3fc', border: '#0c4a6e', text: '#082f49' },
+        mesa_wait: { bg: '#d8b4fe', border: '#581c87', text: '#3b0764' },
+        in_progress: { bg: '#fcd34d', border: '#78350f', text: '#451a03' },
+        waiting: { bg: '#cbd5e1', border: '#334155', text: '#0f172a' }
+      }
+    };
+    this.stageColors = null;
   }
 
   async init() {
@@ -731,6 +777,7 @@ class SantiyeApp {
   renderAll() {
     if (!this.data || !this.data.units) return;
     this.ensureDataIntegrity();
+    this.applyStageColors();
     this.updateRoleUI();
 
     this.renderKPIs();
@@ -1034,10 +1081,13 @@ class SantiyeApp {
 
     let html = '';
     (this.data?.customStages || []).forEach(cs => {
+      const csBg = cs.bg || this.getSoftTintFromHex(cs.color);
+      const csBorder = cs.borderColor || cs.color;
+      const csText = cs.textColor || this.getDarkTextFromHex(cs.color);
       html += `
         <span style="display: flex; align-items: center; gap: 5px;">
-          <span style="display:inline-block; width:15px; height:15px; border-radius:4px; background:${cs.color}; border:1px solid ${cs.color};"></span>
-          <strong>${cs.name}:</strong> ${cs.icon} Bitti
+          <span style="display:inline-block; width:15px; height:15px; border-radius:4px; background:${csBg}; border:1.5px solid ${csBorder};"></span>
+          <strong style="color:${csText};">${this.escapeHtml(cs.name)}:</strong> ${cs.icon} Bitti
         </span>
       `;
     });
@@ -1333,9 +1383,17 @@ class SantiyeApp {
     const nameEl = document.getElementById('newStageName');
     const codeEl = document.getElementById('newStageCode');
     const compEl = document.getElementById('newStageDefaultCompany');
-    if (nameEl) nameEl.value = '';
+    if (nameEl) {
+      nameEl.value = '';
+      nameEl.oninput = () => this.updateNewStageColorPreview();
+    }
+    const iconEl = document.getElementById('newStageIcon');
+    if (iconEl) {
+      iconEl.onchange = () => this.updateNewStageColorPreview();
+    }
     if (codeEl) codeEl.value = '';
     if (compEl) compEl.value = '';
+    this.updateNewStageColorPreview('#db2777');
 
     this.openModal('modalNewStage');
   }
@@ -1344,8 +1402,9 @@ class SantiyeApp {
     const name = document.getElementById('newStageName')?.value.trim();
     const code = document.getElementById('newStageCode')?.value.trim().toUpperCase();
     const icon = document.getElementById('newStageIcon')?.value.trim() || '💡';
-    const colorRadio = document.querySelector('input[name="newStageColor"]:checked');
-    const color = colorRadio ? colorRadio.value : '#db2777';
+    const colorPicker = document.getElementById('newStageColorPicker');
+    const colorHex = document.getElementById('newStageColorHex');
+    const color = colorPicker?.value || colorHex?.value || '#db2777';
     const prereq = document.getElementById('newStagePrereq')?.value || 'asmaTavan';
     const company = document.getElementById('newStageDefaultCompany')?.value.trim() || '';
 
@@ -1363,6 +1422,9 @@ class SantiyeApp {
       code: code,
       icon: icon,
       color: color,
+      bg: this.getSoftTintFromHex(color),
+      borderColor: color,
+      textColor: this.getDarkTextFromHex(color),
       prerequisiteStage: prereq,
       company: company,
       order: 6 + this.data.customStages.length
@@ -1476,7 +1538,10 @@ class SantiyeApp {
           const stageId = overall.replace('_done', '');
           const cs = (this.data.customStages || []).find(s => s.id === stageId);
           if (cs) {
-            customInlineStyle = `background: ${cs.color} !important; border-color: ${cs.color} !important; color: #ffffff !important;`;
+            const csBg = cs.bg || this.getSoftTintFromHex(cs.color);
+            const csBorder = cs.borderColor || cs.color;
+            const csText = cs.textColor || this.getDarkTextFromHex(cs.color);
+            customInlineStyle = `background: ${csBg} !important; border-color: ${csBorder} !important; color: ${csText} !important;`;
           }
         } else {
           cellClass += ' status-waiting';
@@ -1496,8 +1561,11 @@ class SantiyeApp {
         (this.data.customStages || []).forEach(cs => {
           const isDone = u[cs.id]?.status === 'tamamlandi';
           const isProg = u[cs.id]?.status === 'devam';
+          const csBg = cs.bg || this.getSoftTintFromHex(cs.color);
+          const csBorder = cs.borderColor || cs.color;
+          const csText = cs.textColor || this.getDarkTextFromHex(cs.color);
           const bStyle = isDone
-            ? `background: ${cs.color}; color: #ffffff; border-color: ${cs.color};`
+            ? `background: ${csBg}; color: ${csText}; border-color: ${csBorder}; font-weight: 800;`
             : (isProg ? 'background: #fef3c7; color: #b45309; border-color: #f59e0b;' : 'background: #f1f5f9; color: #94a3b8; border-color: #cbd5e1;');
           customBadgesHtml += `<span class="sub-badge" style="${bStyle}" title="${cs.name}: ${u[cs.id]?.status || 'kilitli'}">${cs.code}</span>`;
         });
@@ -5496,6 +5564,350 @@ class SantiyeApp {
     this.closeModal('modalPermissions');
     this.updateRoleUI();
     this.renderAll();
+  }
+
+  // --- COLOR PALETTE & STAGE COLOR CUSTOMIZER ---
+  getSoftTintFromHex(hex) {
+    if (!hex || typeof hex !== 'string') return '#f8fafc';
+    let clean = hex.trim();
+    if (!clean.startsWith('#')) return '#f8fafc';
+    if (clean.length === 4) {
+      clean = '#' + clean[1] + clean[1] + clean[2] + clean[2] + clean[3] + clean[3];
+    }
+    const r = parseInt(clean.substring(1, 3), 16) || 0;
+    const g = parseInt(clean.substring(3, 5), 16) || 0;
+    const b = parseInt(clean.substring(5, 7), 16) || 0;
+    // Mix 85% white, 15% color for soft pastel background
+    const tr = Math.round(r * 0.15 + 255 * 0.85);
+    const tg = Math.round(g * 0.15 + 255 * 0.85);
+    const tb = Math.round(b * 0.15 + 255 * 0.85);
+    return `rgb(${tr}, ${tg}, ${tb})`;
+  }
+
+  getDarkTextFromHex(hex) {
+    if (!hex || typeof hex !== 'string') return '#0f172a';
+    let clean = hex.trim();
+    if (!clean.startsWith('#')) return '#0f172a';
+    if (clean.length === 4) {
+      clean = '#' + clean[1] + clean[1] + clean[2] + clean[2] + clean[3] + clean[3];
+    }
+    const r = parseInt(clean.substring(1, 3), 16) || 0;
+    const g = parseInt(clean.substring(3, 5), 16) || 0;
+    const b = parseInt(clean.substring(5, 7), 16) || 0;
+    // Darker readable text (55% color)
+    const tr = Math.round(r * 0.55);
+    const tg = Math.round(g * 0.55);
+    const tb = Math.round(b * 0.55);
+    return `rgb(${tr}, ${tg}, ${tb})`;
+  }
+
+  rgbToHex(rgb) {
+    if (!rgb || typeof rgb !== 'string') return '#000000';
+    if (rgb.startsWith('#')) return rgb;
+    const match = rgb.match(/rgba?\((\d+),\s*(\d+),\s*(\d+)/);
+    if (!match) return '#000000';
+    const hex = (x) => ("0" + parseInt(x).toString(16)).slice(-2);
+    return "#" + hex(match[1]) + hex(match[2]) + hex(match[3]);
+  }
+
+  applyStageColors() {
+    let colors = this.data?.stageColors;
+    if (!colors) {
+      const stored = localStorage.getItem('mesa_stage_colors');
+      if (stored) {
+        try { colors = JSON.parse(stored); } catch(e) {}
+      }
+    }
+    if (!colors) {
+      colors = JSON.parse(JSON.stringify(this.defaultStageColors));
+    }
+
+    const root = document.documentElement;
+    if (!root) return;
+
+    const setVar = (name, val) => {
+      if (val) root.style.setProperty(name, val);
+    };
+
+    setVar('--stage-tavan-bg', colors.tavan?.bg || this.defaultStageColors.tavan.bg);
+    setVar('--stage-tavan-border', colors.tavan?.border || this.defaultStageColors.tavan.border);
+    setVar('--stage-tavan-text', colors.tavan?.text || this.defaultStageColors.tavan.text);
+
+    setVar('--stage-test-bg', colors.test_done?.bg || this.defaultStageColors.test_done.bg);
+    setVar('--stage-test-border', colors.test_done?.border || this.defaultStageColors.test_done.border);
+    setVar('--stage-test-text', colors.test_done?.text || this.defaultStageColors.test_done.text);
+
+    setVar('--stage-ready-bg', colors.test_ready?.bg || this.defaultStageColors.test_ready.bg);
+    setVar('--stage-ready-border', colors.test_ready?.border || this.defaultStageColors.test_ready.border);
+    setVar('--stage-ready-text', colors.test_ready?.text || this.defaultStageColors.test_ready.text);
+
+    setVar('--stage-mesa-bg', colors.mesa_wait?.bg || this.defaultStageColors.mesa_wait.bg);
+    setVar('--stage-mesa-border', colors.mesa_wait?.border || this.defaultStageColors.mesa_wait.border);
+    setVar('--stage-mesa-text', colors.mesa_wait?.text || this.defaultStageColors.mesa_wait.text);
+
+    setVar('--stage-prog-bg', colors.in_progress?.bg || this.defaultStageColors.in_progress.bg);
+    setVar('--stage-prog-border', colors.in_progress?.border || this.defaultStageColors.in_progress.border);
+    setVar('--stage-prog-text', colors.in_progress?.text || this.defaultStageColors.in_progress.text);
+
+    setVar('--stage-waiting-bg', colors.waiting?.bg || this.defaultStageColors.waiting.bg);
+    setVar('--stage-waiting-border', colors.waiting?.border || this.defaultStageColors.waiting.border);
+    setVar('--stage-waiting-text', colors.waiting?.text || this.defaultStageColors.waiting.text);
+
+    this.stageColors = colors;
+  }
+
+  openColorSettingsModal() {
+    this.applyStageColors();
+    const colors = this.stageColors || this.defaultStageColors;
+
+    const setInput = (id, val) => {
+      const el = document.getElementById(id);
+      if (el && val) el.value = val.startsWith('#') ? val : this.rgbToHex(val);
+    };
+
+    setInput('colorInputTavanBg', colors.tavan?.bg);
+    setInput('colorInputTavanBorder', colors.tavan?.border);
+
+    setInput('colorInputTestBg', colors.test_done?.bg);
+    setInput('colorInputTestBorder', colors.test_done?.border);
+
+    setInput('colorInputReadyBg', colors.test_ready?.bg);
+    setInput('colorInputReadyBorder', colors.test_ready?.border);
+
+    setInput('colorInputMesaBg', colors.mesa_wait?.bg);
+    setInput('colorInputMesaBorder', colors.mesa_wait?.border);
+
+    setInput('colorInputProgBg', colors.in_progress?.bg);
+    setInput('colorInputProgBorder', colors.in_progress?.border);
+
+    setInput('colorInputWaitBg', colors.waiting?.bg);
+    setInput('colorInputWaitBorder', colors.waiting?.border);
+
+    // Update preview pills inside modal
+    const setPill = (id, bg, border, text) => {
+      const el = document.getElementById(id);
+      if (el) {
+        if (bg) el.style.backgroundColor = bg;
+        if (border) el.style.borderColor = border;
+        if (text) el.style.color = text;
+      }
+    };
+    setPill('previewPillTavan', colors.tavan?.bg, colors.tavan?.border, colors.tavan?.text);
+    setPill('previewPillTest', colors.test_done?.bg, colors.test_done?.border, colors.test_done?.text);
+    setPill('previewPillReady', colors.test_ready?.bg, colors.test_ready?.border, colors.test_ready?.text);
+    setPill('previewPillMesa', colors.mesa_wait?.bg, colors.mesa_wait?.border, colors.mesa_wait?.text);
+    setPill('previewPillProg', colors.in_progress?.bg, colors.in_progress?.border, colors.in_progress?.text);
+    setPill('previewPillWait', colors.waiting?.bg, colors.waiting?.border, colors.waiting?.text);
+
+    // Render custom stages
+    const customContainer = document.getElementById('customStagesColorSettingsContainer');
+    if (customContainer) {
+      let customHtml = '';
+      (this.data?.customStages || []).forEach(cs => {
+        const csBg = cs.bg || this.getSoftTintFromHex(cs.color);
+        const csBorder = cs.borderColor || cs.color;
+        const csText = cs.textColor || this.getDarkTextFromHex(cs.color);
+        customHtml += `
+          <div class="color-setting-row">
+            <div style="display:flex; align-items:center; gap: 8px;">
+              <span class="color-preview-pill" id="previewPillCustom_${cs.id}" style="background: ${csBg}; border-color: ${csBorder}; color: ${csText};">
+                ${cs.icon} ${this.escapeHtml(cs.name)}
+              </span>
+            </div>
+            <div style="display:flex; align-items:center; gap: 8px;">
+              <label style="font-size: 0.72rem; color: #64748b;">Rozet Rengi:</label>
+              <input type="color" id="colorInputCustom_${cs.id}" value="${cs.color}" class="color-picker-input" onchange="app.previewCustomStageColorChange('${cs.id}', this.value)">
+            </div>
+          </div>
+        `;
+      });
+      customContainer.innerHTML = customHtml;
+    }
+
+    this.openModal('modalColorSettings');
+  }
+
+  previewLiveColorChange(stageKey, prop, hexVal) {
+    const root = document.documentElement;
+    if (!root) return;
+    const varMap = {
+      tavan: { bg: '--stage-tavan-bg', border: '--stage-tavan-border', text: '--stage-tavan-text', pill: 'previewPillTavan' },
+      test_done: { bg: '--stage-test-bg', border: '--stage-test-border', text: '--stage-test-text', pill: 'previewPillTest' },
+      test_ready: { bg: '--stage-ready-bg', border: '--stage-ready-border', text: '--stage-ready-text', pill: 'previewPillReady' },
+      mesa_wait: { bg: '--stage-mesa-bg', border: '--stage-mesa-border', text: '--stage-mesa-text', pill: 'previewPillMesa' },
+      in_progress: { bg: '--stage-prog-bg', border: '--stage-prog-border', text: '--stage-prog-text', pill: 'previewPillProg' },
+      waiting: { bg: '--stage-waiting-bg', border: '--stage-waiting-border', text: '--stage-waiting-text', pill: 'previewPillWait' }
+    };
+
+    const target = varMap[stageKey];
+    if (!target) return;
+
+    if (prop === 'bg') {
+      root.style.setProperty(target.bg, hexVal);
+      const pill = document.getElementById(target.pill);
+      if (pill) pill.style.backgroundColor = hexVal;
+    } else if (prop === 'border') {
+      root.style.setProperty(target.border, hexVal);
+      root.style.setProperty(target.text, hexVal);
+      const pill = document.getElementById(target.pill);
+      if (pill) {
+        pill.style.borderColor = hexVal;
+        pill.style.color = hexVal;
+      }
+    }
+  }
+
+  previewCustomStageColorChange(stageId, hexVal) {
+    const pill = document.getElementById(`previewPillCustom_${stageId}`);
+    if (pill) {
+      pill.style.backgroundColor = this.getSoftTintFromHex(hexVal);
+      pill.style.borderColor = hexVal;
+      pill.style.color = this.getDarkTextFromHex(hexVal);
+    }
+  }
+
+  applyColorPreset(presetKey) {
+    const preset = this.colorPresets[presetKey];
+    if (!preset) return;
+
+    const setAndPreview = (stageKey, bg, border, text, inputBgId, inputBorderId) => {
+      const inBg = document.getElementById(inputBgId);
+      const inBorder = document.getElementById(inputBorderId);
+      if (inBg) inBg.value = bg;
+      if (inBorder) inBorder.value = border;
+      this.previewLiveColorChange(stageKey, 'bg', bg);
+      this.previewLiveColorChange(stageKey, 'border', border);
+    };
+
+    setAndPreview('tavan', preset.tavan.bg, preset.tavan.border, preset.tavan.text, 'colorInputTavanBg', 'colorInputTavanBorder');
+    setAndPreview('test_done', preset.test_done.bg, preset.test_done.border, preset.test_done.text, 'colorInputTestBg', 'colorInputTestBorder');
+    setAndPreview('test_ready', preset.test_ready.bg, preset.test_ready.border, preset.test_ready.text, 'colorInputReadyBg', 'colorInputReadyBorder');
+    setAndPreview('mesa_wait', preset.mesa_wait.bg, preset.mesa_wait.border, preset.mesa_wait.text, 'colorInputMesaBg', 'colorInputMesaBorder');
+    setAndPreview('in_progress', preset.in_progress.bg, preset.in_progress.border, preset.in_progress.text, 'colorInputProgBg', 'colorInputProgBorder');
+    setAndPreview('waiting', preset.waiting.bg, preset.waiting.border, preset.waiting.text, 'colorInputWaitBg', 'colorInputWaitBorder');
+
+    this.showToast(`"${presetKey}" paleti önizlemesi uygulandı. Beğendiyseniz "Kaydet ve Uygula"ya tıklayınız.`, 'info');
+  }
+
+  async saveCustomStageColors() {
+    const getVal = (id, def) => document.getElementById(id)?.value || def;
+
+    const newColors = {
+      tavan: {
+        bg: getVal('colorInputTavanBg', this.defaultStageColors.tavan.bg),
+        border: getVal('colorInputTavanBorder', this.defaultStageColors.tavan.border),
+        text: getVal('colorInputTavanBorder', this.defaultStageColors.tavan.text),
+        label: '🏗️ Asma Tavan Kapandı'
+      },
+      test_done: {
+        bg: getVal('colorInputTestBg', this.defaultStageColors.test_done.bg),
+        border: getVal('colorInputTestBorder', this.defaultStageColors.test_done.border),
+        text: getVal('colorInputTestBorder', this.defaultStageColors.test_done.text),
+        label: '⚡ Test Tamamlandı'
+      },
+      test_ready: {
+        bg: getVal('colorInputReadyBg', this.defaultStageColors.test_ready.bg),
+        border: getVal('colorInputReadyBorder', this.defaultStageColors.test_ready.border),
+        text: getVal('colorInputReadyBorder', this.defaultStageColors.test_ready.text),
+        label: '🚀 Teste Hazır'
+      },
+      mesa_wait: {
+        bg: getVal('colorInputMesaBg', this.defaultStageColors.mesa_wait.bg),
+        border: getVal('colorInputMesaBorder', this.defaultStageColors.mesa_wait.border),
+        text: getVal('colorInputMesaBorder', this.defaultStageColors.mesa_wait.text),
+        label: '🏢 MESA Onay Bekliyor'
+      },
+      in_progress: {
+        bg: getVal('colorInputProgBg', this.defaultStageColors.in_progress.bg),
+        border: getVal('colorInputProgBorder', this.defaultStageColors.in_progress.border),
+        text: getVal('colorInputProgBorder', this.defaultStageColors.in_progress.text),
+        label: '🚧 İmalat Sürüyor'
+      },
+      waiting: {
+        bg: getVal('colorInputWaitBg', this.defaultStageColors.waiting.bg),
+        border: getVal('colorInputWaitBorder', this.defaultStageColors.waiting.border),
+        text: getVal('colorInputWaitBorder', this.defaultStageColors.waiting.text),
+        label: '⏳ Başlanmadı / Bekliyor'
+      }
+    };
+
+    this.stageColors = newColors;
+    if (!this.data) this.data = {};
+    this.data.stageColors = newColors;
+    localStorage.setItem('mesa_stage_colors', JSON.stringify(newColors));
+
+    // Save custom stages colors if changed
+    (this.data?.customStages || []).forEach(cs => {
+      const input = document.getElementById(`colorInputCustom_${cs.id}`);
+      if (input) {
+        cs.color = input.value;
+        cs.bg = this.getSoftTintFromHex(input.value);
+        cs.borderColor = input.value;
+        cs.textColor = this.getDarkTextFromHex(input.value);
+      }
+    });
+
+    this.applyStageColors();
+    await this.saveData(this.data);
+    this.closeModal('modalColorSettings');
+    this.renderAll();
+    this.showToast('🎨 Isı haritası renk ayarlarınız başarıyla kaydedildi!', 'success');
+  }
+
+  async resetStageColorsToDefault() {
+    this.stageColors = JSON.parse(JSON.stringify(this.defaultStageColors));
+    if (this.data) this.data.stageColors = this.stageColors;
+    localStorage.removeItem('mesa_stage_colors');
+    this.applyStageColors();
+    this.openColorSettingsModal();
+    await this.saveData(this.data);
+    this.renderAll();
+    this.showToast('Varsayılan pastel ve okunabilir renkler geri yüklendi.', 'success');
+  }
+
+  // --- SETTINGS CENTER MODAL ---
+  openSettingsCenterModal() {
+    const isAuth = this.isLoggedIn();
+    const btnLogout = document.getElementById('btnSettingsLogout');
+    if (btnLogout) {
+      btnLogout.style.display = isAuth ? 'inline-flex' : 'none';
+    }
+    this.openModal('modalSettingsCenter');
+  }
+
+  // --- NEW STAGE COLOR PICKER & PREVIEW HELPERS ---
+  updateNewStageColorPreview(hex) {
+    if (!hex) {
+      const picker = document.getElementById('newStageColorPicker');
+      const hexInput = document.getElementById('newStageColorHex');
+      hex = picker?.value || hexInput?.value || '#db2777';
+    }
+    const picker = document.getElementById('newStageColorPicker');
+    const hexInput = document.getElementById('newStageColorHex');
+    const box = document.getElementById('newStagePreviewBox');
+    const nameEl = document.getElementById('newStageName');
+    const iconEl = document.getElementById('newStageIcon');
+    const txtEl = document.getElementById('newStagePreviewText');
+    const icnEl = document.getElementById('newStagePreviewIcon');
+
+    if (picker && picker.value !== hex) picker.value = hex;
+    if (hexInput && hexInput.value !== hex) hexInput.value = hex;
+
+    if (box) {
+      box.style.backgroundColor = this.getSoftTintFromHex(hex);
+      box.style.borderColor = hex;
+      box.style.color = this.getDarkTextFromHex(hex);
+    }
+    if (txtEl) {
+      txtEl.textContent = nameEl?.value?.trim() || 'Örnek Aşama';
+    }
+    if (icnEl) {
+      icnEl.textContent = iconEl?.value || '💡';
+    }
+  }
+
+  setNewStageColor(hex) {
+    this.updateNewStageColorPreview(hex);
   }
 
   // --- UTILS: MODALS & TOASTS ---

@@ -2905,6 +2905,372 @@ body {
   to { opacity: 1; }
 }
 
+/* ========================================================
+   COMPACT & READABLE OVERRIDES (Single Screen Heatmap Fit)
+   ======================================================== */
+:root {
+  --stage-tavan-bg: #ccfbf1;
+  --stage-tavan-border: #0d9488;
+  --stage-tavan-text: #0f766e;
+
+  --stage-test-bg: #dcfce7;
+  --stage-test-border: #16a34a;
+  --stage-test-text: #15803d;
+
+  --stage-ready-bg: #e0f2fe;
+  --stage-ready-border: #0284c7;
+  --stage-ready-text: #0369a1;
+
+  --stage-mesa-bg: #f3e8ff;
+  --stage-mesa-border: #9333ea;
+  --stage-mesa-text: #6b21a8;
+
+  --stage-prog-bg: #fef3c7;
+  --stage-prog-border: #f59e0b;
+  --stage-prog-text: #b45309;
+
+  --stage-custom-bg: #fce7f3;
+  --stage-custom-border: #ec4899;
+  --stage-custom-text: #9d174d;
+
+  --stage-waiting-bg: #f8fafc;
+  --stage-waiting-border: #cbd5e1;
+  --stage-waiting-text: #64748b;
+}
+
+.header {
+  padding: 0.35rem 1rem !important;
+}
+.brand-icon {
+  width: 28px !important;
+  height: 28px !important;
+  font-size: 15px !important;
+  border-radius: 6px !important;
+}
+.brand-title {
+  font-size: 0.95rem !important;
+}
+.brand-subtitle {
+  font-size: 0.72rem !important;
+}
+
+.main-content {
+  padding: 0.35rem 0.75rem !important;
+}
+
+/* Compact Workflow Banner */
+.workflow-banner {
+  padding: 0.22rem 0.65rem !important;
+  margin-bottom: 0.35rem !important;
+  border-radius: 6px !important;
+}
+.workflow-container {
+  gap: 0.35rem !important;
+}
+.workflow-steps {
+  gap: 0.3rem !important;
+}
+.step-item {
+  padding: 0.18rem 0.45rem !important;
+  font-size: 0.72rem !important;
+  border-radius: 4px !important;
+}
+
+/* Compact Horizontal KPI Grid */
+.kpi-grid {
+  display: flex !important;
+  flex-wrap: nowrap !important;
+  overflow-x: auto !important;
+  gap: 0.4rem !important;
+  margin-bottom: 0.35rem !important;
+  padding-bottom: 2px !important;
+}
+.kpi-card {
+  flex: 1 1 115px !important;
+  min-width: 110px !important;
+  padding: 0.28rem 0.5rem !important;
+  border-radius: 6px !important;
+  gap: 0.4rem !important;
+}
+.kpi-icon {
+  width: 24px !important;
+  height: 24px !important;
+  min-width: 24px !important;
+  font-size: 13px !important;
+  border-radius: 5px !important;
+}
+.kpi-title {
+  font-size: 0.65rem !important;
+  margin-bottom: 0.1rem !important;
+}
+.kpi-value {
+  font-size: 0.92rem !important;
+  line-height: 1.15 !important;
+}
+.kpi-sub {
+  font-size: 0.62rem !important;
+}
+.kpi-progress {
+  height: 3px !important;
+  margin-top: 2px !important;
+}
+
+.sub-nav-bar {
+  padding: 0.2rem 0.4rem !important;
+  margin-bottom: 0.35rem !important;
+  border-radius: 6px !important;
+}
+.sub-tab-btn {
+  padding: 0.25rem 0.6rem !important;
+  font-size: 0.76rem !important;
+}
+
+.weekly-timeline-bar {
+  padding: 0.3rem 0.65rem !important;
+  margin-bottom: 0.35rem !important;
+  border-radius: 6px !important;
+}
+.timeline-pill {
+  padding: 0.2rem 0.55rem !important;
+  font-size: 0.74rem !important;
+}
+
+.toolbar {
+  margin-bottom: 0.35rem !important;
+  gap: 0.4rem !important;
+}
+.filter-chip {
+  padding: 0.2rem 0.5rem !important;
+  font-size: 0.72rem !important;
+}
+
+/* Matrix Table & Cells - Compact & Readable */
+.matrix-table th {
+  padding: 0.35rem 0.5rem !important;
+  font-size: 0.75rem !important;
+}
+.matrix-table td.floor-label-cell {
+  padding: 0.35rem 0.5rem !important;
+  font-size: 0.78rem !important;
+}
+.matrix-cell {
+  padding: 0.32rem 0.45rem !important;
+  border-radius: 5px !important;
+  border: 1.5px solid var(--border-color) !important;
+}
+.cell-main-title {
+  font-size: 0.72rem !important;
+  line-height: 1.15 !important;
+}
+.cell-badges {
+  gap: 2.5px !important;
+  margin-top: 3px !important;
+}
+.sub-badge {
+  width: 15px !important;
+  height: 15px !important;
+  font-size: 8px !important;
+  border-radius: 3px !important;
+  border: 1px solid rgba(0,0,0,0.15) !important;
+}
+.sub-badge.ok { background: #dcfce7 !important; color: #15803d !important; border-color: #86efac !important; }
+.sub-badge.wait { background: #f1f5f9 !important; color: #94a3b8 !important; border-color: #cbd5e1 !important; }
+.sub-badge.prog { background: #fef3c7 !important; color: #b45309 !important; border-color: #fde68a !important; }
+.sub-badge.rev { background: #fee2e2 !important; color: #dc2626 !important; border-color: #fca5a5 !important; }
+.sub-badge.test-ok { background: #dcfce7 !important; color: #15803d !important; border-color: #86efac !important; }
+.sub-badge.test-ready { background: #e0f2fe !important; color: #0369a1 !important; border-color: #7dd3fc !important; }
+.sub-badge.tavan-ok { background: #ccfbf1 !important; color: #0f766e !important; border-color: #5eead4 !important; }
+.sub-badge.tavan-ready { background: #e0f2fe !important; color: #0369a1 !important; border-color: #7dd3fc !important; }
+.sub-badge.custom-ok { background: #fce7f3 !important; color: #9d174d !important; border-color: #f472b6 !important; }
+
+/* Status Classes with CSS Variables */
+.matrix-cell.status-tavan-done {
+  background: var(--stage-tavan-bg) !important;
+  border: 1.5px solid var(--stage-tavan-border) !important;
+  color: var(--stage-tavan-text) !important;
+}
+.matrix-cell.status-tavan-done .cell-main-title {
+  color: var(--stage-tavan-text) !important;
+  font-weight: 800 !important;
+}
+
+.matrix-cell.status-test-done {
+  background: var(--stage-test-bg) !important;
+  border: 1.5px solid var(--stage-test-border) !important;
+  color: var(--stage-test-text) !important;
+}
+.matrix-cell.status-test-done .cell-main-title {
+  color: var(--stage-test-text) !important;
+  font-weight: 800 !important;
+}
+
+.matrix-cell.status-test-ready {
+  background: var(--stage-ready-bg) !important;
+  border: 1.5px solid var(--stage-ready-border) !important;
+  color: var(--stage-ready-text) !important;
+  animation: pulse-ready 2.5s infinite !important;
+}
+.matrix-cell.status-test-ready .cell-main-title {
+  color: var(--stage-ready-text) !important;
+  font-weight: 800 !important;
+}
+
+.matrix-cell.status-mesa-wait {
+  background: var(--stage-mesa-bg) !important;
+  border: 1.5px solid var(--stage-mesa-border) !important;
+  color: var(--stage-mesa-text) !important;
+}
+.matrix-cell.status-mesa-wait .cell-main-title {
+  color: var(--stage-mesa-text) !important;
+  font-weight: 800 !important;
+}
+
+.matrix-cell.status-in-progress {
+  background: var(--stage-prog-bg) !important;
+  border: 1.5px solid var(--stage-prog-border) !important;
+  color: var(--stage-prog-text) !important;
+}
+.matrix-cell.status-in-progress .cell-main-title {
+  color: var(--stage-prog-text) !important;
+  font-weight: 800 !important;
+}
+
+.matrix-cell.status-custom-done {
+  background: var(--stage-custom-bg) !important;
+  border: 1.5px solid var(--stage-custom-border) !important;
+  color: var(--stage-custom-text) !important;
+}
+.matrix-cell.status-custom-done .cell-main-title {
+  color: var(--stage-custom-text) !important;
+  font-weight: 800 !important;
+}
+
+.matrix-cell.status-waiting {
+  background: var(--stage-waiting-bg) !important;
+  border: 1.5px solid var(--stage-waiting-border) !important;
+  color: var(--stage-waiting-text) !important;
+}
+.matrix-cell.status-waiting .cell-main-title {
+  color: var(--stage-waiting-text) !important;
+  font-weight: 700 !important;
+}
+
+/* Settings Tiles */
+.settings-tile {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  padding: 0.65rem 0.85rem;
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  cursor: pointer;
+  text-align: left;
+  transition: all 0.15s ease;
+  width: 100%;
+}
+.settings-tile:hover {
+  background: #f8fafc;
+  border-color: #cbd5e1;
+  transform: translateY(-1px);
+}
+.settings-tile-icon {
+  width: 34px;
+  height: 34px;
+  min-width: 34px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+}
+
+/* Floating Quick Access Bar at bottom-right */
+.floating-quick-bar {
+  position: fixed;
+  bottom: 18px;
+  right: 20px;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  padding: 0.35rem 0.65rem;
+  border-radius: 30px;
+  border: 1px solid rgba(203, 213, 225, 0.8);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.12), 0 1px 3px rgba(0, 0, 0, 0.08);
+  transition: all 0.2s ease;
+}
+.floating-quick-bar:hover {
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.16);
+  transform: translateY(-2px);
+}
+.floating-quick-bar .floating-btn {
+  border-radius: 20px;
+  padding: 0.3rem 0.65rem;
+  font-size: 0.76rem;
+  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  cursor: pointer;
+}
+
+/* Color Settings Swatch & Row Styles */
+.color-setting-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.55rem 0.75rem;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  background: #ffffff;
+  gap: 0.75rem;
+  transition: all 0.15s ease;
+}
+.color-setting-row:hover {
+  border-color: #cbd5e1;
+  background: #f8fafc;
+}
+.color-preview-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 0.25rem 0.6rem;
+  border-radius: 5px;
+  font-size: 0.76rem;
+  font-weight: 800;
+  border: 1.5px solid transparent;
+  min-width: 140px;
+  justify-content: center;
+}
+.color-picker-input {
+  width: 38px;
+  height: 32px;
+  padding: 0;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  cursor: pointer;
+  background: transparent;
+}
+.preset-btn {
+  padding: 0.35rem 0.75rem;
+  border-radius: 6px;
+  border: 1px solid #cbd5e1;
+  background: #ffffff;
+  font-size: 0.78rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.preset-btn:hover {
+  background: #f1f5f9;
+  border-color: #94a3b8;
+}
+
+
   </style>
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⚡</text></svg>">
 </head>
@@ -2949,7 +3315,7 @@ body {
         </div>
 
         <!-- Login / Logout Buttons -->
-        <button id="btnLoginModal" class="btn btn-primary" onclick="app.openLoginModal()" style="font-weight: 700;">
+        <button id="btnLoginModal" class="btn btn-primary btn-sm" onclick="app.openLoginModal()" style="font-weight: 700; padding: 0.3rem 0.75rem;">
           <span>🔑</span>
           <span>Giriş Yap</span>
         </button>
@@ -2959,41 +3325,20 @@ body {
           <span>Çıkış Yap</span>
         </button>
 
-        <div id="adminActions" style="display: none;" class="header-actions">
-          <button class="btn btn-primary" onclick="app.openBulkModal()">
-            <span>⚡</span>
-            <span>Toplu İşlem</span>
-          </button>
-          <button class="btn btn-outline" onclick="app.openPermissionsModal()" title="Kullanıcı & Yetkilendirme Ayarları">
-            <span>👥</span>
-            <span>Yetkiler</span>
-          </button>
-          <button class="btn btn-outline" onclick="app.openCloudSettingsModal()" title="Firebase Bulut Ayarları">
-            <span>☁️</span>
-            <span>Bulut</span>
-          </button>
-          <button class="btn btn-outline" onclick="app.openBackupModal()" title="Veri Yedekle / Yükle">
-            <span>💾</span>
-            <span>Yedek</span>
-          </button>
-          <button class="btn btn-outline" onclick="app.openChangePasswordModal()">
-            <span>🔒</span>
-            <span>Şifre</span>
-          </button>
-          <button class="btn btn-danger btn-sm" onclick="app.logout()">
-            <span>Çıkış</span>
-          </button>
-        </div>
-
-        <button class="btn btn-outline" onclick="app.exportToExcel()" title="Excel / CSV Raporu İndir">
-          <span>📥</span>
-          <span>Excel İndir</span>
+        <!-- Renkler Butonu (Tek tıkla renk ayarları) -->
+        <button class="btn btn-outline btn-sm" onclick="app.openColorSettingsModal()" title="Isı Haritası Renklerini Özelleştir" style="font-weight: 700; border-color: #cbd5e1; background: #ffffff; color: #1e293b; padding: 0.3rem 0.65rem;">
+          <span>🎨</span>
+          <span>Renkler</span>
         </button>
 
-        <button class="btn btn-outline" onclick="window.print()" title="Yazdır / PDF">
-          <span>🖨️</span>
-          <span>Yazdır</span>
+        <!-- Ayarlar & Menü Butonu (Yönetim & Araçlar) -->
+        <button id="btnSettingsMenu" class="btn btn-outline btn-sm" onclick="app.openSettingsCenterModal()" title="Şantiye Ayarları & Yönetim Menüsü" style="font-weight: 700; border-color: #cbd5e1; background: #ffffff; color: #1e293b; padding: 0.3rem 0.65rem;">
+          <span>⚙️</span>
+          <span>Ayarlar & Menü ▾</span>
         </button>
+
+        <!-- Hidden container keeping original IDs for JS compatibility -->
+        <div id="adminActions" style="display: none;"></div>
       </div>
     </div>
   </header>
@@ -3057,7 +3402,7 @@ body {
          ======================================================== -->
     <div id="masterSection-test" class="master-section-panel active">
       <!-- Prerequisite Rule Banner -->
-  <aside class="workflow-banner" style="margin-bottom: 1rem; border-radius: 10px; border: 1px solid #e2e8f0;">
+  <aside class="workflow-banner" style="margin-bottom: 0.35rem; border-radius: 6px; border: 1px solid #e2e8f0;">
     <div class="workflow-container">
       <div style="font-size: 0.85rem; font-weight: 700; color: #1e293b; display: flex; align-items: center; gap: 0.5rem;">
         <span>📋</span>
@@ -3273,14 +3618,14 @@ body {
         </div>
 
         <!-- YENİLENMİŞ NET VE AYRIŞIR RENK LEJANTI -->
-        <div style="display: flex; align-items: center; gap: 0.75rem; font-size: 0.78rem; flex-wrap: wrap;" id="matrixLegendContainer">
-          <span style="display: flex; align-items: center; gap: 5px;"><span style="display:inline-block; width:15px; height:15px; border-radius:4px; background:#0f766e; border:1px solid #115e59;"></span> <strong>Zümrüt:</strong> 🏗️ Tavan Kapandı</span>
-          <span style="display: flex; align-items: center; gap: 5px;"><span style="display:inline-block; width:15px; height:15px; border-radius:4px; background:#16a34a; border:1px solid #15803d;"></span> <strong>Yeşil:</strong> ⚡ Test Tamamlandı</span>
-          <span style="display: flex; align-items: center; gap: 5px;"><span style="display:inline-block; width:15px; height:15px; border-radius:4px; background:#2563eb; border:1px solid #1d4ed8;"></span> <strong>Mavi:</strong> 🚀 Teste Hazır</span>
-          <span style="display: flex; align-items: center; gap: 5px;"><span style="display:inline-block; width:15px; height:15px; border-radius:4px; background:#9333ea; border:1px solid #7c3aed;"></span> <strong>Mor:</strong> 🏢 MESA Bekliyor</span>
-          <span style="display: flex; align-items: center; gap: 5px;"><span style="display:inline-block; width:15px; height:15px; border-radius:4px; background:#f59e0b; border:1px solid #d97706;"></span> <strong>Turuncu:</strong> 🚧 İmalat Sürüyor</span>
+        <div style="display: flex; align-items: center; gap: 0.75rem; font-size: 0.76rem; flex-wrap: wrap;" id="matrixLegendContainer">
+          <span style="display: flex; align-items: center; gap: 5px;"><span id="legSwatchTavan" style="display:inline-block; width:15px; height:15px; border-radius:4px; background:var(--stage-tavan-bg); border:1.5px solid var(--stage-tavan-border);"></span> <strong style="color:var(--stage-tavan-text);">Turkuaz:</strong> 🏗️ Tavan Kapandı</span>
+          <span style="display: flex; align-items: center; gap: 5px;"><span id="legSwatchTest" style="display:inline-block; width:15px; height:15px; border-radius:4px; background:var(--stage-test-bg); border:1.5px solid var(--stage-test-border);"></span> <strong style="color:var(--stage-test-text);">Yeşil:</strong> ⚡ Test Tamamlandı</span>
+          <span style="display: flex; align-items: center; gap: 5px;"><span id="legSwatchReady" style="display:inline-block; width:15px; height:15px; border-radius:4px; background:var(--stage-ready-bg); border:1.5px solid var(--stage-ready-border);"></span> <strong style="color:var(--stage-ready-text);">Mavi:</strong> 🚀 Teste Hazır</span>
+          <span style="display: flex; align-items: center; gap: 5px;"><span id="legSwatchMesa" style="display:inline-block; width:15px; height:15px; border-radius:4px; background:var(--stage-mesa-bg); border:1.5px solid var(--stage-mesa-border);"></span> <strong style="color:var(--stage-mesa-text);">Mor:</strong> 🏢 MESA Bekliyor</span>
+          <span style="display: flex; align-items: center; gap: 5px;"><span id="legSwatchProg" style="display:inline-block; width:15px; height:15px; border-radius:4px; background:var(--stage-prog-bg); border:1.5px solid var(--stage-prog-border);"></span> <strong style="color:var(--stage-prog-text);">Sarı:</strong> 🚧 İmalat Sürüyor</span>
           <span id="customLegendStages" style="display:contents;"></span>
-          <span style="display: flex; align-items: center; gap: 5px;"><span style="display:inline-block; width:15px; height:15px; border-radius:4px; background:#f8fafc; border:1px solid #cbd5e1;"></span> <strong>Gri:</strong> ⏳ Başlanmadı</span>
+          <span style="display: flex; align-items: center; gap: 5px;"><span id="legSwatchWaiting" style="display:inline-block; width:15px; height:15px; border-radius:4px; background:var(--stage-waiting-bg); border:1.5px solid var(--stage-waiting-border);"></span> <strong style="color:var(--stage-waiting-text);">Gri:</strong> ⏳ Başlanmadı</span>
         </div>
       </div>
 
@@ -4773,28 +5118,25 @@ body {
         </div>
 
         <div class="form-group">
-          <label class="form-label">Harita & Rozet Rengi:</label>
-          <div style="display: flex; gap: 0.6rem; align-items: center; flex-wrap: wrap;">
-            <label style="display:flex; align-items:center; gap:4px; font-size:0.8rem; cursor:pointer;">
-              <input type="radio" name="newStageColor" value="#db2777" checked>
-              <span style="display:inline-block; width:16px; height:16px; background:#db2777; border-radius:3px;"></span> Fuşya
-            </label>
-            <label style="display:flex; align-items:center; gap:4px; font-size:0.8rem; cursor:pointer;">
-              <input type="radio" name="newStageColor" value="#6366f1">
-              <span style="display:inline-block; width:16px; height:16px; background:#6366f1; border-radius:3px;"></span> İndigo
-            </label>
-            <label style="display:flex; align-items:center; gap:4px; font-size:0.8rem; cursor:pointer;">
-              <input type="radio" name="newStageColor" value="#ea580c">
-              <span style="display:inline-block; width:16px; height:16px; background:#ea580c; border-radius:3px;"></span> Kiremit
-            </label>
-            <label style="display:flex; align-items:center; gap:4px; font-size:0.8rem; cursor:pointer;">
-              <input type="radio" name="newStageColor" value="#0284c7">
-              <span style="display:inline-block; width:16px; height:16px; background:#0284c7; border-radius:3px;"></span> Okyanus
-            </label>
-            <label style="display:flex; align-items:center; gap:4px; font-size:0.8rem; cursor:pointer;">
-              <input type="radio" name="newStageColor" value="#84cc16">
-              <span style="display:inline-block; width:16px; height:16px; background:#84cc16; border-radius:3px;"></span> Limon
-            </label>
+          <label class="form-label">Harita & Rozet Rengi (Renk Seçin):</label>
+          <div style="display: flex; gap: 0.65rem; align-items: center; margin-bottom: 0.5rem;">
+            <input type="color" id="newStageColorPicker" value="#db2777" class="color-picker-input" onchange="app.updateNewStageColorPreview(this.value)">
+            <input type="text" id="newStageColorHex" class="form-control" value="#db2777" style="max-width: 100px; font-family: monospace; font-size: 0.8rem;" oninput="app.updateNewStageColorPreview(this.value)">
+            <!-- Live preview box -->
+            <div id="newStagePreviewBox" style="display: inline-flex; align-items: center; gap: 6px; padding: 0.3rem 0.65rem; border-radius: 6px; background: #fce7f3; border: 1.5px solid #db2777; color: #9d174d; font-size: 0.76rem; font-weight: 800;">
+              <span id="newStagePreviewIcon">💡</span>
+              <span id="newStagePreviewText">Örnek Aşama</span>
+            </div>
+          </div>
+          <!-- Quick Palette Chips -->
+          <div style="display: flex; gap: 0.4rem; align-items: center; flex-wrap: wrap;">
+            <span style="font-size: 0.72rem; color: #64748b; font-weight: 700;">Hızlı Renkler:</span>
+            <button type="button" class="preset-btn" style="padding: 2px 7px; font-size: 0.72rem; border-color: #f472b6; background: #fdf2f8; color: #db2777;" onclick="app.setNewStageColor('#db2777')">🌸 Fuşya</button>
+            <button type="button" class="preset-btn" style="padding: 2px 7px; font-size: 0.72rem; border-color: #818cf8; background: #eef2ff; color: #4f46e5;" onclick="app.setNewStageColor('#6366f1')">💜 İndigo</button>
+            <button type="button" class="preset-btn" style="padding: 2px 7px; font-size: 0.72rem; border-color: #38bdf8; background: #f0f9ff; color: #0284c7;" onclick="app.setNewStageColor('#0284c7')">🌊 Okyanus</button>
+            <button type="button" class="preset-btn" style="padding: 2px 7px; font-size: 0.72rem; border-color: #fb923c; background: #fff7ed; color: #ea580c;" onclick="app.setNewStageColor('#ea580c')">🍊 Turuncu</button>
+            <button type="button" class="preset-btn" style="padding: 2px 7px; font-size: 0.72rem; border-color: #a3e635; background: #f7fee7; color: #65a30d;" onclick="app.setNewStageColor('#84cc16')">🍋 Limon</button>
+            <button type="button" class="preset-btn" style="padding: 2px 7px; font-size: 0.72rem; border-color: #2dd4bf; background: #f0fdfa; color: #0d9488;" onclick="app.setNewStageColor('#0d9488')">🩵 Turkuaz</button>
           </div>
         </div>
 
@@ -4898,6 +5240,279 @@ body {
         <button class="btn btn-primary" onclick="app.closeModal('modalCompareSnapshots')">Kapat</button>
       </div>
     </div>
+  </div>
+
+  <!-- MODAL: Renk Paleti & Isı Haritası Renk Özelleştirme -->
+  <div id="modalColorSettings" class="modal-overlay">
+    <div class="modal-box" style="max-width: 620px;">
+      <div class="modal-header">
+        <div>
+          <h2 class="modal-title">🎨 Isı Haritası Renk Ayarları</h2>
+          <div style="font-size: 0.8rem; color: #64748b;">Her imalat ve durum için hafif, okunabilir veya dilediğiniz özel renkleri seçin</div>
+        </div>
+        <button class="modal-close" onclick="app.closeModal('modalColorSettings')">&times;</button>
+      </div>
+      <div class="modal-body">
+        <!-- 1-Click Preset Palettes -->
+        <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 0.75rem; margin-bottom: 1rem;">
+          <div style="font-size: 0.75rem; font-weight: 800; color: #475569; margin-bottom: 0.45rem; text-transform: uppercase;">
+            ✨ Hazır Renk Paletleri (1-Tıkla Uygula):
+          </div>
+          <div style="display: flex; gap: 0.45rem; flex-wrap: wrap;">
+            <button type="button" class="preset-btn" onclick="app.applyColorPreset('pastel')" title="Yumuşak, göz yormayan, yüksek kontrastlı pastel renkler">
+              🌸 Yumuşak / Pastel (Varsayılan)
+            </button>
+            <button type="button" class="preset-btn" onclick="app.applyColorPreset('vivid')" title="Daha canlı ve belirgin tonlar">
+              💎 Modern & Canlı
+            </button>
+            <button type="button" class="preset-btn" onclick="app.applyColorPreset('mesa_corporate')" title="MESA Şantiye Kurumsal Renkleri">
+              🏢 Kurumsal MESA Soft
+            </button>
+            <button type="button" class="preset-btn" onclick="app.applyColorPreset('contrast')" title="Güneş altında veya düşük parlaklıkta yüksek kontrast">
+              🌓 Yüksek Kontrast
+            </button>
+          </div>
+        </div>
+
+        <!-- Color rows for each stage -->
+        <div style="display: flex; flex-direction: column; gap: 0.5rem; max-height: 380px; overflow-y: auto; padding-right: 4px;">
+          <!-- 1. Asma Tavan -->
+          <div class="color-setting-row">
+            <div style="display:flex; align-items:center; gap: 8px;">
+              <span class="color-preview-pill" id="previewPillTavan" style="background: var(--stage-tavan-bg); border-color: var(--stage-tavan-border); color: var(--stage-tavan-text);">
+                🏗️ Asma Tavan Kapandı
+              </span>
+            </div>
+            <div style="display:flex; align-items:center; gap: 8px;">
+              <label style="font-size: 0.72rem; color: #64748b;">Arka Plan:</label>
+              <input type="color" id="colorInputTavanBg" class="color-picker-input" onchange="app.previewLiveColorChange('tavan', 'bg', this.value)">
+              <label style="font-size: 0.72rem; color: #64748b;">Çerçeve & Metin:</label>
+              <input type="color" id="colorInputTavanBorder" class="color-picker-input" onchange="app.previewLiveColorChange('tavan', 'border', this.value)">
+            </div>
+          </div>
+
+          <!-- 2. Test Bitti -->
+          <div class="color-setting-row">
+            <div style="display:flex; align-items:center; gap: 8px;">
+              <span class="color-preview-pill" id="previewPillTest" style="background: var(--stage-test-bg); border-color: var(--stage-test-border); color: var(--stage-test-text);">
+                ⚡ Test Tamamlandı
+              </span>
+            </div>
+            <div style="display:flex; align-items:center; gap: 8px;">
+              <label style="font-size: 0.72rem; color: #64748b;">Arka Plan:</label>
+              <input type="color" id="colorInputTestBg" class="color-picker-input" onchange="app.previewLiveColorChange('test_done', 'bg', this.value)">
+              <label style="font-size: 0.72rem; color: #64748b;">Çerçeve & Metin:</label>
+              <input type="color" id="colorInputTestBorder" class="color-picker-input" onchange="app.previewLiveColorChange('test_done', 'border', this.value)">
+            </div>
+          </div>
+
+          <!-- 3. Teste Hazır -->
+          <div class="color-setting-row">
+            <div style="display:flex; align-items:center; gap: 8px;">
+              <span class="color-preview-pill" id="previewPillReady" style="background: var(--stage-ready-bg); border-color: var(--stage-ready-border); color: var(--stage-ready-text);">
+                🚀 Teste Hazır
+              </span>
+            </div>
+            <div style="display:flex; align-items:center; gap: 8px;">
+              <label style="font-size: 0.72rem; color: #64748b;">Arka Plan:</label>
+              <input type="color" id="colorInputReadyBg" class="color-picker-input" onchange="app.previewLiveColorChange('test_ready', 'bg', this.value)">
+              <label style="font-size: 0.72rem; color: #64748b;">Çerçeve & Metin:</label>
+              <input type="color" id="colorInputReadyBorder" class="color-picker-input" onchange="app.previewLiveColorChange('test_ready', 'border', this.value)">
+            </div>
+          </div>
+
+          <!-- 4. MESA Bekliyor -->
+          <div class="color-setting-row">
+            <div style="display:flex; align-items:center; gap: 8px;">
+              <span class="color-preview-pill" id="previewPillMesa" style="background: var(--stage-mesa-bg); border-color: var(--stage-mesa-border); color: var(--stage-mesa-text);">
+                🏢 MESA Onay Bekliyor
+              </span>
+            </div>
+            <div style="display:flex; align-items:center; gap: 8px;">
+              <label style="font-size: 0.72rem; color: #64748b;">Arka Plan:</label>
+              <input type="color" id="colorInputMesaBg" class="color-picker-input" onchange="app.previewLiveColorChange('mesa_wait', 'bg', this.value)">
+              <label style="font-size: 0.72rem; color: #64748b;">Çerçeve & Metin:</label>
+              <input type="color" id="colorInputMesaBorder" class="color-picker-input" onchange="app.previewLiveColorChange('mesa_wait', 'border', this.value)">
+            </div>
+          </div>
+
+          <!-- 5. İmalat Sürüyor -->
+          <div class="color-setting-row">
+            <div style="display:flex; align-items:center; gap: 8px;">
+              <span class="color-preview-pill" id="previewPillProg" style="background: var(--stage-prog-bg); border-color: var(--stage-prog-border); color: var(--stage-prog-text);">
+                🚧 İmalat Sürüyor
+              </span>
+            </div>
+            <div style="display:flex; align-items:center; gap: 8px;">
+              <label style="font-size: 0.72rem; color: #64748b;">Arka Plan:</label>
+              <input type="color" id="colorInputProgBg" class="color-picker-input" onchange="app.previewLiveColorChange('in_progress', 'bg', this.value)">
+              <label style="font-size: 0.72rem; color: #64748b;">Çerçeve & Metin:</label>
+              <input type="color" id="colorInputProgBorder" class="color-picker-input" onchange="app.previewLiveColorChange('in_progress', 'border', this.value)">
+            </div>
+          </div>
+
+          <!-- 6. Başlanmadı / Bekliyor -->
+          <div class="color-setting-row">
+            <div style="display:flex; align-items:center; gap: 8px;">
+              <span class="color-preview-pill" id="previewPillWait" style="background: var(--stage-waiting-bg); border-color: var(--stage-waiting-border); color: var(--stage-waiting-text);">
+                ⏳ Başlanmadı / Bekliyor
+              </span>
+            </div>
+            <div style="display:flex; align-items:center; gap: 8px;">
+              <label style="font-size: 0.72rem; color: #64748b;">Arka Plan:</label>
+              <input type="color" id="colorInputWaitBg" class="color-picker-input" onchange="app.previewLiveColorChange('waiting', 'bg', this.value)">
+              <label style="font-size: 0.72rem; color: #64748b;">Çerçeve & Metin:</label>
+              <input type="color" id="colorInputWaitBorder" class="color-picker-input" onchange="app.previewLiveColorChange('waiting', 'border', this.value)">
+            </div>
+          </div>
+
+          <!-- 7. Özel Aşamalar Container -->
+          <div id="customStagesColorSettingsContainer" style="display: contents;"></div>
+        </div>
+      </div>
+      <div class="modal-footer" style="display: flex; justify-content: space-between; align-items: center;">
+        <button type="button" class="btn btn-secondary btn-sm" onclick="app.resetStageColorsToDefault()">
+          <span>🔄</span>
+          <span>Varsayılana Sıfırla</span>
+        </button>
+        <div style="display:flex; gap: 0.5rem;">
+          <button type="button" class="btn btn-secondary" onclick="app.closeModal('modalColorSettings')">Kapat</button>
+          <button type="button" class="btn btn-primary" onclick="app.saveCustomStageColors()">
+            <span>💾</span>
+            <span>Kaydet ve Uygula</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: Şantiye Ayarlar & Yönetim Merkezi -->
+  <div id="modalSettingsCenter" class="modal-overlay">
+    <div class="modal-box" style="max-width: 680px;">
+      <div class="modal-header">
+        <div>
+          <h2 class="modal-title">⚙️ Şantiye Ayarları & Yönetim Menüsü</h2>
+          <div style="font-size: 0.8rem; color: #64748b;">Tüm şantiye araçlarına, ayarlara ve raporlara buradan kolayca ulaşın</div>
+        </div>
+        <button class="modal-close" onclick="app.closeModal('modalSettingsCenter')">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 0.65rem;">
+          <!-- 1. Toplu İşlem -->
+          <button class="settings-tile" onclick="app.closeModal('modalSettingsCenter'); app.openBulkModal();">
+            <div class="settings-tile-icon" style="background: #e0f2fe; color: #0284c7;">⚡</div>
+            <div>
+              <div style="font-weight: 700; font-size: 0.85rem; color: #0f172a;">Toplu Kat / Blok Güncelleme</div>
+              <div style="font-size: 0.72rem; color: #64748b;">Birden fazla bloğu tek tıkla test edildi yapın</div>
+            </div>
+          </button>
+
+          <!-- 2. Renk Ayarları -->
+          <button class="settings-tile" onclick="app.closeModal('modalSettingsCenter'); app.openColorSettingsModal();">
+            <div class="settings-tile-icon" style="background: #fdf2f8; color: #db2777;">🎨</div>
+            <div>
+              <div style="font-weight: 700; font-size: 0.85rem; color: #0f172a;">Renk Paleti & Ayarları</div>
+              <div style="font-size: 0.72rem; color: #64748b;">Isı haritasının renklerini kişiselleştirin</div>
+            </div>
+          </button>
+
+          <!-- 3. Yeni Aşama Ekle -->
+          <button class="settings-tile" onclick="app.closeModal('modalSettingsCenter'); app.openNewStageModal();">
+            <div class="settings-tile-icon" style="background: #fef3c7; color: #d97706;">➕</div>
+            <div>
+              <div style="font-weight: 700; font-size: 0.85rem; color: #0f172a;">Yeni İmalat / Aşama Ekle</div>
+              <div style="font-size: 0.72rem; color: #64748b;">Elektrik montaj vb. yeni iş kalemi başlatın</div>
+            </div>
+          </button>
+
+          <!-- 4. Haftalık Arşiv / Snapshot -->
+          <button class="settings-tile" onclick="app.closeModal('modalSettingsCenter'); app.openCreateSnapshotModal();">
+            <div class="settings-tile-icon" style="background: #ecfdf5; color: #059669;">📸</div>
+            <div>
+              <div style="font-weight: 700; font-size: 0.85rem; color: #0f172a;">Bu Haftayı Arşivle</div>
+              <div style="font-size: 0.72rem; color: #64748b;">Toplantı öncesi ısı haritasını dondurup saklayın</div>
+            </div>
+          </button>
+
+          <!-- 5. Yetkiler & Kullanıcılar -->
+          <button class="settings-tile" onclick="app.closeModal('modalSettingsCenter'); app.openPermissionsModal();">
+            <div class="settings-tile-icon" style="background: #f3e8ff; color: #7c3aed;">👥</div>
+            <div>
+              <div style="font-weight: 700; font-size: 0.85rem; color: #0f172a;">Kullanıcı & Yetki Yönetimi</div>
+              <div style="font-size: 0.72rem; color: #64748b;">MESA, Üçay Elektrik ve yönetici rolleri</div>
+            </div>
+          </button>
+
+          <!-- 6. Bulut Senkronizasyon -->
+          <button class="settings-tile" onclick="app.closeModal('modalSettingsCenter'); app.openCloudSettingsModal();">
+            <div class="settings-tile-icon" style="background: #eff6ff; color: #2563eb;">☁️</div>
+            <div>
+              <div style="font-weight: 700; font-size: 0.85rem; color: #0f172a;">Firebase Bulut Ayarları</div>
+              <div style="font-size: 0.72rem; color: #64748b;">Netlify canlı bulut veri senkronizasyonu</div>
+            </div>
+          </button>
+
+          <!-- 7. Veri Yedekleme / Yükleme -->
+          <button class="settings-tile" onclick="app.closeModal('modalSettingsCenter'); app.openBackupModal();">
+            <div class="settings-tile-icon" style="background: #f1f5f9; color: #475569;">💾</div>
+            <div>
+              <div style="font-weight: 700; font-size: 0.85rem; color: #0f172a;">Veri Yedekleme & Geri Yükleme</div>
+              <div style="font-size: 0.72rem; color: #64748b;">JSON formatında indirip güvenle saklayın</div>
+            </div>
+          </button>
+
+          <!-- 8. Şifre Değiştir -->
+          <button class="settings-tile" onclick="app.closeModal('modalSettingsCenter'); app.openChangePasswordModal();">
+            <div class="settings-tile-icon" style="background: #fee2e2; color: #dc2626;">🔒</div>
+            <div>
+              <div style="font-weight: 700; font-size: 0.85rem; color: #0f172a;">Şifre Değiştir</div>
+              <div style="font-size: 0.72rem; color: #64748b;">Kendi şifrenizi kolayca güncelleyin</div>
+            </div>
+          </button>
+
+          <!-- 9. Excel İndir -->
+          <button class="settings-tile" onclick="app.closeModal('modalSettingsCenter'); app.exportToExcel();">
+            <div class="settings-tile-icon" style="background: #ecfdf5; color: #16a34a;">📥</div>
+            <div>
+              <div style="font-weight: 700; font-size: 0.85rem; color: #0f172a;">Excel / CSV Raporu İndir</div>
+              <div style="font-size: 0.72rem; color: #64748b;">Tüm blok ve kat durumunu tablo olarak aktarın</div>
+            </div>
+          </button>
+
+          <!-- 10. Yazdır / PDF -->
+          <button class="settings-tile" onclick="app.closeModal('modalSettingsCenter'); window.print();">
+            <div class="settings-tile-icon" style="background: #f8fafc; color: #334155;">🖨️</div>
+            <div>
+              <div style="font-weight: 700; font-size: 0.85rem; color: #0f172a;">Yazdır / PDF Rapor</div>
+              <div style="font-size: 0.72rem; color: #64748b;">A4 formatında şantiye sunum çıktısı alın</div>
+            </div>
+          </button>
+        </div>
+      </div>
+      <div class="modal-footer" style="display: flex; justify-content: space-between; align-items: center;">
+        <button id="btnSettingsLogout" class="btn btn-danger btn-sm" onclick="app.closeModal('modalSettingsCenter'); app.logout();" style="display: none;">
+          <span>🚪</span>
+          <span>Oturumu Kapat</span>
+        </button>
+        <button class="btn btn-primary" onclick="app.closeModal('modalSettingsCenter')">Tamam / Kapat</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- FLOATING QUICK ACCESS BAR AT BOTTOM-RIGHT -->
+  <div class="floating-quick-bar" id="floatingQuickBar">
+    <button class="btn btn-sm btn-outline floating-btn" onclick="app.openColorSettingsModal()" title="Isı Haritası Renk Ayarları" style="background:#ffffff; color:#0f172a; border-color:#cbd5e1;">
+      <span>🎨</span>
+      <span class="floating-btn-text">Renkler</span>
+    </button>
+    <button class="btn btn-sm btn-outline floating-btn" onclick="app.openSettingsCenterModal()" title="Şantiye Menüsü & Ayarlar" style="background:#ffffff; color:#0f172a; border-color:#cbd5e1;">
+      <span>⚙️</span>
+      <span class="floating-btn-text">Ayarlar</span>
+    </button>
+    <button class="btn btn-sm btn-primary floating-btn" onclick="app.openCreateSnapshotModal()" title="Bu Haftayı Arşivle">
+      <span>📸</span>
+      <span class="floating-btn-text">Haftayı Arşivle</span>
+    </button>
   </div>
 
   <!-- Toast Container -->
