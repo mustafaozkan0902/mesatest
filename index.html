@@ -3022,12 +3022,9 @@ body {
   <main class="main-content">
 
     <!-- ========================================================
-         MASTER 3-SECTION NAVIGATION BAR
-         1. Kısım: Şantiye Test Takibi & Isı Haritası (MESA / Ana Firma Görünümü)
-         2. Kısım: İnternal İş Planı & Özel Notlarım (Yönetici & Ekip Gizli Alanı)
-         3. Kısım: Toplantı Notları & Şantiye To-Do (Haftalık Kararlar & Taahhütler)
+         MASTER 3-SECTION NAVIGATION BAR (Sadece Isı Haritası Kaldığı İçin Gizlendi)
          ======================================================== -->
-    <nav class="master-tabs-nav">
+    <nav class="master-tabs-nav" style="display: none !important;">
       <button class="master-tab-btn active" id="btnMasterTest" onclick="app.switchMasterTab('test')">
         <span class="master-tab-icon">🏢</span>
         <div class="master-tab-text">
@@ -3045,7 +3042,7 @@ body {
         <span class="master-tab-badge-secret">Gizli</span>
       </button>
 
-      <button class="master-tab-btn" id="btnMasterMeetings" onclick="app.switchMasterTab('meetings')">
+      <button class="master-tab-btn" id="btnMasterMeetings" onclick="app.switchMasterTab('meetings')" style="display: none;">
         <span class="master-tab-icon">📋</span>
         <div class="master-tab-text">
           <div class="master-tab-title">3. Toplantı Notları & Şantiye To-Do</div>
@@ -3091,6 +3088,7 @@ body {
           <span>🏗️ 5. Asma Tavan Kapatma</span>
           <span style="font-size: 0.7rem; color: #047857; font-weight: 800;">[KAPATMAYA HAZIR]</span>
         </div>
+        <div id="workflowCustomSteps" style="display:contents;"></div>
       </div>
     </div>
   </aside>
@@ -3187,6 +3185,8 @@ body {
           <div class="kpi-progress"><div id="barTavan" class="kpi-bar" style="background: #059669;"></div></div>
         </div>
       </div>
+      <!-- Dinamik Eklenen Aşamaların KPI Kartları -->
+      <div id="customStagesKpiContainer" style="display:contents;"></div>
     </section>
 
       <!-- Section 1 Sub-Navigation Bar -->
@@ -3217,22 +3217,70 @@ body {
 
       <!-- TAB 1: Matris -->
       <section id="view-matrix" class="view-panel active">
+
+      <!-- HAFTALIK ZAMAN TÜNELİ & ARŞİV ÇUBUĞU (Toplantılarda Geçmiş Haftaları Görme) -->
+      <div class="weekly-timeline-bar" style="background: #ffffff; border: 1.5px solid #e2e8f0; border-radius: 12px; padding: 0.85rem 1.15rem; margin-bottom: 1rem; box-shadow: 0 2px 4px rgba(0,0,0,0.04); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.75rem;">
+        <div style="display: flex; align-items: center; gap: 0.65rem; flex-wrap: wrap;">
+          <div style="display: flex; align-items: center; gap: 6px; font-weight: 800; font-size: 0.88rem; color: #1e293b; margin-right: 0.5rem;">
+            <span style="font-size: 1.2rem;">⏱️</span>
+            <span>Haftalık Isı Haritası Arşivi:</span>
+          </div>
+
+          <div id="weeklySnapshotPills" style="display: flex; gap: 0.45rem; flex-wrap: wrap; align-items: center;">
+            <!-- Rendered dynamically: [🔴 Canlı Güncel Durum] [📅 46. Hafta] [📅 45. Hafta]... -->
+          </div>
+        </div>
+
+        <div style="display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap;">
+          <button class="btn btn-outline btn-sm" onclick="app.openCompareSnapshotsModal()" title="Haftalar Arası İlerleme & Değişim Karşılaştırması">
+            <span>📊</span>
+            <span>Haftalık İlerleme Raporu</span>
+          </button>
+
+          <button class="btn btn-outline btn-sm" onclick="app.openNewStageModal()" title="Yeni Takip Edilecek İmalat / Aşama Ekle (Örn: Elektrik Montaj)">
+            <span>➕</span>
+            <span>Yeni Aşama Ekle</span>
+          </button>
+
+          <button class="btn btn-primary btn-sm" onclick="app.openCreateSnapshotModal()" title="Bu haftanın durumunu kalıcı olarak arşive kaydet">
+            <span>📸</span>
+            <span>Bu Haftayı Arşivle</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Arşiv Modu Uyarı Bildirim Bandı (Geçmiş hafta seçilince açılır) -->
+      <div id="snapshotActiveBanner" style="display: none; background: #eff6ff; border: 1.5px solid #93c5fd; border-radius: 8px; padding: 0.65rem 1rem; margin-bottom: 1rem; align-items: center; justify-content: space-between; gap: 0.75rem;">
+        <div style="display: flex; align-items: center; gap: 0.5rem; color: #1e40af; font-size: 0.85rem; font-weight: 700;">
+          <span style="font-size: 1.1rem;">📅</span>
+          <span id="snapshotBannerText">45. Hafta Isı Haritası Arşivi Görüntüleniyor (8 Kasım 2026 Durumu)</span>
+        </div>
+        <button class="btn btn-sm btn-primary" onclick="app.returnToLiveSnapshot()" style="padding: 0.3rem 0.75rem; font-size: 0.78rem;">
+          <span>🔙</span>
+          <span>Canlı Güncel Duruma Dön</span>
+        </button>
+      </div>
+
       <div class="toolbar">
         <div class="filter-group">
           <span style="font-size: 0.8rem; font-weight: 700; color: #475569;">Filtrele:</span>
           <button class="filter-chip active" onclick="app.setMatrixFilter('all')">Tüm Katlar</button>
           <button class="filter-chip chip-ready" onclick="app.setMatrixFilter('ready')">⚡ Teste Hazır Olanlar</button>
           <button class="filter-chip chip-mesa" onclick="app.setMatrixFilter('mesa_wait')">🏢 MESA Onayı Bekleyenler</button>
-          <button class="filter-chip" onclick="app.setMatrixFilter('prereq_wait')">⚠️ Ön Şartı (Mekanik/Klima) Eksikler</button>
-          <button class="filter-chip chip-done" onclick="app.setMatrixFilter('done')">✅ Testi Tamamlananlar</button>
+          <button class="filter-chip" onclick="app.setMatrixFilter('prereq_wait')">⚠️ Ön Şartı Eksikler</button>
+          <button class="filter-chip chip-done" onclick="app.setMatrixFilter('done')">✅ Testi Bitenler</button>
+          <button class="filter-chip" style="border-color:#0f766e; color:#0f766e; font-weight:700;" onclick="app.setMatrixFilter('tavan_done')">🏗️ Tavanı Kapananlar</button>
         </div>
 
-        <div style="display: flex; align-items: center; gap: 0.75rem; font-size: 0.78rem; flex-wrap: wrap;">
-          <span style="display: flex; align-items: center; gap: 4px;"><span class="sub-badge tavan-ok" style="background:#059669;">🏗️</span> Tavan Kapandı</span>
-          <span style="display: flex; align-items: center; gap: 4px;"><span class="sub-badge test-ok">✓</span> Test Tamam</span>
-          <span style="display: flex; align-items: center; gap: 4px;"><span class="sub-badge test-ready">⚡</span> Teste Hazır</span>
-          <span style="display: flex; align-items: center; gap: 4px;"><span class="sub-badge" style="background:#a855f7;">🏢</span> MESA Bekliyor</span>
-          <span style="display: flex; align-items: center; gap: 4px;"><span class="sub-badge prog">⏳</span> İmalat Sürüyor</span>
+        <!-- YENİLENMİŞ NET VE AYRIŞIR RENK LEJANTI -->
+        <div style="display: flex; align-items: center; gap: 0.75rem; font-size: 0.78rem; flex-wrap: wrap;" id="matrixLegendContainer">
+          <span style="display: flex; align-items: center; gap: 5px;"><span style="display:inline-block; width:15px; height:15px; border-radius:4px; background:#0f766e; border:1px solid #115e59;"></span> <strong>Zümrüt:</strong> 🏗️ Tavan Kapandı</span>
+          <span style="display: flex; align-items: center; gap: 5px;"><span style="display:inline-block; width:15px; height:15px; border-radius:4px; background:#16a34a; border:1px solid #15803d;"></span> <strong>Yeşil:</strong> ⚡ Test Tamamlandı</span>
+          <span style="display: flex; align-items: center; gap: 5px;"><span style="display:inline-block; width:15px; height:15px; border-radius:4px; background:#2563eb; border:1px solid #1d4ed8;"></span> <strong>Mavi:</strong> 🚀 Teste Hazır</span>
+          <span style="display: flex; align-items: center; gap: 5px;"><span style="display:inline-block; width:15px; height:15px; border-radius:4px; background:#9333ea; border:1px solid #7c3aed;"></span> <strong>Mor:</strong> 🏢 MESA Bekliyor</span>
+          <span style="display: flex; align-items: center; gap: 5px;"><span style="display:inline-block; width:15px; height:15px; border-radius:4px; background:#f59e0b; border:1px solid #d97706;"></span> <strong>Turuncu:</strong> 🚧 İmalat Sürüyor</span>
+          <span id="customLegendStages" style="display:contents;"></span>
+          <span style="display: flex; align-items: center; gap: 5px;"><span style="display:inline-block; width:15px; height:15px; border-radius:4px; background:#f8fafc; border:1px solid #cbd5e1;"></span> <strong>Gri:</strong> ⏳ Başlanmadı</span>
         </div>
       </div>
 
@@ -3586,9 +3634,9 @@ body {
     </div>
 
     <!-- ========================================================
-         3. KISIM: TOPLANTI NOTLARI & ŞANTİYE TO-DO
+         3. KISIM: TOPLANTI NOTLARI & ŞANTİYE TO-DO (KULLANICI TALEBİYLE KALDIRILDI)
          ======================================================== -->
-    <div id="masterSection-meetings" class="master-section-panel" style="display: none;">
+    <div id="masterSection-meetings" class="master-section-panel" style="display: none !important;">
       <section id="view-meetings" class="view-panel active">
       <!-- Kompakt 1 Satır Toplantı & To-Do KPI Barı -->
       <div class="meeting-compact-kpi-bar">
@@ -3905,20 +3953,9 @@ body {
           </div>
         </div>
 
-        <!-- 5. Bu Kata Ait Toplantı Kararları & Verilen Sözler -->
-        <div style="background: #fffbeb; border: 1.5px solid #fde68a; border-radius: 8px; padding: 1rem; margin-top: 1rem;">
-          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 0.5rem; flex-wrap:wrap; gap:0.5rem;">
-            <div>
-              <strong style="color: #b45309; font-size: 0.88rem;">📋 Bu Kata Ait Toplantı Kararları & Sözler</strong>
-              <div style="font-size: 0.72rem; color: #78350f;">Koordinasyon toplantılarında bu kata özel verilen taahhütler ve gecikme mazeretleri</div>
-            </div>
-            <button class="btn btn-secondary btn-sm" type="button" onclick="app.openNewMeetingModalForCurrentUnit()" style="font-size: 0.75rem; padding: 0.25rem 0.6rem;">
-              ➕ Bu Kata Söz Ekle
-            </button>
-          </div>
-          <div id="unitMeetingActionsContainer" style="margin-top: 0.5rem;">
-            <!-- Dynamically populated -->
-          </div>
+        <!-- Dinamik Eklenen Aşamalar (Örn: 6. Aşama Elektrik Montaj) -->
+        <div id="customStagesUnitModalContainer">
+          <!-- Dynamically populated per custom stage -->
         </div>
 
       </div>
@@ -4695,6 +4732,170 @@ body {
         <button class="btn btn-primary" onclick="app.verifyAdminPassword()">
           <span>Giriş Yap ➔</span>
         </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: Yeni Takip Aşaması / İmalat Ekle -->
+  <div id="modalNewStage" class="modal-overlay">
+    <div class="modal-box" style="max-width: 520px;">
+      <div class="modal-header">
+        <div>
+          <h2 class="modal-title">➕ Yeni İmalat / Aşama Ekle</h2>
+          <div style="font-size: 0.8rem; color: #94a3b8;">Şantiyede sıralı takip edilecek yeni iş kalemi ekleyin (Örn: Elektrik Montaj)</div>
+        </div>
+        <button class="modal-close" onclick="app.closeModal('modalNewStage')">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label class="form-label">Aşama / İmalat Adı: <span style="color:#dc2626;">*</span></label>
+          <input type="text" id="newStageName" class="form-control" placeholder="Örn: Elektrik Montaj & Armatür">
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem;">
+          <div class="form-group">
+            <label class="form-label">Aşama İkonu:</label>
+            <select id="newStageIcon" class="form-select">
+              <option value="💡">💡 Ampul / Montaj</option>
+              <option value="🔌">🔌 Priz / Anahtar</option>
+              <option value="🔆">🔆 Armatür / Aydınlatma</option>
+              <option value="⚡">⚡ Pano / Şalt</option>
+              <option value="📐">📐 İnce İşler</option>
+              <option value="🎨">🎨 Boya / Kaplama</option>
+              <option value="🚪">🚪 Kapı / Mobilya</option>
+              <option value="🏁">🏁 Son Kabul / Teslim</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Rozet Kodu (2 Harf):</label>
+            <input type="text" id="newStageCode" class="form-control" placeholder="Örn: EM" maxlength="3">
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Harita & Rozet Rengi:</label>
+          <div style="display: flex; gap: 0.6rem; align-items: center; flex-wrap: wrap;">
+            <label style="display:flex; align-items:center; gap:4px; font-size:0.8rem; cursor:pointer;">
+              <input type="radio" name="newStageColor" value="#db2777" checked>
+              <span style="display:inline-block; width:16px; height:16px; background:#db2777; border-radius:3px;"></span> Fuşya
+            </label>
+            <label style="display:flex; align-items:center; gap:4px; font-size:0.8rem; cursor:pointer;">
+              <input type="radio" name="newStageColor" value="#6366f1">
+              <span style="display:inline-block; width:16px; height:16px; background:#6366f1; border-radius:3px;"></span> İndigo
+            </label>
+            <label style="display:flex; align-items:center; gap:4px; font-size:0.8rem; cursor:pointer;">
+              <input type="radio" name="newStageColor" value="#ea580c">
+              <span style="display:inline-block; width:16px; height:16px; background:#ea580c; border-radius:3px;"></span> Kiremit
+            </label>
+            <label style="display:flex; align-items:center; gap:4px; font-size:0.8rem; cursor:pointer;">
+              <input type="radio" name="newStageColor" value="#0284c7">
+              <span style="display:inline-block; width:16px; height:16px; background:#0284c7; border-radius:3px;"></span> Okyanus
+            </label>
+            <label style="display:flex; align-items:center; gap:4px; font-size:0.8rem; cursor:pointer;">
+              <input type="radio" name="newStageColor" value="#84cc16">
+              <span style="display:inline-block; width:16px; height:16px; background:#84cc16; border-radius:3px;"></span> Limon
+            </label>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Ön Şart Kuralı (Bu İş Neden Sonra Başlasın?):</label>
+          <select id="newStagePrereq" class="form-select">
+            <option value="asmaTavan">5. Asma Tavan Kapatma bittikten sonra başlasın</option>
+            <option value="elektrikTest">4. Elektrik Testi bittikten sonra başlasın</option>
+            <option value="mesa">3. MESA Kabul Onayı bittikten sonra başlasın</option>
+            <option value="none">Ön şart olmadan bağımsız başlasın</option>
+          </select>
+          <div style="font-size:0.75rem; color:#64748b; margin-top:0.35rem;">
+            Seçilen ön şart tamamlanmadan bu aşama katlarda otomatik olarak kilitli kalır.
+          </div>
+        </div>
+
+        <div class="form-group" style="margin-bottom: 0;">
+          <label class="form-label">Varsayılan Uygulayıcı Taşeron / Ekip:</label>
+          <input type="text" id="newStageDefaultCompany" class="form-control" placeholder="Örn: Üçay Elektrik Montaj Ekibi">
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" onclick="app.closeModal('modalNewStage')">İptal</button>
+        <button class="btn btn-primary" onclick="app.saveNewStage()">
+          <span>💾</span>
+          <span>Aşamayı Oluştur ve Başlat</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: Bu Haftayı Arşivle (Snapshot) -->
+  <div id="modalCreateSnapshot" class="modal-overlay">
+    <div class="modal-box" style="max-width: 480px;">
+      <div class="modal-header">
+        <div>
+          <h2 class="modal-title">📸 Bu Haftanın Isı Haritasını Arşivle</h2>
+          <div style="font-size: 0.8rem; color: #94a3b8;">Haftalık toplantılarda geriye dönük incelemek üzere anlık durumu kaydedin</div>
+        </div>
+        <button class="modal-close" onclick="app.closeModal('modalCreateSnapshot')">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label class="form-label">Hafta Başlığı / No: <span style="color:#dc2626;">*</span></label>
+          <input type="text" id="snapshotTitleInput" class="form-control" placeholder="Örn: 46. Hafta (15 Kasım 2026)">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Arşiv Tarihi:</label>
+          <input type="date" id="snapshotDateInput" class="form-control">
+        </div>
+        <div class="form-group" style="margin-bottom: 0;">
+          <label class="form-label">Toplantı / Durum Notu (Opsiyonel):</label>
+          <textarea id="snapshotNoteInput" class="form-control" rows="3" placeholder="Örn: MESA haftalık koordinasyon toplantısı öncesi dondurulan şantiye durumu. 4. ve 5. bloklarda testler tamamlandı."></textarea>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" onclick="app.closeModal('modalCreateSnapshot')">İptal</button>
+        <button class="btn btn-primary" onclick="app.saveCurrentWeeklySnapshot()">
+          <span>💾</span>
+          <span>Bu Haftayı Kaydet & Dondur</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: Haftalık İlerleme Raporu (Hafta Karşılaştır) -->
+  <div id="modalCompareSnapshots" class="modal-overlay">
+    <div class="modal-box" style="max-width: 760px;">
+      <div class="modal-header">
+        <div>
+          <h2 class="modal-title">📊 Haftalık İlerleme & Değişim Karşılaştırması</h2>
+          <div style="font-size: 0.8rem; color: #94a3b8;">İki hafta arasında tamamlanan imalatları ve şantiye hızını karşılaştırın</div>
+        </div>
+        <button class="modal-close" onclick="app.closeModal('modalCompareSnapshots')">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1.25rem;">
+          <div class="form-group" style="margin-bottom: 0;">
+            <label class="form-label">1. Hafta (Önceki Durum):</label>
+            <select id="compareSelectWeekA" class="form-select" onchange="app.renderCompareReport()">
+              <!-- Options populated dynamically -->
+            </select>
+          </div>
+          <div class="form-group" style="margin-bottom: 0;">
+            <label class="form-label">2. Hafta (Yeni / Güncel Durum):</label>
+            <select id="compareSelectWeekB" class="form-select" onchange="app.renderCompareReport()">
+              <!-- Options populated dynamically -->
+            </select>
+          </div>
+        </div>
+
+        <div id="compareReportContent">
+          <!-- Dynamically populated comparison stats & delta cards -->
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" onclick="window.print()">
+          <span>🖨️</span>
+          <span>Raporu Yazdır / PDF</span>
+        </button>
+        <button class="btn btn-primary" onclick="app.closeModal('modalCompareSnapshots')">Kapat</button>
       </div>
     </div>
   </div>

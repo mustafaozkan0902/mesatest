@@ -52,6 +52,7 @@ class SantiyeApp {
     this.currentMasterTab = 'test';
     this.currentTestSubTab = 'matrix';
     this.currentInternalSubTab = 'internal_plan';
+    this.activeSnapshotId = null;
     
     this.fallbackKey = 'santiye_data_v2';
     localStorage.removeItem('santiye_offline_backup_data');
@@ -246,6 +247,101 @@ class SantiyeApp {
           };
         }
       });
+    }
+
+    // Ensure customStages exists
+    if (!this.data.customStages || !Array.isArray(this.data.customStages)) {
+      this.data.customStages = [
+        {
+          id: 'elektrikMontaj',
+          name: 'Elektrik Montaj & Armatür',
+          code: 'EM',
+          icon: '💡',
+          color: '#db2777',
+          prerequisiteStage: 'asmaTavan',
+          company: 'Üçay Elektrik Montaj Ekibi',
+          order: 6
+        }
+      ];
+    }
+
+    // Ensure customStages fields exist on each unit
+    if (this.data.units && this.data.customStages) {
+      Object.values(this.data.units).forEach(u => {
+        this.data.customStages.forEach(cs => {
+          if (!u[cs.id]) {
+            const prereqDone = cs.prerequisiteStage === 'none' ||
+              (cs.prerequisiteStage === 'asmaTavan' && u.asmaTavan?.status === 'tamamlandi') ||
+              (cs.prerequisiteStage === 'elektrikTest' && u.elektrikTest?.status === 'tamamlandi') ||
+              (cs.prerequisiteStage === 'mesa' && u.mesa?.status === 'onaylandi') ||
+              (u[cs.prerequisiteStage]?.status === 'tamamlandi');
+
+            u[cs.id] = {
+              status: prereqDone ? 'hazir' : 'kilitli',
+              date: '',
+              company: cs.company || '',
+              note: ''
+            };
+          }
+        });
+      });
+    }
+
+    // Ensure snapshots exist with baseline 44th and 45th weeks
+    if (!this.data.snapshots || !Array.isArray(this.data.snapshots) || this.data.snapshots.length === 0) {
+      const snap44Units = JSON.parse(JSON.stringify(this.data.units));
+      Object.values(snap44Units).forEach(u => {
+        u.elektrikTest = { status: 'kilitli', date: '', tester: '', reportNo: '', note: 'MESA onayı bekleniyor' };
+        u.asmaTavan = { status: 'kilitli', date: '', company: 'Asma Tavan & Alçıpan Ekibi', note: '' };
+        if (u.elektrikMontaj) u.elektrikMontaj = { status: 'kilitli', date: '', company: 'Üçay Elektrik Montaj Ekibi', note: '' };
+        if (['1_kat1', '1_zemin', '2_zemin'].includes(u.id)) {
+          u.mekanik = { status: 'tamamlandi', date: '2026-10-28', company: 'Mekanik Tesisat A.Ş.', note: 'Tamamlandı' };
+          u.klima = { status: 'tamamlandi', date: '2026-10-29', company: 'VRF Klima Sistemleri', note: 'Tamamlandı' };
+          u.mesa = { status: 'bekliyor', date: '', officer: '', docNo: '', note: 'Kontrol bekleniyor' };
+        } else {
+          u.mekanik = { status: 'devam', date: '', company: 'Mekanik Tesisat A.Ş.', note: 'Montaj sürüyor' };
+          u.klima = { status: 'bekliyor', date: '', company: 'VRF Klima Sistemleri', note: '' };
+          u.mesa = { status: 'bekliyor', date: '', officer: '', docNo: '', note: '' };
+        }
+      });
+
+      const snap45Units = JSON.parse(JSON.stringify(snap44Units));
+      ['1_zemin', '1_kat1'].forEach(id => {
+        if (snap45Units[id]) {
+          snap45Units[id].mesa = { status: 'onaylandi', date: '2026-11-04', officer: 'MESA Heyeti', docNo: 'MS-4501', note: 'Onaylandı' };
+          snap45Units[id].elektrikTest = { status: 'tamamlandi', date: '2026-11-06', tester: 'Ahmet Usta (Üçay)', reportNo: 'TR-101', note: 'Test Başarılı' };
+          snap45Units[id].asmaTavan = { status: 'devam', date: '', company: 'Asma Tavan & Alçıpan Ekibi', note: 'Karkas kuruluyor' };
+        }
+      });
+      ['1_kat2', '2_zemin', '3_zemin'].forEach(id => {
+        if (snap45Units[id]) {
+          snap45Units[id].mekanik = { status: 'tamamlandi', date: '2026-11-05', company: 'Mekanik Tesisat A.Ş.', note: 'Tamamlandı' };
+          snap45Units[id].klima = { status: 'tamamlandi', date: '2026-11-05', company: 'VRF Klima Sistemleri', note: 'Tamamlandı' };
+          snap45Units[id].mesa = { status: 'onaylandi', date: '2026-11-07', officer: 'MESA Heyeti', docNo: 'MS-4502', note: 'Onaylandı' };
+          snap45Units[id].elektrikTest = { status: 'hazir', date: '', tester: '', reportNo: '', note: 'Teste hazır' };
+        }
+      });
+
+      this.data.snapshots = [
+        {
+          id: 'snap-week-44',
+          title: '44. Hafta (31 Eki 2026)',
+          date: '2026-10-31',
+          notes: 'MESA şantiye başlangıç koordinasyonu. Mekanik ve klima montajları başladı.',
+          createdAt: '2026-10-31T17:00:00Z',
+          units: snap44Units,
+          customStages: JSON.parse(JSON.stringify(this.data.customStages))
+        },
+        {
+          id: 'snap-week-45',
+          title: '45. Hafta (07 Kas 2026)',
+          date: '2026-11-07',
+          notes: 'Blok 1 zemin ve 1. kat elektrik testleri başarıyla tamamlandı. Asma tavan ekipleri sahaya girdi.',
+          createdAt: '2026-11-07T17:00:00Z',
+          units: snap45Units,
+          customStages: JSON.parse(JSON.stringify(this.data.customStages))
+        }
+      ];
     }
   }
 
@@ -638,10 +734,13 @@ class SantiyeApp {
     this.updateRoleUI();
 
     this.renderKPIs();
+    this.renderCustomStagesKPIs();
+    this.renderWorkflowCustomSteps();
+    this.renderMatrixLegend();
+    this.renderWeeklyTimeline();
     this.renderMatrix();
     this.renderBuilding();
     this.renderTable();
-    this.renderMeetings();
     this.renderInternalPlan();
     this.renderPrivateNotes();
     this.renderStats();
@@ -650,15 +749,16 @@ class SantiyeApp {
 
   // --- MASTER & SUB-TAB SWITCHING ---
   switchMasterTab(masterTabId) {
+    // Toplantı notları kaldırıldı - daima test / ısı haritası sekmesine yönlendir
+    if (masterTabId === 'meetings' || !['test', 'internal'].includes(masterTabId)) {
+      masterTabId = 'test';
+    }
+
     if (masterTabId === 'internal') {
       if (!this.hasPermission('internal_plan', 'view') && !this.hasPermission('private_notes', 'view')) {
         this.showToast('İnternal alana erişim yetkiniz bulunmamaktadır.', 'warning');
         masterTabId = 'test';
       }
-    }
-
-    if (!['test', 'internal', 'meetings'].includes(masterTabId)) {
-      masterTabId = 'test';
     }
 
     this.currentMasterTab = masterTabId;
@@ -670,8 +770,7 @@ class SantiyeApp {
     document.querySelectorAll('.master-tab-btn').forEach(btn => btn.classList.remove('active'));
     const masterBtnMap = {
       test: 'btnMasterTest',
-      internal: 'btnMasterInternal',
-      meetings: 'btnMasterMeetings'
+      internal: 'btnMasterInternal'
     };
     const targetBtn = document.getElementById(masterBtnMap[masterTabId]);
     if (targetBtn) targetBtn.classList.add('active');
@@ -703,8 +802,6 @@ class SantiyeApp {
         sub = 'internal_plan';
       }
       this.switchInternalSubTab(sub);
-    } else if (masterTabId === 'meetings') {
-      this.renderMeetings();
     }
   }
 
@@ -797,10 +894,19 @@ class SantiyeApp {
     }
   }
 
+  // --- DATA ACCESS HELPER: SNAPSHOT AWARE ---
+  getCurrentUnits() {
+    if (this.activeSnapshotId && this.data?.snapshots) {
+      const snap = this.data.snapshots.find(s => s.id === this.activeSnapshotId);
+      if (snap && snap.units) return snap.units;
+    }
+    return this.data?.units || {};
+  }
+
   // --- KPI CALCULATIONS ---
   renderKPIs() {
-    const units = Object.values(this.data.units);
-    const total = units.length;
+    const units = Object.values(this.getCurrentUnits());
+    const total = units.length || 80;
 
     let mekanikDone = 0;
     let klimaDone = 0;
@@ -818,34 +924,49 @@ class SantiyeApp {
       if (u.asmaTavan?.status === 'tamamlandi') tavanDone++;
     });
 
-    document.getElementById('kpiTotalUnits').innerText = total;
+    const kpiTotalEl = document.getElementById('kpiTotalUnits');
+    if (kpiTotalEl) kpiTotalEl.innerText = total;
 
     // Mekanik
     const mekPct = Math.round((mekanikDone / total) * 100);
-    document.getElementById('kpiMekanikDone').innerText = mekanikDone;
-    document.getElementById('kpiMekanikPct').innerText = `%${mekPct}`;
-    document.getElementById('barMekanik').style.width = `${mekPct}%`;
+    const kpiMekDoneEl = document.getElementById('kpiMekanikDone');
+    const kpiMekPctEl = document.getElementById('kpiMekanikPct');
+    const barMekEl = document.getElementById('barMekanik');
+    if (kpiMekDoneEl) kpiMekDoneEl.innerText = mekanikDone;
+    if (kpiMekPctEl) kpiMekPctEl.innerText = `%${mekPct}`;
+    if (barMekEl) barMekEl.style.width = `${mekPct}%`;
 
     // Klima
     const klimaPct = Math.round((klimaDone / total) * 100);
-    document.getElementById('kpiKlimaDone').innerText = klimaDone;
-    document.getElementById('kpiKlimaPct').innerText = `%${klimaPct}`;
-    document.getElementById('barKlima').style.width = `${klimaPct}%`;
+    const kpiKliDoneEl = document.getElementById('kpiKlimaDone');
+    const kpiKliPctEl = document.getElementById('kpiKlimaPct');
+    const barKliEl = document.getElementById('barKlima');
+    if (kpiKliDoneEl) kpiKliDoneEl.innerText = klimaDone;
+    if (kpiKliPctEl) kpiKliPctEl.innerText = `%${klimaPct}`;
+    if (barKliEl) barKliEl.style.width = `${klimaPct}%`;
 
     // MESA
     const mesaPct = Math.round((mesaDone / total) * 100);
-    document.getElementById('kpiMesaDone').innerText = mesaDone;
-    document.getElementById('kpiMesaPct').innerText = `%${mesaPct}`;
-    document.getElementById('barMesa').style.width = `${mesaPct}%`;
+    const kpiMesaDoneEl = document.getElementById('kpiMesaDone');
+    const kpiMesaPctEl = document.getElementById('kpiMesaPct');
+    const barMesaEl = document.getElementById('barMesa');
+    if (kpiMesaDoneEl) kpiMesaDoneEl.innerText = mesaDone;
+    if (kpiMesaPctEl) kpiMesaPctEl.innerText = `%${mesaPct}`;
+    if (barMesaEl) barMesaEl.style.width = `${mesaPct}%`;
 
     // Test Ready & Done
-    document.getElementById('kpiTestReady').innerText = testReady;
-    document.getElementById('barTestReady').style.width = `${Math.round((testReady / total) * 100)}%`;
+    const kpiReadyEl = document.getElementById('kpiTestReady');
+    const barReadyEl = document.getElementById('barTestReady');
+    if (kpiReadyEl) kpiReadyEl.innerText = testReady;
+    if (barReadyEl) barReadyEl.style.width = `${Math.round((testReady / total) * 100)}%`;
 
     const testPct = Math.round((testDone / total) * 100);
-    document.getElementById('kpiTestDone').innerText = testDone;
-    document.getElementById('kpiTestDonePct').innerText = `%${testPct}`;
-    document.getElementById('barTestDone').style.width = `${testPct}%`;
+    const kpiTestDoneEl = document.getElementById('kpiTestDone');
+    const kpiTestDonePctEl = document.getElementById('kpiTestDonePct');
+    const barTestDoneEl = document.getElementById('barTestDone');
+    if (kpiTestDoneEl) kpiTestDoneEl.innerText = testDone;
+    if (kpiTestDonePctEl) kpiTestDonePctEl.innerText = `%${testPct}`;
+    if (barTestDoneEl) barTestDoneEl.style.width = `${testPct}%`;
 
     // Asma Tavan Done
     const tavanPct = Math.round((tavanDone / total) * 100);
@@ -855,6 +976,420 @@ class SantiyeApp {
     if (kpiTavanDoneEl) kpiTavanDoneEl.innerText = tavanDone;
     if (kpiTavanPctEl) kpiTavanPctEl.innerText = `%${tavanPct}`;
     if (barTavanEl) barTavanEl.style.width = `${tavanPct}%`;
+  }
+
+  renderCustomStagesKPIs() {
+    const container = document.getElementById('customStagesKpiContainer');
+    if (!container) return;
+
+    const units = Object.values(this.getCurrentUnits());
+    const total = units.length || 1;
+    let html = '';
+
+    (this.data?.customStages || []).forEach(cs => {
+      let doneCount = 0;
+      units.forEach(u => {
+        if (u[cs.id]?.status === 'tamamlandi') doneCount++;
+      });
+      const pct = Math.round((doneCount / total) * 100);
+
+      html += `
+        <div class="kpi-card" style="border-top: 3px solid ${cs.color};">
+          <div class="kpi-icon" style="background: rgba(219, 39, 119, 0.1); color: ${cs.color};">${cs.icon}</div>
+          <div class="kpi-info">
+            <div class="kpi-title">${cs.name}</div>
+            <div class="kpi-value-row">
+              <span class="kpi-value" style="color:${cs.color};">${doneCount}</span>
+              <span class="kpi-sub">%${pct}</span>
+            </div>
+            <div class="kpi-progress"><div class="kpi-bar" style="width: ${pct}%; background: ${cs.color};"></div></div>
+          </div>
+        </div>
+      `;
+    });
+
+    container.innerHTML = html;
+  }
+
+  renderWorkflowCustomSteps() {
+    const container = document.getElementById('workflowCustomSteps');
+    if (!container) return;
+
+    let html = '';
+    (this.data?.customStages || []).forEach(cs => {
+      html += `
+        <span class="step-arrow">➔</span>
+        <div class="step-item" style="border-left: 3px solid ${cs.color}; background: #fff5f8;">
+          <span>${cs.icon} ${cs.name}</span>
+          <span style="font-size: 0.7rem; color: ${cs.color}; font-weight: 800;">[SIRALI TAKİP]</span>
+        </div>
+      `;
+    });
+    container.innerHTML = html;
+  }
+
+  renderMatrixLegend() {
+    const container = document.getElementById('customLegendStages');
+    if (!container) return;
+
+    let html = '';
+    (this.data?.customStages || []).forEach(cs => {
+      html += `
+        <span style="display: flex; align-items: center; gap: 5px;">
+          <span style="display:inline-block; width:15px; height:15px; border-radius:4px; background:${cs.color}; border:1px solid ${cs.color};"></span>
+          <strong>${cs.name}:</strong> ${cs.icon} Bitti
+        </span>
+      `;
+    });
+    container.innerHTML = html;
+  }
+
+  // --- HAFTALIK ZAMAN TÜNELİ & ARŞİVLEME ---
+  renderWeeklyTimeline() {
+    const container = document.getElementById('weeklySnapshotPills');
+    if (!container) return;
+
+    let html = `
+      <button class="timeline-pill ${!this.activeSnapshotId ? 'active live' : ''}" onclick="app.returnToLiveSnapshot()">
+        <span class="pulse-dot" style="display:inline-block; width:8px; height:8px; border-radius:50%; background:#22c55e; margin-right:4px;"></span>
+        🔴 Canlı Güncel Durum
+      </button>
+    `;
+
+    const snapshots = this.data?.snapshots || [];
+    snapshots.forEach(s => {
+      const isActive = this.activeSnapshotId === s.id;
+      html += `
+        <button class="timeline-pill ${isActive ? 'active' : ''}" onclick="app.viewSnapshot('${s.id}')" title="${s.notes || s.title}">
+          📅 ${s.title}
+        </button>
+      `;
+    });
+
+    container.innerHTML = html;
+
+    // Snapshot banner handling
+    const banner = document.getElementById('snapshotActiveBanner');
+    const bannerText = document.getElementById('snapshotBannerText');
+
+    if (this.activeSnapshotId) {
+      const activeSnap = snapshots.find(s => s.id === this.activeSnapshotId);
+      if (activeSnap && banner) {
+        banner.style.display = 'flex';
+        if (bannerText) bannerText.innerText = `${activeSnap.title} Isı Haritası Arşivi Görüntüleniyor (${activeSnap.date} Durumu)`;
+      }
+    } else {
+      if (banner) banner.style.display = 'none';
+    }
+  }
+
+  viewSnapshot(snapshotId) {
+    this.activeSnapshotId = snapshotId;
+    this.renderAll();
+    const snap = (this.data?.snapshots || []).find(s => s.id === snapshotId);
+    this.showToast(`Arşiv inceleme modu: ${snap?.title || 'Geçmiş Hafta'} yüklendi.`, 'info');
+  }
+
+  returnToLiveSnapshot() {
+    this.activeSnapshotId = null;
+    this.renderAll();
+    this.showToast('Canlı güncel duruma dönüldü.', 'success');
+  }
+
+  openCreateSnapshotModal() {
+    if (!this.requireLogin('Haftalık durum arşivlemek için lütfen giriş yapınız.')) return;
+    if (!this.hasPermission('units', 'edit')) {
+      this.showToast('Arşiv kaydı oluşturma yetkiniz bulunmamaktadır.', 'error');
+      return;
+    }
+
+    const today = new Date().toISOString().split('T')[0];
+    const snapCount = (this.data?.snapshots?.length || 0) + 44;
+    const titleInput = document.getElementById('snapshotTitleInput');
+    const dateInput = document.getElementById('snapshotDateInput');
+    const notesInput = document.getElementById('snapshotNoteInput');
+
+    if (titleInput) titleInput.value = `${snapCount}. Hafta (${new Date().toLocaleDateString('tr-TR', { day: '2-digit', month: 'short', year: 'numeric' })})`;
+    if (dateInput) dateInput.value = today;
+    if (notesInput) notesInput.value = '';
+
+    this.openModal('modalCreateSnapshot');
+  }
+
+  async saveCurrentWeeklySnapshot() {
+    const title = document.getElementById('snapshotTitleInput')?.value.trim();
+    const date = document.getElementById('snapshotDateInput')?.value;
+    const notes = document.getElementById('snapshotNoteInput')?.value.trim() || '';
+
+    if (!title || !date) {
+      this.showToast('Lütfen hafta başlığını ve tarihini giriniz.', 'warning');
+      return;
+    }
+
+    if (!this.data.snapshots) this.data.snapshots = [];
+
+    const newSnap = {
+      id: `snap-${Date.now()}`,
+      title: title,
+      date: date,
+      notes: notes,
+      createdAt: new Date().toISOString(),
+      units: JSON.parse(JSON.stringify(this.data.units)),
+      customStages: JSON.parse(JSON.stringify(this.data.customStages || []))
+    };
+
+    this.data.snapshots.push(newSnap);
+    await this.saveData(this.data);
+
+    this.closeModal('modalCreateSnapshot');
+    this.renderWeeklyTimeline();
+    this.showToast(`✅ "${title}" arşivi başarıyla donduruldu ve kaydedildi!`, 'success');
+  }
+
+  openCompareSnapshotsModal() {
+    const selA = document.getElementById('compareSelectWeekA');
+    const selB = document.getElementById('compareSelectWeekB');
+    if (!selA || !selB) return;
+
+    const snapshots = this.data?.snapshots || [];
+    let optsA = '';
+    let optsB = `<option value="live" selected>🔴 Canlı Güncel Durum</option>`;
+
+    snapshots.forEach((s, idx) => {
+      const isLast = idx === snapshots.length - 1;
+      optsA += `<option value="${s.id}" ${isLast ? 'selected' : ''}>📅 ${s.title}</option>`;
+      optsB += `<option value="${s.id}">📅 ${s.title}</option>`;
+    });
+
+    selA.innerHTML = optsA;
+    selB.innerHTML = optsB;
+
+    this.renderCompareReport();
+    this.openModal('modalCompareSnapshots');
+  }
+
+  renderCompareReport() {
+    const selA = document.getElementById('compareSelectWeekA')?.value;
+    const selB = document.getElementById('compareSelectWeekB')?.value;
+    const container = document.getElementById('compareReportContent');
+    if (!container || !this.data) return;
+
+    let unitsA = {};
+    let unitsB = {};
+    let titleA = 'Önceki Durum';
+    let titleB = 'Sonraki Durum';
+
+    const snapshots = this.data.snapshots || [];
+    const snapA = snapshots.find(s => s.id === selA);
+    if (snapA) {
+      unitsA = snapA.units || {};
+      titleA = snapA.title;
+    }
+
+    if (selB === 'live') {
+      unitsB = this.data.units || {};
+      titleB = 'Canlı Güncel Durum';
+    } else {
+      const snapB = snapshots.find(s => s.id === selB);
+      if (snapB) {
+        unitsB = snapB.units || {};
+        titleB = snapB.title;
+      }
+    }
+
+    let testDoneA = 0, testDoneB = 0;
+    let tavanDoneA = 0, tavanDoneB = 0;
+    let mesaDoneA = 0, mesaDoneB = 0;
+    let changesList = [];
+
+    const allKeys = Object.keys(this.data.units || {});
+    allKeys.forEach(k => {
+      const uA = unitsA[k] || {};
+      const uB = unitsB[k] || {};
+
+      if (uA.elektrikTest?.status === 'tamamlandi') testDoneA++;
+      if (uB.elektrikTest?.status === 'tamamlandi') testDoneB++;
+
+      if (uA.asmaTavan?.status === 'tamamlandi') tavanDoneA++;
+      if (uB.asmaTavan?.status === 'tamamlandi') tavanDoneB++;
+
+      if (uA.mesa?.status === 'onaylandi') mesaDoneA++;
+      if (uB.mesa?.status === 'onaylandi') mesaDoneB++;
+
+      const stA = this.getUnitOverallStatus(uA);
+      const stB = this.getUnitOverallStatus(uB);
+      if (stA !== stB) {
+        changesList.push({
+          unitName: `${uB.blockName || uA.blockName || k} - ${uB.floorName || uA.floorName || ''}`,
+          oldStatus: this.formatStatusLabel(stA),
+          newStatus: this.formatStatusLabel(stB)
+        });
+      }
+    });
+
+    const deltaTest = testDoneB - testDoneA;
+    const deltaTavan = tavanDoneB - tavanDoneA;
+    const deltaMesa = mesaDoneB - mesaDoneA;
+
+    container.innerHTML = `
+      <div style="background:#f8fafc; border:1.5px solid #e2e8f0; border-radius:10px; padding:1.25rem; margin-bottom:1.5rem;">
+        <h4 style="margin:0 0 0.85rem 0; color:#1e293b; font-size:1.05rem;">📊 İki Tarih Arası İlerleme & Hız Özeti</h4>
+        <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap:1rem;">
+          <div style="background:#ffffff; border-radius:8px; padding:1rem; border-left:4px solid #16a34a; box-shadow:0 1px 3px rgba(0,0,0,0.05);">
+            <div style="font-size:0.75rem; color:#64748b; font-weight:700;">⚡ ELEKTRİK TESTİ</div>
+            <div style="font-size:1.35rem; font-weight:800; color:#1e293b; margin:4px 0;">
+              ${testDoneA} ➔ ${testDoneB} 
+            </div>
+            <div style="font-size:0.85rem; color:${deltaTest >= 0 ? '#16a34a' : '#dc2626'}; font-weight:800;">
+              ${deltaTest >= 0 ? '▲ +' : '▼ '}${deltaTest} Kat İlerleme
+            </div>
+          </div>
+          <div style="background:#ffffff; border-radius:8px; padding:1rem; border-left:4px solid #0f766e; box-shadow:0 1px 3px rgba(0,0,0,0.05);">
+            <div style="font-size:0.75rem; color:#64748b; font-weight:700;">🏗️ ASMA TAVAN KAPATMA</div>
+            <div style="font-size:1.35rem; font-weight:800; color:#1e293b; margin:4px 0;">
+              ${tavanDoneA} ➔ ${tavanDoneB}
+            </div>
+            <div style="font-size:0.85rem; color:${deltaTavan >= 0 ? '#0f766e' : '#dc2626'}; font-weight:800;">
+              ${deltaTavan >= 0 ? '▲ +' : '▼ '}${deltaTavan} Kat İlerleme
+            </div>
+          </div>
+          <div style="background:#ffffff; border-radius:8px; padding:1rem; border-left:4px solid #9333ea; box-shadow:0 1px 3px rgba(0,0,0,0.05);">
+            <div style="font-size:0.75rem; color:#64748b; font-weight:700;">🏢 MESA KABUL ONAYI</div>
+            <div style="font-size:1.35rem; font-weight:800; color:#1e293b; margin:4px 0;">
+              ${mesaDoneA} ➔ ${mesaDoneB}
+            </div>
+            <div style="font-size:0.85rem; color:${deltaMesa >= 0 ? '#9333ea' : '#dc2626'}; font-weight:800;">
+              ${deltaMesa >= 0 ? '▲ +' : '▼ '}${deltaMesa} Kat İlerleme
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <h4 style="margin:1rem 0 0.5rem 0; color:#1e293b; font-size:1rem; display:flex; justify-content:space-between; align-items:center;">
+        <span>📋 Kat Bazlı İlerleme Dökümü</span>
+        <span style="font-size:0.8rem; background:#e0f2fe; color:#0369a1; padding:2px 8px; border-radius:12px; font-weight:700;">${changesList.length} Kat Değişti</span>
+      </h4>
+      ${changesList.length === 0 ? '<p style="color:#64748b; font-size:0.88rem; padding:1rem; background:#f8fafc; border-radius:8px;">Seçilen iki hafta arasında kat durumlarında herhangi bir değişiklik bulunmuyor.</p>' : `
+        <div style="max-height:280px; overflow-y:auto; border:1px solid #e2e8f0; border-radius:8px;">
+          <table style="width:100%; border-collapse:collapse; font-size:0.85rem;">
+            <thead>
+              <tr style="background:#f1f5f9; text-align:left; color:#475569;">
+                <th style="padding:8px 12px; border-bottom:1px solid #cbd5e1;">Kat / Mahâl</th>
+                <th style="padding:8px 12px; border-bottom:1px solid #cbd5e1;">${titleA}</th>
+                <th style="padding:8px 12px; border-bottom:1px solid #cbd5e1;">${titleB}</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${changesList.map(c => `
+                <tr style="border-bottom:1px solid #f1f5f9;">
+                  <td style="padding:8px 12px; font-weight:700;">${c.unitName}</td>
+                  <td style="padding:8px 12px; color:#64748b;">${c.oldStatus}</td>
+                  <td style="padding:8px 12px; font-weight:700; color:#0f766e;">➔ ${c.newStatus}</td>
+                </tr>
+              `).join('')}
+            </tbody>
+          </table>
+        </div>
+      `}
+    `;
+  }
+
+  formatStatusLabel(st) {
+    if (st === 'tavan_done') return '🏗️ Tavan Kapandı';
+    if (st === 'done') return '⚡ Test Başarılı';
+    if (st === 'ready') return '⚡ Teste Hazır';
+    if (st === 'mesa_wait') return '🏢 MESA Bekliyor';
+    if (st === 'in_progress') return '🚧 İmalat Sürüyor';
+    if (st && st.endsWith('_done')) {
+      const stageId = st.replace('_done', '');
+      const cs = (this.data?.customStages || []).find(s => s.id === stageId);
+      return cs ? `${cs.icon} ${cs.name} Bitti` : 'Tamamlandı';
+    }
+    return '⏳ Bekliyor';
+  }
+
+  // --- DİNAMİK AŞAMA EKLEME ---
+  openNewStageModal() {
+    if (!this.requireLogin('Yeni aşama eklemek için lütfen yönetici girişi yapınız.')) return;
+    if (!this.isAdmin) {
+      this.showToast('Yeni aşama ekleme yetkisi yalnızca yöneticilere aittir.', 'warning');
+      return;
+    }
+
+    const prereqSelect = document.getElementById('newStagePrereq');
+    if (prereqSelect) {
+      let opts = `
+        <option value="asmaTavan" selected>5. Asma Tavan Kapatma bittikten sonra başlasın</option>
+        <option value="elektrikTest">4. Elektrik Testi bittikten sonra başlasın</option>
+        <option value="mesa">3. MESA Kabul Onayı bittikten sonra başlasın</option>
+        <option value="none">Ön şart olmadan bağımsız başlasın</option>
+      `;
+      (this.data?.customStages || []).forEach(cs => {
+        opts += `<option value="${cs.id}">${cs.icon} ${cs.name} bittikten sonra başlasın</option>`;
+      });
+      prereqSelect.innerHTML = opts;
+    }
+
+    const nameEl = document.getElementById('newStageName');
+    const codeEl = document.getElementById('newStageCode');
+    const compEl = document.getElementById('newStageDefaultCompany');
+    if (nameEl) nameEl.value = '';
+    if (codeEl) codeEl.value = '';
+    if (compEl) compEl.value = '';
+
+    this.openModal('modalNewStage');
+  }
+
+  async saveNewStage() {
+    const name = document.getElementById('newStageName')?.value.trim();
+    const code = document.getElementById('newStageCode')?.value.trim().toUpperCase();
+    const icon = document.getElementById('newStageIcon')?.value.trim() || '💡';
+    const colorRadio = document.querySelector('input[name="newStageColor"]:checked');
+    const color = colorRadio ? colorRadio.value : '#db2777';
+    const prereq = document.getElementById('newStagePrereq')?.value || 'asmaTavan';
+    const company = document.getElementById('newStageDefaultCompany')?.value.trim() || '';
+
+    if (!name || !code) {
+      this.showToast('Lütfen aşama adını ve kısaltma kodunu giriniz.', 'warning');
+      return;
+    }
+
+    if (!this.data.customStages) this.data.customStages = [];
+
+    const stageId = 'stage_' + Date.now().toString(36);
+    const newStage = {
+      id: stageId,
+      name: name,
+      code: code,
+      icon: icon,
+      color: color,
+      prerequisiteStage: prereq,
+      company: company,
+      order: 6 + this.data.customStages.length
+    };
+
+    this.data.customStages.push(newStage);
+
+    // Initialize on all units
+    Object.values(this.data.units).forEach(u => {
+      const isPrereqDone = prereq === 'none' ||
+        (prereq === 'asmaTavan' && u.asmaTavan?.status === 'tamamlandi') ||
+        (prereq === 'elektrikTest' && u.elektrikTest?.status === 'tamamlandi') ||
+        (prereq === 'mesa' && u.mesa?.status === 'onaylandi') ||
+        (u[prereq]?.status === 'tamamlandi');
+
+      u[stageId] = {
+        status: isPrereqDone ? 'hazir' : 'kilitli',
+        date: '',
+        company: company,
+        note: ''
+      };
+    });
+
+    await this.saveData(this.data);
+    this.closeModal('modalNewStage');
+    this.renderAll();
+    this.showToast(`✅ "${name}" aşaması başarıyla eklendi ve tüm katlara uygulandı!`, 'success');
   }
 
   // --- TAB 1: MATRIX / HEATMAP ---
@@ -867,12 +1402,21 @@ class SantiyeApp {
   }
 
   getUnitOverallStatus(u) {
+    if (!u) return 'waiting';
+    if (this.data?.customStages) {
+      for (let i = this.data.customStages.length - 1; i >= 0; i--) {
+        const cs = this.data.customStages[i];
+        if (u[cs.id]?.status === 'tamamlandi') {
+          return `${cs.id}_done`;
+        }
+      }
+    }
     if (u.asmaTavan?.status === 'tamamlandi') return 'tavan_done';
     if (u.elektrikTest?.status === 'tamamlandi') return 'done';
     if (u.elektrikTest?.status === 'hazir') return 'ready';
     if (u.mesa?.status === 'onaylandi') return 'ready';
     if (u.mekanik?.status === 'tamamlandi' && u.klima?.status === 'tamamlandi') return 'mesa_wait';
-    if (u.mekanik?.status === 'devam' || u.klima?.status === 'devam') return 'in_progress';
+    if (u.mekanik?.status === 'devam' || u.klima?.status === 'devam' || u.asmaTavan?.status === 'devam') return 'in_progress';
     return 'waiting';
   }
 
@@ -882,6 +1426,7 @@ class SantiyeApp {
 
     const blocks = this.data.blocks;
     const floors = this.data.floors; // ordered top to bottom: Çatı down to B2
+    const currentUnits = this.getCurrentUnits();
 
     let html = '<thead><tr><th class="floor-col-header">Kat / Blok</th>';
     blocks.forEach(b => {
@@ -894,12 +1439,13 @@ class SantiyeApp {
 
       blocks.forEach(b => {
         const uKey = `${b.id}_${f.id}`;
-        const u = this.data.units[uKey] || {
+        const u = currentUnits[uKey] || {
           id: uKey, blockId: b.id, floorId: f.id,
           mekanik: { status: 'bekliyor' },
           klima: { status: 'bekliyor' },
           mesa: { status: 'bekliyor' },
-          elektrikTest: { status: 'kilitli' }
+          elektrikTest: { status: 'kilitli' },
+          asmaTavan: { status: 'kilitli' }
         };
 
         const overall = this.getUnitOverallStatus(u);
@@ -908,25 +1454,53 @@ class SantiyeApp {
         let isFilteredIn = true;
         if (this.matrixFilter === 'ready' && overall !== 'ready') isFilteredIn = false;
         if (this.matrixFilter === 'mesa_wait' && overall !== 'mesa_wait') isFilteredIn = false;
-        if (this.matrixFilter === 'prereq_wait' && (overall === 'done' || overall === 'ready' || overall === 'mesa_wait' || overall === 'tavan_done')) isFilteredIn = false;
-        if (this.matrixFilter === 'done' && overall !== 'done' && overall !== 'tavan_done') isFilteredIn = false;
+        if (this.matrixFilter === 'prereq_wait' && (overall === 'done' || overall === 'ready' || overall === 'mesa_wait' || overall === 'tavan_done' || overall.endsWith('_done'))) isFilteredIn = false;
+        if (this.matrixFilter === 'done' && overall !== 'done' && overall !== 'tavan_done' && !overall.endsWith('_done')) isFilteredIn = false;
+        if (this.matrixFilter === 'tavan_done' && overall !== 'tavan_done') isFilteredIn = false;
 
         let cellClass = 'matrix-cell';
-        if (overall === 'tavan_done') cellClass += ' status-tavan-done';
-        else if (overall === 'done') cellClass += ' status-test-done';
-        else if (overall === 'ready') cellClass += ' status-test-ready';
-        else if (overall === 'mesa_wait') cellClass += ' status-mesa-wait';
-        else if (overall === 'in_progress') cellClass += ' status-in-progress';
-        else cellClass += ' status-waiting';
+        let customInlineStyle = '';
+
+        if (overall === 'tavan_done') {
+          cellClass += ' status-tavan-done';
+        } else if (overall === 'done') {
+          cellClass += ' status-test-done';
+        } else if (overall === 'ready') {
+          cellClass += ' status-test-ready';
+        } else if (overall === 'mesa_wait') {
+          cellClass += ' status-mesa-wait';
+        } else if (overall === 'in_progress') {
+          cellClass += ' status-in-progress';
+        } else if (overall.endsWith('_done')) {
+          cellClass += ' status-custom-done';
+          const stageId = overall.replace('_done', '');
+          const cs = (this.data.customStages || []).find(s => s.id === stageId);
+          if (cs) {
+            customInlineStyle = `background: ${cs.color} !important; border-color: ${cs.color} !important; color: #ffffff !important;`;
+          }
+        } else {
+          cellClass += ' status-waiting';
+        }
 
         const opacityStyle = isFilteredIn ? 'opacity: 1;' : 'opacity: 0.25; filter: grayscale(80%);';
 
-        // Badges for the 5 stages
+        // Badges for the stages
         const bMek = u.mekanik?.status === 'tamamlandi' ? 'ok' : (u.mekanik?.status === 'devam' ? 'prog' : 'wait');
         const bKli = u.klima?.status === 'tamamlandi' ? 'ok' : (u.klima?.status === 'devam' ? 'prog' : 'wait');
         const bMesa = u.mesa?.status === 'onaylandi' ? 'ok' : (u.mesa?.status === 'revizyon' ? 'rev' : 'wait');
         const bTest = u.elektrikTest?.status === 'tamamlandi' ? 'test-ok' : (u.elektrikTest?.status === 'hazir' ? 'test-ready' : 'wait');
         const bTavan = u.asmaTavan?.status === 'tamamlandi' ? 'tavan-ok' : (u.asmaTavan?.status === 'devam' ? 'prog' : (u.elektrikTest?.status === 'tamamlandi' ? 'tavan-ready' : 'wait'));
+
+        // Custom badges
+        let customBadgesHtml = '';
+        (this.data.customStages || []).forEach(cs => {
+          const isDone = u[cs.id]?.status === 'tamamlandi';
+          const isProg = u[cs.id]?.status === 'devam';
+          const bStyle = isDone
+            ? `background: ${cs.color}; color: #ffffff; border-color: ${cs.color};`
+            : (isProg ? 'background: #fef3c7; color: #b45309; border-color: #f59e0b;' : 'background: #f1f5f9; color: #94a3b8; border-color: #cbd5e1;');
+          customBadgesHtml += `<span class="sub-badge" style="${bStyle}" title="${cs.name}: ${u[cs.id]?.status || 'kilitli'}">${cs.code}</span>`;
+        });
 
         let mainLabel = 'Başlanmadı';
         if (overall === 'tavan_done') mainLabel = '🏗️ Tavan Kapandı';
@@ -934,9 +1508,14 @@ class SantiyeApp {
         else if (overall === 'ready') mainLabel = '⚡ TESTE HAZIR';
         else if (overall === 'mesa_wait') mainLabel = '🏢 MESA Bekliyor';
         else if (overall === 'in_progress') mainLabel = '🚧 İmalat Sürüyor';
+        else if (overall.endsWith('_done')) {
+          const stageId = overall.replace('_done', '');
+          const cs = (this.data.customStages || []).find(s => s.id === stageId);
+          mainLabel = cs ? `${cs.icon} ${cs.name}` : 'Tamamlandı';
+        }
 
         html += `
-          <td class="${cellClass}" style="${opacityStyle}" onclick="app.openEditUnitModal('${uKey}')" title="${b.name} - ${f.name} Detayı için tıklayın">
+          <td class="${cellClass}" style="${opacityStyle} ${customInlineStyle}" onclick="app.openEditUnitModal('${uKey}')" title="${b.name} - ${f.name} Detayı için tıklayın">
             <span class="cell-main-title">${mainLabel}</span>
             <div class="cell-badges">
               <span class="sub-badge ${bMek}" title="1. Mekanik: ${u.mekanik?.status || 'bekliyor'}">M</span>
@@ -944,6 +1523,7 @@ class SantiyeApp {
               <span class="sub-badge ${bMesa}" title="3. MESA: ${u.mesa?.status || 'bekliyor'}">MS</span>
               <span class="sub-badge ${bTest}" title="4. Test: ${u.elektrikTest?.status || 'kilitli'}">T</span>
               <span class="sub-badge ${bTavan}" title="5. Asma Tavan: ${u.asmaTavan?.status || 'kilitli'}">AT</span>
+              ${customBadgesHtml}
             </div>
           </td>
         `;
@@ -982,12 +1562,13 @@ class SantiyeApp {
     const curBlock = this.data.blocks.find(b => b.id === this.activeBlockId) || this.data.blocks[0];
     document.getElementById('activeBlockTitle').innerText = `${curBlock.name} Durumu`;
 
+    const currentUnits = this.getCurrentUnits();
     const floors = this.data.floors;
     let bMekCount = 0, bKlimaCount = 0, bMesaCount = 0, bReadyCount = 0, bDoneCount = 0;
 
     floors.forEach(f => {
       const uKey = `${this.activeBlockId}_${f.id}`;
-      const u = this.data.units[uKey];
+      const u = currentUnits[uKey];
       if (u) {
         if (u.mekanik?.status === 'tamamlandi') bMekCount++;
         if (u.klima?.status === 'tamamlandi') bKlimaCount++;
@@ -1013,7 +1594,7 @@ class SantiyeApp {
 
     floors.forEach(f => {
       const uKey = `${this.activeBlockId}_${f.id}`;
-      const u = this.data.units[uKey] || {};
+      const u = currentUnits[uKey] || {};
       const overall = this.getUnitOverallStatus(u);
 
       let cardClass = 'floor-card';
@@ -1034,6 +1615,11 @@ class SantiyeApp {
       } else if (overall === 'in_progress') {
         cardClass += ' card-prereq-wait';
         overallBadge = '<span class="floor-status-badge badge-prog">🚧 İMALAT DEVAM EDİYOR</span>';
+      } else if (overall.endsWith('_done')) {
+        const stageId = overall.replace('_done', '');
+        const cs = (this.data?.customStages || []).find(s => s.id === stageId);
+        cardClass += ' card-custom-done';
+        overallBadge = `<span class="floor-status-badge badge-ok" style="background:${cs ? cs.color : '#db2777'}; color:#fff; border:1px solid ${cs ? cs.color : '#db2777'};">${cs ? cs.icon : '✨'} ${(cs ? cs.name : 'AŞAMA').toUpperCase()} BİTTİ</span>`;
       }
 
       // Mekanik format
@@ -1162,6 +1748,29 @@ class SantiyeApp {
                 ${u.asmaTavan?.company ? ` • ${u.asmaTavan.company}` : ''}
               </div>
             </div>
+
+            <!-- Dinamik Aşamalar -->
+            ${(this.data?.customStages || []).map(cs => {
+              const csData = u[cs.id] || {};
+              const isCsDone = csData.status === 'tamamlandi';
+              let csBadge = '<span class="stage-val-badge badge-locked">🔒 Bekleniyor</span>';
+              if (isCsDone) csBadge = `<span class="stage-val-badge badge-ok" style="background:${cs.color}; color:#fff;">Tamamlandı ✓</span>`;
+              else if (csData.status === 'devam') csBadge = '<span class="stage-val-badge badge-prog">Sürüyor</span>';
+              else if (csData.status === 'hazir') csBadge = '<span class="stage-val-badge badge-ready">Hazır</span>';
+              return `
+                <div class="stage-box" style="border-left: 3px solid ${cs.color};">
+                  <div class="stage-header">
+                    <span class="stage-name" style="color: ${cs.color};">${cs.icon} ${cs.name}</span>
+                    ${csBadge}
+                  </div>
+                  <div class="stage-detail" title="${csData.note || ''}">
+                    ${csData.date ? `📅 ${csData.date}` : 'Tarih yok'}
+                    ${csData.company ? ` • ${csData.company}` : ''}
+                    ${csData.note ? ` • ${csData.note}` : ''}
+                  </div>
+                </div>
+              `;
+            }).join('')}
           </div>
 
           <div class="floor-card-footer">
@@ -1192,7 +1801,7 @@ class SantiyeApp {
     const blockFilter = document.getElementById('tableBlockFilter')?.value || 'all';
     const statusFilter = document.getElementById('tableStatusFilter')?.value || 'all';
 
-    let units = Object.values(this.data.units);
+    let units = Object.values(this.getCurrentUnits());
 
     // Filter
     units = units.filter(u => {
@@ -1203,8 +1812,9 @@ class SantiyeApp {
       const overall = this.getUnitOverallStatus(u);
       if (statusFilter === 'ready' && overall !== 'ready') return false;
       if (statusFilter === 'mesa_wait' && overall !== 'mesa_wait') return false;
-      if (statusFilter === 'prereq_wait' && (overall === 'done' || overall === 'ready' || overall === 'mesa_wait')) return false;
+      if (statusFilter === 'prereq_wait' && (overall === 'done' || overall === 'ready' || overall === 'mesa_wait' || overall === 'tavan_done' || overall.endsWith('_done'))) return false;
       if (statusFilter === 'done' && overall !== 'done') return false;
+      if (statusFilter === 'tavan_done' && overall !== 'tavan_done') return false;
 
       // Search
       if (search) {
@@ -1219,7 +1829,7 @@ class SantiyeApp {
     document.getElementById('tableTabCount').innerText = units.length;
 
     if (units.length === 0) {
-      tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; padding: 2rem; color: #64748b;">Arama kriterlerine uygun kat bulunamadı.</td></tr>`;
+      tbody.innerHTML = `<tr><td colspan="8" style="text-align:center; padding: 2rem; color: #64748b;">Arama kriterlerine uygun kat bulunamadı.</td></tr>`;
       return;
     }
 
@@ -1242,6 +1852,17 @@ class SantiyeApp {
       if (isTavanDone) tavanBadge = '<span class="stage-val-badge badge-ok" style="background:#ecfdf5; color:#059669;">✅ Tavan Kapandı</span>';
       else if (u.asmaTavan?.status === 'devam') tavanBadge = '<span class="stage-val-badge badge-prog">🚧 Kapatılıyor</span>';
       else if (isTestDone) tavanBadge = '<span class="stage-val-badge badge-ready">⚡ Kapatmaya Hazır</span>';
+
+      let customBadges = '';
+      (this.data?.customStages || []).forEach(cs => {
+        const csData = u[cs.id] || {};
+        const isCsDone = csData.status === 'tamamlandi';
+        let b = '<span class="stage-val-badge badge-locked">🔒 Bekleniyor</span>';
+        if (isCsDone) b = `<span class="stage-val-badge badge-ok" style="background:${cs.color}; color:#fff;">✓ ${cs.name}</span>`;
+        else if (csData.status === 'devam') b = '<span class="stage-val-badge badge-prog">🚧 Sürüyor</span>';
+        else if (csData.status === 'hazir') b = '<span class="stage-val-badge badge-ready">⚡ Hazır</span>';
+        customBadges += `<div style="margin-top:2px;">${b}</div>`;
+      });
 
       html += `
         <tr>
@@ -1267,6 +1888,7 @@ class SantiyeApp {
           <td>
             ${tavanBadge}
             <div style="font-size:0.7rem; color:#64748b;">${u.asmaTavan?.date || ''}</div>
+            ${customBadges}
           </td>
           <td style="font-size: 0.78rem; color: #64748b;">
             ${u.updatedAt || '-'}
@@ -1288,12 +1910,13 @@ class SantiyeApp {
     const container = document.getElementById('blockStatsGrid');
     if (!container || !this.data) return;
 
+    const currentUnits = this.getCurrentUnits();
     let html = '';
     this.data.blocks.forEach(b => {
       let bMek = 0, bKli = 0, bMesa = 0, bReady = 0, bTest = 0, bTavan = 0;
 
       this.data.floors.forEach(f => {
-        const u = this.data.units[`${b.id}_${f.id}`];
+        const u = currentUnits[`${b.id}_${f.id}`];
         if (u) {
           if (u.mekanik?.status === 'tamamlandi') bMek++;
           if (u.klima?.status === 'tamamlandi') bKli++;
@@ -1414,7 +2037,8 @@ class SantiyeApp {
 
   // --- MODAL: EDIT UNIT ---
   openEditUnitModal(unitId) {
-    const u = this.data.units[unitId];
+    const currentUnits = this.getCurrentUnits();
+    const u = currentUnits[unitId];
     if (!u) return;
 
     document.getElementById('editUnitId').value = unitId;
@@ -1456,10 +2080,13 @@ class SantiyeApp {
     const tavanNoteEl = document.getElementById('editAsmaTavanNote');
     if (tavanNoteEl) tavanNoteEl.value = u.asmaTavan?.note || '';
 
+    // 6. Custom Stages
+    this.renderCustomStagesInUnitModal(u);
+
     // Role check for save button & read-only guard
     const btnSave = document.getElementById('btnSaveUnit');
     const readOnlyAlert = document.getElementById('unitModalReadOnlyAlert');
-    const canEdit = this.hasPermission('units', 'edit');
+    const canEdit = !this.activeSnapshotId && this.hasPermission('units', 'edit');
 
     if (canEdit) {
       if (btnSave) btnSave.style.display = 'inline-flex';
@@ -1467,13 +2094,82 @@ class SantiyeApp {
       this.enableModalInputs(true);
     } else {
       if (btnSave) btnSave.style.display = 'none';
-      if (readOnlyAlert) readOnlyAlert.style.display = 'flex';
+      if (readOnlyAlert) {
+        readOnlyAlert.style.display = 'flex';
+        readOnlyAlert.innerText = this.activeSnapshotId
+          ? '⚠️ Geçmiş haftaya ait dondurulmuş arşivi inceliyorsunuz. Bu ekran salt okunurdur. Değişiklik yapmak için lütfen canlı güncel duruma dönünüz.'
+          : 'Salt okunur izleme modundasınız. Değişiklik yetkiniz bulunmamaktadır.';
+      }
       this.enableModalInputs(false);
     }
 
-    this.renderUnitMeetingActions(unitId);
     this.handleModalStateChange();
     this.openModal('modalEditUnit');
+  }
+
+  renderCustomStagesInUnitModal(u) {
+    const container = document.getElementById('customStagesUnitModalContainer');
+    if (!container) return;
+
+    let html = '';
+    (this.data?.customStages || []).forEach(cs => {
+      const stageData = u[cs.id] || { status: 'kilitli', date: '', company: cs.company || '', note: '' };
+      const prereqMet = cs.prerequisiteStage === 'none' ||
+        (cs.prerequisiteStage === 'asmaTavan' && u.asmaTavan?.status === 'tamamlandi') ||
+        (cs.prerequisiteStage === 'elektrikTest' && u.elektrikTest?.status === 'tamamlandi') ||
+        (cs.prerequisiteStage === 'mesa' && u.mesa?.status === 'onaylandi') ||
+        (u[cs.prerequisiteStage]?.status === 'tamamlandi');
+
+      html += `
+        <div class="stage-edit-card" style="border-left: 4px solid ${cs.color}; background: #ffffff; border-radius: 8px; padding: 1rem; margin-bottom: 1rem; border: 1.5px solid #e2e8f0; border-left: 4px solid ${cs.color};">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.75rem;">
+            <div style="font-weight:700; font-size:0.95rem; color:#1e293b; display:flex; align-items:center; gap:6px;">
+              <span>${cs.icon}</span>
+              <span>${cs.name}</span>
+            </div>
+            <span class="stage-val-badge ${stageData.status === 'tamamlandi' ? 'badge-ok' : (stageData.status === 'devam' ? 'badge-prog' : (stageData.status === 'hazir' ? 'badge-ready' : 'badge-locked'))}" style="${stageData.status === 'tamamlandi' ? `background:${cs.color}; color:#fff;` : ''}">
+              ${stageData.status === 'tamamlandi' ? '✅ Tamamlandı' : (stageData.status === 'devam' ? '🚧 Devam Ediyor' : (stageData.status === 'hazir' ? '⚡ Hazır' : '🔒 Kilitli'))}
+            </span>
+          </div>
+
+          ${!prereqMet ? `
+            <div style="background:#fffbeb; border:1px solid #fde68a; color:#b45309; padding:6px 10px; border-radius:6px; font-size:0.78rem; margin-bottom:0.75rem; display:flex; align-items:center; gap:6px;">
+              <span>⚠️</span>
+              <span>Bu aşamanın başlayabilmesi için ön koşul olan aşamanın (${cs.prerequisiteStage}) tamamlanması gerekir.</span>
+            </div>
+          ` : ''}
+
+          <div style="display:grid; grid-template-columns: 1fr 1fr; gap:0.75rem; margin-bottom:0.75rem;">
+            <div>
+              <label style="font-size:0.75rem; font-weight:700; color:#64748b; display:block; margin-bottom:4px;">Durum</label>
+              <select id="editCustomStage_${cs.id}_status" class="form-control" style="width:100%; font-size:0.85rem;">
+                <option value="kilitli" ${stageData.status === 'kilitli' ? 'selected' : ''}>🔒 Kilitli / Bekliyor</option>
+                <option value="hazir" ${stageData.status === 'hazir' ? 'selected' : ''}>⚡ İşleme Hazır</option>
+                <option value="devam" ${stageData.status === 'devam' ? 'selected' : ''}>🚧 İmalat Sürüyor</option>
+                <option value="tamamlandi" ${stageData.status === 'tamamlandi' ? 'selected' : ''}>✅ Tamamlandı (Bitti)</option>
+              </select>
+            </div>
+            <div>
+              <label style="font-size:0.75rem; font-weight:700; color:#64748b; display:block; margin-bottom:4px;">Tarih</label>
+              <input type="date" id="editCustomStage_${cs.id}_date" class="form-control" style="width:100%; font-size:0.85rem;" value="${stageData.date || ''}">
+            </div>
+          </div>
+
+          <div style="display:grid; grid-template-columns: 1fr 1fr; gap:0.75rem;">
+            <div>
+              <label style="font-size:0.75rem; font-weight:700; color:#64748b; display:block; margin-bottom:4px;">Sorumlu Taşeron / Ekip</label>
+              <input type="text" id="editCustomStage_${cs.id}_company" class="form-control" style="width:100%; font-size:0.85rem;" value="${stageData.company || cs.company || ''}">
+            </div>
+            <div>
+              <label style="font-size:0.75rem; font-weight:700; color:#64748b; display:block; margin-bottom:4px;">Notlar & Açıklama</label>
+              <input type="text" id="editCustomStage_${cs.id}_note" class="form-control" style="width:100%; font-size:0.85rem;" value="${stageData.note || ''}">
+            </div>
+          </div>
+        </div>
+      `;
+    });
+
+    container.innerHTML = html;
   }
 
   enableModalInputs(enabled) {
@@ -1615,6 +2311,10 @@ class SantiyeApp {
   }
 
   async saveUnitData() {
+    if (this.activeSnapshotId) {
+      this.showToast('Geçmiş arşiv incelenirken değişiklik yapılamaz. Lütfen canlı güncel duruma dönünüz.', 'warning');
+      return;
+    }
     if (!this.requireLogin('Kat durumunu güncellemek için lütfen giriş yapınız.')) {
       return;
     }
@@ -1683,14 +2383,30 @@ class SantiyeApp {
         note: document.getElementById('editAsmaTavanNote')?.value || ''
       },
       updatedAt: new Date().toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' }),
-      updatedBy: 'Admin'
+      updatedBy: this.currentUser?.name || 'Yönetici'
     };
+
+    // Custom stages values
+    (this.data?.customStages || []).forEach(cs => {
+      const stEl = document.getElementById(`editCustomStage_${cs.id}_status`);
+      const dtEl = document.getElementById(`editCustomStage_${cs.id}_date`);
+      const compEl = document.getElementById(`editCustomStage_${cs.id}_company`);
+      const ntEl = document.getElementById(`editCustomStage_${cs.id}_note`);
+      if (stEl) {
+        updatedUnit[cs.id] = {
+          status: stEl.value,
+          date: dtEl?.value || (stEl.value === 'tamamlandi' ? new Date().toISOString().split('T')[0] : ''),
+          company: compEl?.value || cs.company || '',
+          note: ntEl?.value || ''
+        };
+      }
+    });
 
     this.data.units[unitId] = updatedUnit;
     this.data.logs.unshift({
       id: `log-${Date.now()}`,
       timestamp: new Date().toLocaleString('tr-TR'),
-      user: 'Admin',
+      user: this.currentUser?.name || 'Yönetici',
       unitId: unitId,
       blockName: u.blockName,
       floorName: u.floorName,

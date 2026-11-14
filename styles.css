@@ -565,33 +565,120 @@ body {
   z-index: 5;
 }
 
-/* Matrix Cell Status Styling */
-.matrix-cell.status-test-done {
-  background: #dcfce7;
-  border-color: #22c55e;
+/* Matrix Cell Status Styling - VIVID & CLEARLY DIFFERENTIATED */
+.matrix-cell.status-tavan-done {
+  background: #0f766e !important;
+  border: 2px solid #115e59 !important;
+  color: #ffffff !important;
 }
+.matrix-cell.status-tavan-done .cell-main-title {
+  color: #ffffff !important;
+  font-weight: 800 !important;
+}
+
+.matrix-cell.status-test-done {
+  background: #16a34a !important;
+  border: 2px solid #15803d !important;
+  color: #ffffff !important;
+}
+.matrix-cell.status-test-done .cell-main-title {
+  color: #ffffff !important;
+  font-weight: 800 !important;
+}
+
 .matrix-cell.status-test-ready {
-  background: #e0f2fe;
-  border-color: #0284c7;
-  box-shadow: 0 0 0 1px #0284c7;
+  background: #2563eb !important;
+  border: 2px solid #1d4ed8 !important;
+  color: #ffffff !important;
+  box-shadow: 0 0 0 1.5px #2563eb, 0 3px 6px rgba(37, 99, 235, 0.35);
   animation: pulse-ready 2.5s infinite;
 }
+.matrix-cell.status-test-ready .cell-main-title {
+  color: #ffffff !important;
+  font-weight: 800 !important;
+}
+
 @keyframes pulse-ready {
-  0%, 100% { box-shadow: 0 0 0 1px #0284c7; }
-  50% { box-shadow: 0 0 8px 2px rgba(2, 132, 199, 0.4); }
+  0%, 100% { box-shadow: 0 0 0 1.5px #2563eb; }
+  50% { box-shadow: 0 0 10px 3px rgba(37, 99, 235, 0.5); }
 }
 
 .matrix-cell.status-mesa-wait {
-  background: #faf5ff;
-  border-color: #a855f7;
+  background: #9333ea !important;
+  border: 2px solid #7c3aed !important;
+  color: #ffffff !important;
 }
+.matrix-cell.status-mesa-wait .cell-main-title {
+  color: #ffffff !important;
+  font-weight: 800 !important;
+}
+
 .matrix-cell.status-in-progress {
-  background: #fef3c7;
-  border-color: #f59e0b;
+  background: #f59e0b !important;
+  border: 2px solid #d97706 !important;
+  color: #ffffff !important;
 }
+.matrix-cell.status-in-progress .cell-main-title {
+  color: #ffffff !important;
+  font-weight: 800 !important;
+}
+
+.matrix-cell.status-custom-done {
+  background: #db2777 !important;
+  border: 2px solid #be185d !important;
+  color: #ffffff !important;
+}
+.matrix-cell.status-custom-done .cell-main-title {
+  color: #ffffff !important;
+  font-weight: 800 !important;
+}
+
 .matrix-cell.status-waiting {
+  background: #f8fafc !important;
+  border: 1.5px solid #cbd5e1 !important;
+  color: #64748b !important;
+}
+.matrix-cell.status-waiting .cell-main-title {
+  color: #64748b !important;
+  font-weight: 700 !important;
+}
+
+/* Timeline Pills for Weekly Snapshots */
+.timeline-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 0.35rem 0.75rem;
+  border-radius: 20px;
+  font-size: 0.78rem;
+  font-weight: 700;
+  border: 1.5px solid #cbd5e1;
   background: #f8fafc;
-  border-color: #cbd5e1;
+  color: #334155;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+.timeline-pill:hover {
+  background: #e2e8f0;
+  border-color: #94a3b8;
+  transform: translateY(-1px);
+}
+.timeline-pill.active {
+  background: #0f172a !important;
+  color: #ffffff !important;
+  border-color: #0f172a !important;
+  box-shadow: 0 2px 5px rgba(15, 23, 42, 0.25);
+}
+.timeline-pill.live {
+  border-color: #22c55e;
+  background: #f0fdf4;
+  color: #15803d;
+}
+.timeline-pill.live.active {
+  background: #16a34a !important;
+  color: #ffffff !important;
+  border-color: #15803d !important;
 }
 
 .cell-badges {
@@ -602,8 +689,8 @@ body {
 }
 
 .sub-badge {
-  width: 14px;
-  height: 14px;
+  width: 15px;
+  height: 15px;
   border-radius: 3px;
   font-size: 8px;
   font-weight: 800;
@@ -611,6 +698,7 @@ body {
   align-items: center;
   justify-content: center;
   color: #fff;
+  border: 1px solid rgba(255,255,255,0.6);
 }
 .sub-badge.ok { background: #16a34a; }
 .sub-badge.wait { background: #94a3b8; }
@@ -618,6 +706,9 @@ body {
 .sub-badge.rev { background: #dc2626; }
 .sub-badge.test-ok { background: #15803d; }
 .sub-badge.test-ready { background: #0284c7; }
+.sub-badge.tavan-ok { background: #042f2e; }
+.sub-badge.tavan-ready { background: #0d9488; }
+.sub-badge.custom-ok { background: #db2777; }
 
 .cell-main-title {
   font-size: 0.72rem;
