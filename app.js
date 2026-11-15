@@ -77,6 +77,8 @@ class SantiyeApp {
       test_done: { bg: '#dcfce7', border: '#16a34a', text: '#15803d', label: '⚡ Test Tamamlandı' },
       test_ready: { bg: '#e0f2fe', border: '#0284c7', text: '#0369a1', label: '🚀 Teste Hazır' },
       mesa_wait: { bg: '#f3e8ff', border: '#9333ea', text: '#6b21a8', label: '🏢 MESA Onay Bekliyor' },
+      klima_wait: { bg: '#ecfeff', border: '#06b6d4', text: '#0e7490', label: '❄️ Klima Bekliyor / Sürüyor' },
+      mekanik_wait: { bg: '#fff7ed', border: '#ea580c', text: '#9a3412', label: '🔧 Mekanik Bekliyor / Sürüyor' },
       in_progress: { bg: '#fef3c7', border: '#f59e0b', text: '#b45309', label: '🚧 İmalat Sürüyor' },
       waiting: { bg: '#f8fafc', border: '#cbd5e1', text: '#64748b', label: '⏳ Başlanmadı / Bekliyor' }
     };
@@ -87,6 +89,8 @@ class SantiyeApp {
         test_done: { bg: '#dcfce7', border: '#16a34a', text: '#15803d' },
         test_ready: { bg: '#e0f2fe', border: '#0284c7', text: '#0369a1' },
         mesa_wait: { bg: '#f3e8ff', border: '#9333ea', text: '#6b21a8' },
+        klima_wait: { bg: '#ecfeff', border: '#06b6d4', text: '#0e7490' },
+        mekanik_wait: { bg: '#fff7ed', border: '#ea580c', text: '#9a3412' },
         in_progress: { bg: '#fef3c7', border: '#f59e0b', text: '#b45309' },
         waiting: { bg: '#f8fafc', border: '#cbd5e1', text: '#64748b' }
       },
@@ -95,6 +99,8 @@ class SantiyeApp {
         test_done: { bg: '#bbf7d0', border: '#15803d', text: '#14532d' },
         test_ready: { bg: '#bae6fd', border: '#0369a1', text: '#0c4a6e' },
         mesa_wait: { bg: '#e9d5ff', border: '#7e22ce', text: '#581c87' },
+        klima_wait: { bg: '#a5f3fc', border: '#0891b2', text: '#164e63' },
+        mekanik_wait: { bg: '#fed7aa', border: '#c2410c', text: '#7c2d12' },
         in_progress: { bg: '#fde68a', border: '#d97706', text: '#78350f' },
         waiting: { bg: '#e2e8f0', border: '#94a3b8', text: '#334155' }
       },
@@ -103,7 +109,9 @@ class SantiyeApp {
         test_done: { bg: '#cffafe', border: '#0891b2', text: '#155e75' },
         test_ready: { bg: '#dbeafe', border: '#2563eb', text: '#1e40af' },
         mesa_wait: { bg: '#ede9fe', border: '#8b5cf6', text: '#5b21b6' },
-        in_progress: { bg: '#ffedd5', border: '#ea580c', text: '#9a3412' },
+        klima_wait: { bg: '#cffafe', border: '#06b6d4', text: '#0e7490' },
+        mekanik_wait: { bg: '#ffedd5', border: '#ea580c', text: '#9a3412' },
+        in_progress: { bg: '#ffedd5', border: '#f97316', text: '#9a3412' },
         waiting: { bg: '#f1f5f9', border: '#cbd5e1', text: '#475569' }
       },
       contrast: {
@@ -111,6 +119,8 @@ class SantiyeApp {
         test_done: { bg: '#86efac', border: '#14532d', text: '#052e16' },
         test_ready: { bg: '#7dd3fc', border: '#0c4a6e', text: '#082f49' },
         mesa_wait: { bg: '#d8b4fe', border: '#581c87', text: '#3b0764' },
+        klima_wait: { bg: '#67e8f9', border: '#0e7490', text: '#083344' },
+        mekanik_wait: { bg: '#fdba74', border: '#9a3412', text: '#431407' },
         in_progress: { bg: '#fcd34d', border: '#78350f', text: '#451a03' },
         waiting: { bg: '#cbd5e1', border: '#334155', text: '#0f172a' }
       }
@@ -1355,6 +1365,8 @@ class SantiyeApp {
     if (st === 'done') return '⚡ Test Başarılı';
     if (st === 'ready') return '⚡ Teste Hazır';
     if (st === 'mesa_wait') return '🏢 MESA Bekliyor';
+    if (st === 'klima_wait') return '❄️ Klima Bekliyor';
+    if (st === 'mekanik_wait') return '🔧 Mekanik Bekliyor';
     if (st === 'in_progress') return '🚧 İmalat Sürüyor';
     if (st && st.endsWith('_done')) {
       const stageId = st.replace('_done', '');
@@ -1724,6 +1736,10 @@ class SantiyeApp {
     if (u.elektrikTest?.status === 'hazir') return 'ready';
     if (u.mesa?.status === 'onaylandi') return 'ready';
     if (u.mekanik?.status === 'tamamlandi' && u.klima?.status === 'tamamlandi') return 'mesa_wait';
+    if (u.mekanik?.status === 'tamamlandi' && u.klima?.status !== 'tamamlandi') return 'klima_wait';
+    if (u.klima?.status === 'tamamlandi' && u.mekanik?.status !== 'tamamlandi') return 'mekanik_wait';
+    if (u.klima?.status === 'devam' && u.mekanik?.status !== 'devam') return 'klima_wait';
+    if (u.mekanik?.status === 'devam' && u.klima?.status !== 'devam') return 'mekanik_wait';
     if (u.mekanik?.status === 'devam' || u.klima?.status === 'devam' || u.asmaTavan?.status === 'devam') return 'in_progress';
     return 'waiting';
   }
@@ -1762,6 +1778,8 @@ class SantiyeApp {
         let isFilteredIn = true;
         if (this.matrixFilter === 'ready' && overall !== 'ready') isFilteredIn = false;
         if (this.matrixFilter === 'mesa_wait' && overall !== 'mesa_wait') isFilteredIn = false;
+        if (this.matrixFilter === 'klima_wait' && overall !== 'klima_wait') isFilteredIn = false;
+        if (this.matrixFilter === 'mekanik_wait' && overall !== 'mekanik_wait') isFilteredIn = false;
         if (this.matrixFilter === 'prereq_wait' && (overall === 'done' || overall === 'ready' || overall === 'mesa_wait' || overall === 'tavan_done' || overall.endsWith('_done'))) isFilteredIn = false;
         if (this.matrixFilter === 'done' && overall !== 'done' && overall !== 'tavan_done' && !overall.endsWith('_done')) isFilteredIn = false;
         if (this.matrixFilter === 'tavan_done' && overall !== 'tavan_done') isFilteredIn = false;
@@ -1777,6 +1795,10 @@ class SantiyeApp {
           cellClass += ' status-test-ready';
         } else if (overall === 'mesa_wait') {
           cellClass += ' status-mesa-wait';
+        } else if (overall === 'klima_wait') {
+          cellClass += ' status-klima-wait';
+        } else if (overall === 'mekanik_wait') {
+          cellClass += ' status-mekanik-wait';
         } else if (overall === 'in_progress') {
           cellClass += ' status-in-progress';
         } else if (overall.endsWith('_done')) {
@@ -1795,9 +1817,9 @@ class SantiyeApp {
 
         const opacityStyle = isFilteredIn ? 'opacity: 1;' : 'opacity: 0.25; filter: grayscale(80%);';
 
-        // Badges for the stages
-        const bMek = u.mekanik?.status === 'tamamlandi' ? 'ok' : (u.mekanik?.status === 'devam' ? 'prog' : 'wait');
-        const bKli = u.klima?.status === 'tamamlandi' ? 'ok' : (u.klima?.status === 'devam' ? 'prog' : 'wait');
+        // Badges for the stages (Mekanik: mek-*, Klima: kli-*)
+        const bMek = u.mekanik?.status === 'tamamlandi' ? 'mek-ok' : (u.mekanik?.status === 'devam' ? 'mek-prog' : 'mek-wait');
+        const bKli = u.klima?.status === 'tamamlandi' ? 'kli-ok' : (u.klima?.status === 'devam' ? 'kli-prog' : 'kli-wait');
         const bMesa = u.mesa?.status === 'onaylandi' ? 'ok' : (u.mesa?.status === 'revizyon' ? 'rev' : 'wait');
         const bTest = u.elektrikTest?.status === 'tamamlandi' ? 'test-ok' : (u.elektrikTest?.status === 'hazir' ? 'test-ready' : 'wait');
         const bTavan = u.asmaTavan?.status === 'tamamlandi' ? 'tavan-ok' : (u.asmaTavan?.status === 'devam' ? 'prog' : (u.elektrikTest?.status === 'tamamlandi' ? 'tavan-ready' : 'wait'));
@@ -1821,6 +1843,8 @@ class SantiyeApp {
         else if (overall === 'done') mainLabel = '⚡ Test Bitti';
         else if (overall === 'ready') mainLabel = '⚡ TESTE HAZIR';
         else if (overall === 'mesa_wait') mainLabel = '🏢 MESA Bekliyor';
+        else if (overall === 'klima_wait') mainLabel = (u.klima?.status === 'devam' ? '❄️ Klima Sürüyor' : '❄️ Klima Bekliyor');
+        else if (overall === 'mekanik_wait') mainLabel = (u.mekanik?.status === 'devam' ? '🔧 Mekanik Sürüyor' : '🔧 Mekanik Bekliyor');
         else if (overall === 'in_progress') mainLabel = '🚧 İmalat Sürüyor';
         else if (overall.endsWith('_done')) {
           const stageId = overall.replace('_done', '');
@@ -1926,6 +1950,12 @@ class SantiyeApp {
       } else if (overall === 'mesa_wait') {
         cardClass += ' card-mesa-wait';
         overallBadge = '<span class="floor-status-badge badge-prog" style="background:#f3e8ff; color:#7c3aed; border:1px solid #d8b4fe;">🏢 MESA ONAYI BEKLİYOR</span>';
+      } else if (overall === 'klima_wait') {
+        cardClass += ' card-klima-wait';
+        overallBadge = '<span class="floor-status-badge badge-prog" style="background:#ecfeff; color:#0e7490; border:1px solid #06b6d4;">❄️ KLİMA / VRF BEKLİYOR</span>';
+      } else if (overall === 'mekanik_wait') {
+        cardClass += ' card-mekanik-wait';
+        overallBadge = '<span class="floor-status-badge badge-prog" style="background:#fff7ed; color:#9a3412; border:1px solid #ea580c;">🔧 MEKANİK İŞİ BEKLİYOR</span>';
       } else if (overall === 'in_progress') {
         cardClass += ' card-prereq-wait';
         overallBadge = '<span class="floor-status-badge badge-prog">🚧 İMALAT DEVAM EDİYOR</span>';
@@ -5891,6 +5921,14 @@ class SantiyeApp {
     setVar('--stage-mesa-border', colors.mesa_wait?.border || this.defaultStageColors.mesa_wait.border);
     setVar('--stage-mesa-text', colors.mesa_wait?.text || this.defaultStageColors.mesa_wait.text);
 
+    setVar('--stage-klima-bg', colors.klima_wait?.bg || this.defaultStageColors.klima_wait.bg);
+    setVar('--stage-klima-border', colors.klima_wait?.border || this.defaultStageColors.klima_wait.border);
+    setVar('--stage-klima-text', colors.klima_wait?.text || this.defaultStageColors.klima_wait.text);
+
+    setVar('--stage-mekanik-bg', colors.mekanik_wait?.bg || this.defaultStageColors.mekanik_wait.bg);
+    setVar('--stage-mekanik-border', colors.mekanik_wait?.border || this.defaultStageColors.mekanik_wait.border);
+    setVar('--stage-mekanik-text', colors.mekanik_wait?.text || this.defaultStageColors.mekanik_wait.text);
+
     setVar('--stage-prog-bg', colors.in_progress?.bg || this.defaultStageColors.in_progress.bg);
     setVar('--stage-prog-border', colors.in_progress?.border || this.defaultStageColors.in_progress.border);
     setVar('--stage-prog-text', colors.in_progress?.text || this.defaultStageColors.in_progress.text);
@@ -5923,6 +5961,12 @@ class SantiyeApp {
     setInput('colorInputMesaBg', colors.mesa_wait?.bg);
     setInput('colorInputMesaBorder', colors.mesa_wait?.border);
 
+    setInput('colorInputKlimaBg', colors.klima_wait?.bg || this.defaultStageColors.klima_wait.bg);
+    setInput('colorInputKlimaBorder', colors.klima_wait?.border || this.defaultStageColors.klima_wait.border);
+
+    setInput('colorInputMekanikBg', colors.mekanik_wait?.bg || this.defaultStageColors.mekanik_wait.bg);
+    setInput('colorInputMekanikBorder', colors.mekanik_wait?.border || this.defaultStageColors.mekanik_wait.border);
+
     setInput('colorInputProgBg', colors.in_progress?.bg);
     setInput('colorInputProgBorder', colors.in_progress?.border);
 
@@ -5942,6 +5986,8 @@ class SantiyeApp {
     setPill('previewPillTest', colors.test_done?.bg, colors.test_done?.border, colors.test_done?.text);
     setPill('previewPillReady', colors.test_ready?.bg, colors.test_ready?.border, colors.test_ready?.text);
     setPill('previewPillMesa', colors.mesa_wait?.bg, colors.mesa_wait?.border, colors.mesa_wait?.text);
+    setPill('previewPillKlima', colors.klima_wait?.bg, colors.klima_wait?.border, colors.klima_wait?.text);
+    setPill('previewPillMekanik', colors.mekanik_wait?.bg, colors.mekanik_wait?.border, colors.mekanik_wait?.text);
     setPill('previewPillProg', colors.in_progress?.bg, colors.in_progress?.border, colors.in_progress?.text);
     setPill('previewPillWait', colors.waiting?.bg, colors.waiting?.border, colors.waiting?.text);
 
@@ -5984,6 +6030,8 @@ class SantiyeApp {
       test_done: { bg: '--stage-test-bg', border: '--stage-test-border', text: '--stage-test-text', pill: 'previewPillTest' },
       test_ready: { bg: '--stage-ready-bg', border: '--stage-ready-border', text: '--stage-ready-text', pill: 'previewPillReady' },
       mesa_wait: { bg: '--stage-mesa-bg', border: '--stage-mesa-border', text: '--stage-mesa-text', pill: 'previewPillMesa' },
+      klima_wait: { bg: '--stage-klima-bg', border: '--stage-klima-border', text: '--stage-klima-text', pill: 'previewPillKlima' },
+      mekanik_wait: { bg: '--stage-mekanik-bg', border: '--stage-mekanik-border', text: '--stage-mekanik-text', pill: 'previewPillMekanik' },
       in_progress: { bg: '--stage-prog-bg', border: '--stage-prog-border', text: '--stage-prog-text', pill: 'previewPillProg' },
       waiting: { bg: '--stage-waiting-bg', border: '--stage-waiting-border', text: '--stage-waiting-text', pill: 'previewPillWait' }
     };
@@ -6032,6 +6080,8 @@ class SantiyeApp {
     setAndPreview('test_done', preset.test_done.bg, preset.test_done.border, preset.test_done.text, 'colorInputTestBg', 'colorInputTestBorder');
     setAndPreview('test_ready', preset.test_ready.bg, preset.test_ready.border, preset.test_ready.text, 'colorInputReadyBg', 'colorInputReadyBorder');
     setAndPreview('mesa_wait', preset.mesa_wait.bg, preset.mesa_wait.border, preset.mesa_wait.text, 'colorInputMesaBg', 'colorInputMesaBorder');
+    setAndPreview('klima_wait', preset.klima_wait.bg, preset.klima_wait.border, preset.klima_wait.text, 'colorInputKlimaBg', 'colorInputKlimaBorder');
+    setAndPreview('mekanik_wait', preset.mekanik_wait.bg, preset.mekanik_wait.border, preset.mekanik_wait.text, 'colorInputMekanikBg', 'colorInputMekanikBorder');
     setAndPreview('in_progress', preset.in_progress.bg, preset.in_progress.border, preset.in_progress.text, 'colorInputProgBg', 'colorInputProgBorder');
     setAndPreview('waiting', preset.waiting.bg, preset.waiting.border, preset.waiting.text, 'colorInputWaitBg', 'colorInputWaitBorder');
 
@@ -6065,6 +6115,18 @@ class SantiyeApp {
         border: getVal('colorInputMesaBorder', this.defaultStageColors.mesa_wait.border),
         text: getVal('colorInputMesaBorder', this.defaultStageColors.mesa_wait.text),
         label: '🏢 MESA Onay Bekliyor'
+      },
+      klima_wait: {
+        bg: getVal('colorInputKlimaBg', this.defaultStageColors.klima_wait.bg),
+        border: getVal('colorInputKlimaBorder', this.defaultStageColors.klima_wait.border),
+        text: getVal('colorInputKlimaBorder', this.defaultStageColors.klima_wait.text),
+        label: '❄️ Klima Bekliyor / Sürüyor'
+      },
+      mekanik_wait: {
+        bg: getVal('colorInputMekanikBg', this.defaultStageColors.mekanik_wait.bg),
+        border: getVal('colorInputMekanikBorder', this.defaultStageColors.mekanik_wait.border),
+        text: getVal('colorInputMekanikBorder', this.defaultStageColors.mekanik_wait.text),
+        label: '🔧 Mekanik Bekliyor / Sürüyor'
       },
       in_progress: {
         bg: getVal('colorInputProgBg', this.defaultStageColors.in_progress.bg),

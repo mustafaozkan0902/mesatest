@@ -736,6 +736,14 @@ body {
 .floor-card.card-mesa-wait {
   border-left: 5px solid var(--purple);
 }
+.floor-card.card-klima-wait {
+  border-left: 5px solid #06b6d4;
+  background: #f0fdfa;
+}
+.floor-card.card-mekanik-wait {
+  border-left: 5px solid #ea580c;
+  background: #fffbf5;
+}
 .floor-card.card-prereq-wait {
   border-left: 5px solid var(--warning);
 }
@@ -2933,6 +2941,14 @@ body {
   --stage-custom-border: #ec4899;
   --stage-custom-text: #9d174d;
 
+  --stage-klima-bg: #ecfeff;
+  --stage-klima-border: #06b6d4;
+  --stage-klima-text: #0e7490;
+
+  --stage-mekanik-bg: #fff7ed;
+  --stage-mekanik-border: #ea580c;
+  --stage-mekanik-text: #9a3412;
+
   --stage-waiting-bg: #f8fafc;
   --stage-waiting-border: #cbd5e1;
   --stage-waiting-text: #64748b;
@@ -3083,6 +3099,16 @@ body {
 .sub-badge.tavan-ready { background: #e0f2fe !important; color: #0369a1 !important; border-color: #7dd3fc !important; }
 .sub-badge.custom-ok { background: #fce7f3 !important; color: #9d174d !important; border-color: #f472b6 !important; }
 
+/* 1. Mekanik Rozetleri (Turuncu / Amber) */
+.sub-badge.mek-ok { background: #ffedd5 !important; color: #c2410c !important; border-color: #ea580c !important; font-weight: 800 !important; }
+.sub-badge.mek-prog { background: #fff7ed !important; color: #ea580c !important; border-color: #f97316 !important; border-style: dashed !important; font-weight: 800 !important; }
+.sub-badge.mek-wait { background: #f8fafc !important; color: #94a3b8 !important; border-color: #fdba74 !important; }
+
+/* 2. Klima Rozetleri (Buz Mavisi / Parlak Cyan) */
+.sub-badge.kli-ok { background: #cffafe !important; color: #0e7490 !important; border-color: #06b6d4 !important; font-weight: 800 !important; }
+.sub-badge.kli-prog { background: #ecfeff !important; color: #0891b2 !important; border-color: #06b6d4 !important; border-style: dashed !important; font-weight: 800 !important; }
+.sub-badge.kli-wait { background: #f0f9ff !important; color: #0284c7 !important; border-color: #7dd3fc !important; border-style: dashed !important; }
+
 /* Status Classes with CSS Variables */
 .matrix-cell.status-tavan-done {
   background: var(--stage-tavan-bg) !important;
@@ -3122,6 +3148,28 @@ body {
 }
 .matrix-cell.status-mesa-wait .cell-main-title {
   color: var(--stage-mesa-text) !important;
+  font-weight: 800 !important;
+}
+
+/* Klima Bekleyen / Sürüyor (Buz Mavisi & Canlı Cyan) */
+.matrix-cell.status-klima-wait {
+  background: var(--stage-klima-bg, #ecfeff) !important;
+  border: 1.5px solid var(--stage-klima-border, #06b6d4) !important;
+  color: var(--stage-klima-text, #0e7490) !important;
+}
+.matrix-cell.status-klima-wait .cell-main-title {
+  color: var(--stage-klima-text, #0e7490) !important;
+  font-weight: 800 !important;
+}
+
+/* Mekanik Bekleyen / Sürüyor (Canlı Turuncu / Amber) */
+.matrix-cell.status-mekanik-wait {
+  background: var(--stage-mekanik-bg, #fff7ed) !important;
+  border: 1.5px solid var(--stage-mekanik-border, #ea580c) !important;
+  color: var(--stage-mekanik-text, #9a3412) !important;
+}
+.matrix-cell.status-mekanik-wait .cell-main-title {
+  color: var(--stage-mekanik-text, #9a3412) !important;
   font-weight: 800 !important;
 }
 
@@ -3401,43 +3449,6 @@ body {
          1. KISIM: ŞANTİYE TEST TAKİBİ & ISI HARİTASI (ANA FİRMA GÖRÜNÜMÜ)
          ======================================================== -->
     <div id="masterSection-test" class="master-section-panel active">
-      <!-- Prerequisite Rule Banner -->
-  <aside class="workflow-banner" style="margin-bottom: 0.35rem; border-radius: 6px; border: 1px solid #e2e8f0;">
-    <div class="workflow-container">
-      <div style="font-size: 0.85rem; font-weight: 700; color: #1e293b; display: flex; align-items: center; gap: 0.5rem;">
-        <span>📋</span>
-        <span>Elektrik Testi Kabul Zinciri:</span>
-      </div>
-      <div class="workflow-steps">
-        <div class="step-item req">
-          <span>🔧 1. Mekanik İşi</span>
-          <span style="font-size: 0.7rem; color: #15803d; font-weight: 800;">[BİTMELİ]</span>
-        </div>
-        <span class="step-arrow">+</span>
-        <div class="step-item req">
-          <span>❄️ 2. Klima İşi</span>
-          <span style="font-size: 0.7rem; color: #15803d; font-weight: 800;">[BİTMELİ]</span>
-        </div>
-        <span class="step-arrow">➔</span>
-        <div class="step-item mesa">
-          <span>🏢 3. MESA Teslim & Kabul Onayı</span>
-          <span style="font-size: 0.7rem; color: #7c3aed; font-weight: 800;">[ONAY GEREKLİ]</span>
-        </div>
-        <span class="step-arrow">➔</span>
-        <div class="step-item test">
-          <span>⚡ 4. Elektrik Testi</span>
-          <span style="font-size: 0.7rem; color: #0284c7; font-weight: 800;">[TESTE HAZIR]</span>
-        </div>
-        <span class="step-arrow">➔</span>
-        <div class="step-item tavan" style="border-left: 3px solid #059669; background: #ecfdf5;">
-          <span>🏗️ 5. Asma Tavan Kapatma</span>
-          <span style="font-size: 0.7rem; color: #047857; font-weight: 800;">[KAPATMAYA HAZIR]</span>
-        </div>
-        <div id="workflowCustomSteps" style="display:contents;"></div>
-      </div>
-    </div>
-  </aside>
-
       <!-- KPI Summary Row -->
     <section class="kpi-grid">
       <!-- Total Units -->
@@ -3455,27 +3466,27 @@ body {
 
       <!-- Mekanik Done -->
       <div class="kpi-card">
-        <div class="kpi-icon amber">🔧</div>
+        <div class="kpi-icon amber" style="background: #ffedd5; color: #ea580c;">🔧</div>
         <div class="kpi-info">
           <div class="kpi-title">Mekanik Tamamlanan</div>
           <div class="kpi-value-row">
             <span class="kpi-value" id="kpiMekanikDone">0</span>
             <span class="kpi-sub" id="kpiMekanikPct">%0</span>
           </div>
-          <div class="kpi-progress"><div id="barMekanik" class="kpi-bar" style="background: #f59e0b;"></div></div>
+          <div class="kpi-progress"><div id="barMekanik" class="kpi-bar" style="background: #ea580c;"></div></div>
         </div>
       </div>
 
       <!-- Klima Done -->
       <div class="kpi-card">
-        <div class="kpi-icon indigo">❄️</div>
+        <div class="kpi-icon cyan" style="background: #cffafe; color: #0891b2;">❄️</div>
         <div class="kpi-info">
           <div class="kpi-title">Klima / VRF Tamamlanan</div>
           <div class="kpi-value-row">
             <span class="kpi-value" id="kpiKlimaDone">0</span>
             <span class="kpi-sub" id="kpiKlimaPct">%0</span>
           </div>
-          <div class="kpi-progress"><div id="barKlima" class="kpi-bar" style="background: #6366f1;"></div></div>
+          <div class="kpi-progress"><div id="barKlima" class="kpi-bar" style="background: #06b6d4;"></div></div>
         </div>
       </div>
 
@@ -3612,6 +3623,8 @@ body {
           <button class="filter-chip active" onclick="app.setMatrixFilter('all')">Tüm Katlar</button>
           <button class="filter-chip chip-ready" onclick="app.setMatrixFilter('ready')">⚡ Teste Hazır Olanlar</button>
           <button class="filter-chip chip-mesa" onclick="app.setMatrixFilter('mesa_wait')">🏢 MESA Onayı Bekleyenler</button>
+          <button class="filter-chip" style="border-color:#06b6d4; color:#0e7490; font-weight:700;" onclick="app.setMatrixFilter('klima_wait')">❄️ Klima Bekleyenler</button>
+          <button class="filter-chip" style="border-color:#ea580c; color:#9a3412; font-weight:700;" onclick="app.setMatrixFilter('mekanik_wait')">🔧 Mekanik Bekleyenler</button>
           <button class="filter-chip" onclick="app.setMatrixFilter('prereq_wait')">⚠️ Ön Şartı Eksikler</button>
           <button class="filter-chip chip-done" onclick="app.setMatrixFilter('done')">✅ Testi Bitenler</button>
           <button class="filter-chip" style="border-color:#0f766e; color:#0f766e; font-weight:700;" onclick="app.setMatrixFilter('tavan_done')">🏗️ Tavanı Kapananlar</button>
@@ -3623,6 +3636,8 @@ body {
           <span style="display: flex; align-items: center; gap: 5px;"><span id="legSwatchTest" style="display:inline-block; width:15px; height:15px; border-radius:4px; background:var(--stage-test-bg); border:1.5px solid var(--stage-test-border);"></span> <strong style="color:var(--stage-test-text);">Yeşil:</strong> ⚡ Test Tamamlandı</span>
           <span style="display: flex; align-items: center; gap: 5px;"><span id="legSwatchReady" style="display:inline-block; width:15px; height:15px; border-radius:4px; background:var(--stage-ready-bg); border:1.5px solid var(--stage-ready-border);"></span> <strong style="color:var(--stage-ready-text);">Mavi:</strong> 🚀 Teste Hazır</span>
           <span style="display: flex; align-items: center; gap: 5px;"><span id="legSwatchMesa" style="display:inline-block; width:15px; height:15px; border-radius:4px; background:var(--stage-mesa-bg); border:1.5px solid var(--stage-mesa-border);"></span> <strong style="color:var(--stage-mesa-text);">Mor:</strong> 🏢 MESA Bekliyor</span>
+          <span style="display: flex; align-items: center; gap: 5px;"><span id="legSwatchKlima" style="display:inline-block; width:15px; height:15px; border-radius:4px; background:var(--stage-klima-bg, #ecfeff); border:1.5px solid var(--stage-klima-border, #06b6d4);"></span> <strong style="color:var(--stage-klima-text, #0e7490);">Buz Mavisi:</strong> ❄️ Klima Bekliyor</span>
+          <span style="display: flex; align-items: center; gap: 5px;"><span id="legSwatchMekanik" style="display:inline-block; width:15px; height:15px; border-radius:4px; background:var(--stage-mekanik-bg, #fff7ed); border:1.5px solid var(--stage-mekanik-border, #ea580c);"></span> <strong style="color:var(--stage-mekanik-text, #9a3412);">Turuncu:</strong> 🔧 Mekanik Bekliyor</span>
           <span style="display: flex; align-items: center; gap: 5px;"><span id="legSwatchProg" style="display:inline-block; width:15px; height:15px; border-radius:4px; background:var(--stage-prog-bg); border:1.5px solid var(--stage-prog-border);"></span> <strong style="color:var(--stage-prog-text);">Sarı:</strong> 🚧 İmalat Sürüyor</span>
           <span id="customLegendStages" style="display:contents;"></span>
           <span style="display: flex; align-items: center; gap: 5px;"><span id="legSwatchWaiting" style="display:inline-block; width:15px; height:15px; border-radius:4px; background:var(--stage-waiting-bg); border:1.5px solid var(--stage-waiting-border);"></span> <strong style="color:var(--stage-waiting-text);">Gri:</strong> ⏳ Başlanmadı</span>
@@ -3634,6 +3649,43 @@ body {
           <!-- Dynamically populated -->
         </table>
       </div>
+
+      <!-- Compact Acceptance Chain Reference (Altta, küçük ve sade referans olarak konumlandırıldı) -->
+      <aside class="workflow-banner" style="margin-top: 0.45rem; margin-bottom: 0.25rem; padding: 0.25rem 0.6rem; border-radius: 6px; border: 1px dashed #cbd5e1; background: #f8fafc; font-size: 0.72rem;">
+        <div class="workflow-container" style="gap: 0.5rem; justify-content: flex-start; align-items: center;">
+          <div style="font-size: 0.74rem; font-weight: 700; color: #64748b; display: flex; align-items: center; gap: 0.35rem; flex-shrink: 0;">
+            <span>ℹ️</span>
+            <span>Test Kabul Zinciri Sıralaması:</span>
+          </div>
+          <div class="workflow-steps" style="gap: 0.35rem; align-items: center; flex-wrap: wrap;">
+            <div class="step-item req" style="border-left: 3px solid #ea580c; background: #fff7ed; color: #9a3412; padding: 0.15rem 0.4rem; font-size: 0.7rem;">
+              <span style="font-weight: 700;">🔧 1. Mekanik</span>
+              <span style="font-size: 0.65rem; color: #ea580c; font-weight: 800;">[BİTMELİ]</span>
+            </div>
+            <span class="step-arrow" style="font-size: 0.75rem; color: #94a3b8;">+</span>
+            <div class="step-item req" style="border-left: 3px solid #06b6d4; background: #ecfeff; color: #0e7490; padding: 0.15rem 0.4rem; font-size: 0.7rem;">
+              <span style="font-weight: 700;">❄️ 2. Klima</span>
+              <span style="font-size: 0.65rem; color: #0891b2; font-weight: 800;">[BİTMELİ]</span>
+            </div>
+            <span class="step-arrow" style="font-size: 0.75rem; color: #94a3b8;">➔</span>
+            <div class="step-item mesa" style="border-left: 3px solid #9333ea; background: #f3e8ff; color: #6b21a8; padding: 0.15rem 0.4rem; font-size: 0.7rem;">
+              <span style="font-weight: 700;">🏢 3. MESA Onayı</span>
+              <span style="font-size: 0.65rem; color: #7c3aed; font-weight: 800;">[GEREKLİ]</span>
+            </div>
+            <span class="step-arrow" style="font-size: 0.75rem; color: #94a3b8;">➔</span>
+            <div class="step-item test" style="border-left: 3px solid #0284c7; background: #e0f2fe; color: #0369a1; padding: 0.15rem 0.4rem; font-size: 0.7rem;">
+              <span style="font-weight: 700;">⚡ 4. Elektrik Testi</span>
+              <span style="font-size: 0.65rem; color: #0284c7; font-weight: 800;">[HAZIR]</span>
+            </div>
+            <span class="step-arrow" style="font-size: 0.75rem; color: #94a3b8;">➔</span>
+            <div class="step-item tavan" style="border-left: 3px solid #0d9488; background: #ccfbf1; color: #0f766e; padding: 0.15rem 0.4rem; font-size: 0.7rem;">
+              <span style="font-weight: 700;">🏗️ 5. Asma Tavan</span>
+              <span style="font-size: 0.65rem; color: #0f766e; font-weight: 800;">[KAPAT]</span>
+            </div>
+            <div id="workflowCustomSteps" style="display:contents;"></div>
+          </div>
+        </div>
+      </aside>
     </section>
 
     <!-- TAB 2: Blok Bazlı Görünüm (Building Elevation & Cards) -->
@@ -4122,9 +4174,9 @@ body {
         </div>
 
         <!-- 1. Mekanik İşi -->
-        <div style="background: #f8fafc; border: 1.5px solid #e2e8f0; border-radius: 8px; padding: 1rem; margin-bottom: 1rem;">
+        <div style="background: #fff7ed; border: 1.5px solid #fed7aa; border-radius: 8px; padding: 1rem; margin-bottom: 1rem;">
           <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 0.5rem;">
-            <strong style="color: #b45309;">🔧 1. Aşama: Mekanik İmalat</strong>
+            <strong style="color: #c2410c;">🔧 1. Aşama: Mekanik İmalat</strong>
             <span id="mekanikBadgeStatus" class="stage-val-badge badge-prog">Devam Ediyor</span>
           </div>
           <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem;">
@@ -4148,9 +4200,9 @@ body {
         </div>
 
         <!-- 2. Klima & Havalandırma -->
-        <div style="background: #f8fafc; border: 1.5px solid #e2e8f0; border-radius: 8px; padding: 1rem; margin-bottom: 1rem;">
+        <div style="background: #ecfeff; border: 1.5px solid #a5f3fc; border-radius: 8px; padding: 1rem; margin-bottom: 1rem;">
           <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 0.5rem;">
-            <strong style="color: #4338ca;">❄️ 2. Aşama: Klima & VRF İmalatı</strong>
+            <strong style="color: #0891b2;">❄️ 2. Aşama: Klima & VRF İmalatı</strong>
             <span id="klimaBadgeStatus" class="stage-val-badge badge-prog">Devam Ediyor</span>
           </div>
           <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem;">
@@ -5357,7 +5409,37 @@ body {
             </div>
           </div>
 
-          <!-- 5. İmalat Sürüyor -->
+          <!-- 5. Klima / VRF Bekliyor -->
+          <div class="color-setting-row">
+            <div style="display:flex; align-items:center; gap: 8px;">
+              <span class="color-preview-pill" id="previewPillKlima" style="background: var(--stage-klima-bg, #ecfeff); border-color: var(--stage-klima-border, #06b6d4); color: var(--stage-klima-text, #0e7490);">
+                ❄️ Klima / VRF Bekliyor
+              </span>
+            </div>
+            <div style="display:flex; align-items:center; gap: 8px;">
+              <label style="font-size: 0.72rem; color: #64748b;">Arka Plan:</label>
+              <input type="color" id="colorInputKlimaBg" class="color-picker-input" onchange="app.previewLiveColorChange('klima_wait', 'bg', this.value)">
+              <label style="font-size: 0.72rem; color: #64748b;">Çerçeve & Metin:</label>
+              <input type="color" id="colorInputKlimaBorder" class="color-picker-input" onchange="app.previewLiveColorChange('klima_wait', 'border', this.value)">
+            </div>
+          </div>
+
+          <!-- 6. Mekanik Bekliyor -->
+          <div class="color-setting-row">
+            <div style="display:flex; align-items:center; gap: 8px;">
+              <span class="color-preview-pill" id="previewPillMekanik" style="background: var(--stage-mekanik-bg, #fff7ed); border-color: var(--stage-mekanik-border, #ea580c); color: var(--stage-mekanik-text, #9a3412);">
+                🔧 Mekanik Bekliyor
+              </span>
+            </div>
+            <div style="display:flex; align-items:center; gap: 8px;">
+              <label style="font-size: 0.72rem; color: #64748b;">Arka Plan:</label>
+              <input type="color" id="colorInputMekanikBg" class="color-picker-input" onchange="app.previewLiveColorChange('mekanik_wait', 'bg', this.value)">
+              <label style="font-size: 0.72rem; color: #64748b;">Çerçeve & Metin:</label>
+              <input type="color" id="colorInputMekanikBorder" class="color-picker-input" onchange="app.previewLiveColorChange('mekanik_wait', 'border', this.value)">
+            </div>
+          </div>
+
+          <!-- 7. İmalat Sürüyor -->
           <div class="color-setting-row">
             <div style="display:flex; align-items:center; gap: 8px;">
               <span class="color-preview-pill" id="previewPillProg" style="background: var(--stage-prog-bg); border-color: var(--stage-prog-border); color: var(--stage-prog-text);">
