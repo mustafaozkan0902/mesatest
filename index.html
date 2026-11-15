@@ -3623,24 +3623,25 @@ body {
           <button class="filter-chip active" onclick="app.setMatrixFilter('all')">Tüm Katlar</button>
           <button class="filter-chip chip-ready" onclick="app.setMatrixFilter('ready')">⚡ Teste Hazır Olanlar</button>
           <button class="filter-chip chip-mesa" onclick="app.setMatrixFilter('mesa_wait')">🏢 MESA Onayı Bekleyenler</button>
-          <button class="filter-chip" style="border-color:#06b6d4; color:#0e7490; font-weight:700;" onclick="app.setMatrixFilter('klima_wait')">❄️ Klima Bekleyenler</button>
-          <button class="filter-chip" style="border-color:#ea580c; color:#9a3412; font-weight:700;" onclick="app.setMatrixFilter('mekanik_wait')">🔧 Mekanik Bekleyenler</button>
           <button class="filter-chip" onclick="app.setMatrixFilter('prereq_wait')">⚠️ Ön Şartı Eksikler</button>
           <button class="filter-chip chip-done" onclick="app.setMatrixFilter('done')">✅ Testi Bitenler</button>
           <button class="filter-chip" style="border-color:#0f766e; color:#0f766e; font-weight:700;" onclick="app.setMatrixFilter('tavan_done')">🏗️ Tavanı Kapananlar</button>
         </div>
 
-        <!-- YENİLENMİŞ NET VE AYRIŞIR RENK LEJANTI -->
+        <!-- NET VE AYRIŞIR RENK LEJANTI -->
         <div style="display: flex; align-items: center; gap: 0.75rem; font-size: 0.76rem; flex-wrap: wrap;" id="matrixLegendContainer">
           <span style="display: flex; align-items: center; gap: 5px;"><span id="legSwatchTavan" style="display:inline-block; width:15px; height:15px; border-radius:4px; background:var(--stage-tavan-bg); border:1.5px solid var(--stage-tavan-border);"></span> <strong style="color:var(--stage-tavan-text);">Turkuaz:</strong> 🏗️ Tavan Kapandı</span>
           <span style="display: flex; align-items: center; gap: 5px;"><span id="legSwatchTest" style="display:inline-block; width:15px; height:15px; border-radius:4px; background:var(--stage-test-bg); border:1.5px solid var(--stage-test-border);"></span> <strong style="color:var(--stage-test-text);">Yeşil:</strong> ⚡ Test Tamamlandı</span>
           <span style="display: flex; align-items: center; gap: 5px;"><span id="legSwatchReady" style="display:inline-block; width:15px; height:15px; border-radius:4px; background:var(--stage-ready-bg); border:1.5px solid var(--stage-ready-border);"></span> <strong style="color:var(--stage-ready-text);">Mavi:</strong> 🚀 Teste Hazır</span>
           <span style="display: flex; align-items: center; gap: 5px;"><span id="legSwatchMesa" style="display:inline-block; width:15px; height:15px; border-radius:4px; background:var(--stage-mesa-bg); border:1.5px solid var(--stage-mesa-border);"></span> <strong style="color:var(--stage-mesa-text);">Mor:</strong> 🏢 MESA Bekliyor</span>
-          <span style="display: flex; align-items: center; gap: 5px;"><span id="legSwatchKlima" style="display:inline-block; width:15px; height:15px; border-radius:4px; background:var(--stage-klima-bg, #ecfeff); border:1.5px solid var(--stage-klima-border, #06b6d4);"></span> <strong style="color:var(--stage-klima-text, #0e7490);">Buz Mavisi:</strong> ❄️ Klima Bekliyor</span>
-          <span style="display: flex; align-items: center; gap: 5px;"><span id="legSwatchMekanik" style="display:inline-block; width:15px; height:15px; border-radius:4px; background:var(--stage-mekanik-bg, #fff7ed); border:1.5px solid var(--stage-mekanik-border, #ea580c);"></span> <strong style="color:var(--stage-mekanik-text, #9a3412);">Turuncu:</strong> 🔧 Mekanik Bekliyor</span>
           <span style="display: flex; align-items: center; gap: 5px;"><span id="legSwatchProg" style="display:inline-block; width:15px; height:15px; border-radius:4px; background:var(--stage-prog-bg); border:1.5px solid var(--stage-prog-border);"></span> <strong style="color:var(--stage-prog-text);">Sarı:</strong> 🚧 İmalat Sürüyor</span>
           <span id="customLegendStages" style="display:contents;"></span>
           <span style="display: flex; align-items: center; gap: 5px;"><span id="legSwatchWaiting" style="display:inline-block; width:15px; height:15px; border-radius:4px; background:var(--stage-waiting-bg); border:1.5px solid var(--stage-waiting-border);"></span> <strong style="color:var(--stage-waiting-text);">Gri:</strong> ⏳ Başlanmadı</span>
+          <span style="display: flex; align-items: center; gap: 6px; padding-left: 6px; border-left: 1px solid #cbd5e1; color: #64748b;">
+            <span>Ön Şart Rozetleri:</span>
+            <span class="sub-badge mek-ok" style="display:inline-flex; align-items:center; justify-content:center; width:15px; height:15px; font-size:8px;">M</span> <strong style="color:#c2410c;">Mekanik</strong>
+            <span class="sub-badge kli-ok" style="display:inline-flex; align-items:center; justify-content:center; width:15px; height:15px; font-size:8px; margin-left:3px;">K</span> <strong style="color:#0e7490;">Klima</strong>
+          </span>
         </div>
       </div>
 
@@ -5409,37 +5410,7 @@ body {
             </div>
           </div>
 
-          <!-- 5. Klima / VRF Bekliyor -->
-          <div class="color-setting-row">
-            <div style="display:flex; align-items:center; gap: 8px;">
-              <span class="color-preview-pill" id="previewPillKlima" style="background: var(--stage-klima-bg, #ecfeff); border-color: var(--stage-klima-border, #06b6d4); color: var(--stage-klima-text, #0e7490);">
-                ❄️ Klima / VRF Bekliyor
-              </span>
-            </div>
-            <div style="display:flex; align-items:center; gap: 8px;">
-              <label style="font-size: 0.72rem; color: #64748b;">Arka Plan:</label>
-              <input type="color" id="colorInputKlimaBg" class="color-picker-input" onchange="app.previewLiveColorChange('klima_wait', 'bg', this.value)">
-              <label style="font-size: 0.72rem; color: #64748b;">Çerçeve & Metin:</label>
-              <input type="color" id="colorInputKlimaBorder" class="color-picker-input" onchange="app.previewLiveColorChange('klima_wait', 'border', this.value)">
-            </div>
-          </div>
-
-          <!-- 6. Mekanik Bekliyor -->
-          <div class="color-setting-row">
-            <div style="display:flex; align-items:center; gap: 8px;">
-              <span class="color-preview-pill" id="previewPillMekanik" style="background: var(--stage-mekanik-bg, #fff7ed); border-color: var(--stage-mekanik-border, #ea580c); color: var(--stage-mekanik-text, #9a3412);">
-                🔧 Mekanik Bekliyor
-              </span>
-            </div>
-            <div style="display:flex; align-items:center; gap: 8px;">
-              <label style="font-size: 0.72rem; color: #64748b;">Arka Plan:</label>
-              <input type="color" id="colorInputMekanikBg" class="color-picker-input" onchange="app.previewLiveColorChange('mekanik_wait', 'bg', this.value)">
-              <label style="font-size: 0.72rem; color: #64748b;">Çerçeve & Metin:</label>
-              <input type="color" id="colorInputMekanikBorder" class="color-picker-input" onchange="app.previewLiveColorChange('mekanik_wait', 'border', this.value)">
-            </div>
-          </div>
-
-          <!-- 7. İmalat Sürüyor -->
+          <!-- 5. İmalat Sürüyor -->
           <div class="color-setting-row">
             <div style="display:flex; align-items:center; gap: 8px;">
               <span class="color-preview-pill" id="previewPillProg" style="background: var(--stage-prog-bg); border-color: var(--stage-prog-border); color: var(--stage-prog-text);">
