@@ -3373,6 +3373,12 @@ body {
           <span>Çıkış Yap</span>
         </button>
 
+        <!-- Kullanıcı & Yetki Yönetimi (Yöneticiye özel hızlı erişim) -->
+        <button id="btnHeaderUsers" class="btn btn-outline btn-sm" onclick="app.openPermissionsModal()" style="display: none; font-weight: 700; border-color: #cbd5e1; background: #ffffff; color: #1e293b; padding: 0.3rem 0.65rem;" title="Kullanıcı Tanımlama & Yetki Yönetimi">
+          <span>👥</span>
+          <span>Kullanıcılar</span>
+        </button>
+
         <!-- Renkler Butonu (Tek tıkla renk ayarları) -->
         <button class="btn btn-outline btn-sm" onclick="app.openColorSettingsModal()" title="Isı Haritası Renklerini Özelleştir" style="font-weight: 700; border-color: #cbd5e1; background: #ffffff; color: #1e293b; padding: 0.3rem 0.65rem;">
           <span>🎨</span>
@@ -4370,40 +4376,37 @@ body {
 
     <!-- MODAL 2: Şantiye & Kullanıcı Girişi (Login) -->
   <div id="modalLogin" class="modal-overlay">
-    <div class="modal-box" style="max-width: 460px;">
+    <div class="modal-box" style="max-width: 440px;">
       <div class="modal-header">
         <div>
-          <h2 class="modal-title">🔑 Şantiye Girişi & Yetkilendirme</h2>
-          <div style="font-size: 0.8rem; color: #64748b;">Hesabınızı seçip şifrenizi giriniz veya doğrudan şifre yazınız</div>
+          <h2 class="modal-title">🔑 Şantiye Girişi</h2>
+          <div style="font-size: 0.8rem; color: #64748b;">Kullanıcı adı ve şifrenizi girerek oturum açınız</div>
         </div>
         <button class="modal-close" onclick="app.closeModal('modalLogin')">&times;</button>
       </div>
       <div class="modal-body">
-        <!-- Hızlı Hesap Butonları -->
-        <div style="margin-bottom: 0.85rem;">
-          <div style="font-size: 0.76rem; font-weight: 700; color: #475569; margin-bottom: 0.4rem;">⚡ Hızlı Hesap Seçimi:</div>
-          <div style="display: flex; gap: 0.4rem; flex-wrap: wrap;">
-            <button type="button" class="btn btn-sm btn-outline" onclick="app.quickSelectLogin('u1')" style="font-size: 0.76rem; padding: 4px 10px; border-radius: 6px; font-weight: 600;">🛡️ Yönetici (Ben)</button>
-            <button type="button" class="btn btn-sm btn-outline" onclick="app.quickSelectLogin('u2')" style="font-size: 0.76rem; padding: 4px 10px; border-radius: 6px; font-weight: 600;">⚡ Üçay Elektrik Ekibi</button>
-            <button type="button" class="btn btn-sm btn-outline" onclick="app.quickSelectLogin('u3')" style="font-size: 0.76rem; padding: 4px 10px; border-radius: 6px; font-weight: 600;">🏢 MESA Ekibi</button>
-            <button type="button" class="btn btn-sm btn-outline" onclick="app.quickSelectLogin('u4')" style="font-size: 0.76rem; padding: 4px 10px; border-radius: 6px; font-weight: 600;">👁️ İzleyici</button>
+        <div class="form-group" style="margin-bottom: 0.85rem;">
+          <label class="form-label" for="loginUsernameInput">Kullanıcı Adı:</label>
+          <input type="text" id="loginUsernameInput" class="form-control" placeholder="Kullanıcı adınızı yazınız (örn: admin)" autocomplete="username" autofocus onkeydown="if(event.key==='Enter') document.getElementById('loginPasswordInput')?.focus()">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 0.4rem;">
+            <span style="font-size: 0.72rem; color: #64748b;">veya kayıtlı hesaptan seçin:</span>
+            <select id="loginUserSelect" class="form-select" onchange="app.onLoginUserSelectChange()" style="width: auto; padding: 2px 8px; font-size: 0.72rem; height: auto; border-radius: 4px; max-width: 220px;">
+              <!-- Dinamik doldurulur -->
+            </select>
           </div>
         </div>
 
-        <div class="form-group" style="margin-bottom: 0.75rem;">
-          <label class="form-label">Kullanıcı Hesabı:</label>
-          <select id="loginUserSelect" class="form-select" onchange="app.onLoginUserChange()">
-            <!-- Dinamik olarak tanımlı kullanıcılar listelenir -->
-          </select>
+        <div class="form-group" style="margin-bottom: 0.85rem;">
+          <label class="form-label" id="loginPasswordLabel" for="loginPasswordInput">Giriş Şifresi:</label>
+          <div style="position: relative; display: flex; align-items: center;">
+            <input type="password" id="loginPasswordInput" class="form-control" placeholder="••••••••" autocomplete="current-password" style="padding-right: 2.5rem;" onkeydown="if(event.key==='Enter') app.login()">
+            <button type="button" onclick="app.togglePasswordVisibility('loginPasswordInput', this)" style="position: absolute; right: 8px; background: none; border: none; cursor: pointer; color: #64748b; font-size: 0.95rem; padding: 4px;" title="Şifreyi Göster / Gizle">👁️</button>
+          </div>
         </div>
 
-        <div class="form-group" style="margin-bottom: 0.75rem;">
-          <label class="form-label" id="loginPasswordLabel">Giriş Şifresi:</label>
-          <input type="password" id="loginPasswordInput" class="form-control" placeholder="••••••••" autofocus onkeydown="if(event.key==='Enter') app.login()">
-        </div>
-
-        <div id="loginHintBox" style="font-size: 0.78rem; background: #f8fafc; border: 1px solid #e2e8f0; padding: 0.6rem 0.85rem; border-radius: 6px; color: #475569;">
-          <span>💡 Varsayılan yönetici şifresi: <code>admin123</code></span>
+        <div style="font-size: 0.75rem; background: #f8fafc; border: 1px solid #e2e8f0; padding: 0.6rem 0.85rem; border-radius: 6px; color: #64748b; display: flex; align-items: center; gap: 8px;">
+          <span>🔒</span>
+          <span>MESA Şantiye Yönetim ve Test Takip Portalı güvenli giriş ekranıdır.</span>
         </div>
       </div>
       <div class="modal-footer">
@@ -5024,13 +5027,13 @@ body {
     </div>
   </div>
 
-  <!-- MODAL: Yeni Kullanıcı & Şifre Tanımla -->
+  <!-- MODAL: Yeni Kullanıcı Tanımla & Yetkilendir -->
   <div id="modalNewUser" class="modal-overlay">
     <div class="modal-box" style="max-width: 480px;">
       <div class="modal-header">
         <div>
-          <h2 class="modal-title">➕ Yeni Kullanıcı & Şifre Tanımlama</h2>
-          <div style="font-size: 0.8rem; color: #64748b;">Şantiyede sisteme girecek kişi veya ekip için hesap oluşturun</div>
+          <h2 class="modal-title">➕ Yeni Kullanıcı & Yetki Tanımlama</h2>
+          <div style="font-size: 0.8rem; color: #64748b;">Şantiyede sisteme girecek kişi veya ekip için kullanıcı ve yetki oluşturun</div>
         </div>
         <button class="modal-close" onclick="app.closeModal('modalNewUser')">&times;</button>
       </div>
@@ -5043,28 +5046,31 @@ body {
         <div class="form-group">
           <label class="form-label">Kullanıcı Adı (Giriş ID): <span style="color:red;">*</span></label>
           <input type="text" id="newUserUsernameInput" class="form-control" placeholder="Örn: ahmet_sefi">
-          <small style="color: #64748b; font-size: 0.74rem;">Giriş yaparken kullanılacak benzersiz kullanıcı adı</small>
+          <small style="color: #64748b; font-size: 0.74rem;">Giriş yaparken kullanılacak kullanıcı adı (boşluksuz, küçük harf)</small>
         </div>
 
         <div class="form-group">
           <label class="form-label">Yetki Rolü: <span style="color:red;">*</span></label>
           <select id="newUserRoleSelect" class="form-select">
-            <option value="internal_team">👷 İç Şantiye Ekibi (1. Kısım Test & 2. Kısım İş Planı Yetkili, Özel Notlar Gizli)</option>
-            <option value="ana_firma">🏢 Ana Firma / MESA (Yalnızca 1. Kısım Test & Toplantı Notlarını Görür, İç Plan Gizli)</option>
-            <option value="admin">🛡️ Yönetici / Admin (Tüm Şantiyeyi Görür, Düzenler ve Yönetir)</option>
-            <option value="viewer">👁️ İzleyici (Yalnızca İnceleme / Salt Okunur)</option>
+            <option value="internal_team">⚡ Saha Yetkilisi / Üçay Elektrik (İmalatları ve testleri düzenleyebilir)</option>
+            <option value="ana_firma">🏢 MESA Ekibi / Ana Firma (Isı haritasını ve raporları inceler)</option>
+            <option value="admin">🛡️ Yönetici / Admin (Tam yetkili, her şeyi düzenler ve yönetir)</option>
+            <option value="viewer">👁️ Salt Okunur İzleyici (Yalnızca inceler, değişiklik yapamaz)</option>
           </select>
         </div>
 
         <div class="form-group">
           <label class="form-label">Giriş Şifresi: <span style="color:red;">*</span></label>
-          <input type="text" id="newUserPasswordInput" class="form-control" placeholder="Örn: saha1234">
+          <div style="position: relative; display: flex; align-items: center;">
+            <input type="password" id="newUserPasswordInput" class="form-control" placeholder="Kullanıcı şifresi belirleyiniz" style="padding-right: 2.5rem;">
+            <button type="button" onclick="app.togglePasswordVisibility('newUserPasswordInput', this)" style="position: absolute; right: 8px; background: none; border: none; cursor: pointer; color: #64748b; font-size: 0.95rem; padding: 4px;" title="Şifreyi Göster / Gizle">👁️</button>
+          </div>
           <small style="color: #64748b; font-size: 0.74rem;">Kullanıcının sisteme giriş yaparken kullanacağı şifre</small>
         </div>
 
         <div class="form-group" style="margin-bottom: 0;">
           <label class="form-label">Görev / Sorumluluk Açıklaması:</label>
-          <input type="text" id="newUserDescInput" class="form-control" placeholder="Örn: Kat tali panoları ve meğer testleri sorumlusu">
+          <input type="text" id="newUserDescInput" class="form-control" placeholder="Örn: Blok 1-5 kat panoları ve test sorumlusu">
         </div>
       </div>
       <div class="modal-footer">
@@ -5077,12 +5083,69 @@ body {
     </div>
   </div>
 
-  <!-- MODAL: Kullanıcı Şifresi Belirle / Değiştir -->
+  <!-- MODAL: Kullanıcı & Yetki Düzenle -->
+  <div id="modalEditUser" class="modal-overlay">
+    <div class="modal-box" style="max-width: 480px;">
+      <div class="modal-header">
+        <div>
+          <h2 class="modal-title">✏️ Kullanıcı & Yetki Düzenle</h2>
+          <div style="font-size: 0.8rem; color: #64748b;">Kullanıcı bilgilerini, yetki seviyesini veya şifresini güncelleyin</div>
+        </div>
+        <button class="modal-close" onclick="app.closeModal('modalEditUser')">&times;</button>
+      </div>
+      <div class="modal-body">
+        <input type="hidden" id="editUserId">
+
+        <div class="form-group">
+          <label class="form-label">Ad Soyad / Ekip Ünvanı: <span style="color:red;">*</span></label>
+          <input type="text" id="editUserNameInput" class="form-control" placeholder="Örn: Ahmet Yılmaz">
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Kullanıcı Adı (Giriş ID): <span style="color:red;">*</span></label>
+          <input type="text" id="editUserUsernameInput" class="form-control" placeholder="Örn: ahmet_sefi">
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Yetki Rolü: <span style="color:red;">*</span></label>
+          <select id="editUserRoleSelect" class="form-select">
+            <option value="admin">🛡️ Yönetici / Admin (Tam Yetki - Her Şeyi Düzenler)</option>
+            <option value="internal_team">⚡ Saha Yetkilisi / Üçay (İmalatları ve testleri düzenler)</option>
+            <option value="ana_firma">🏢 MESA Ekibi (Raporları ve ısı haritasını inceler)</option>
+            <option value="viewer">👁️ Salt Okunur İzleyici (Yalnızca inceler)</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Giriş Şifresi: <span style="color:red;">*</span></label>
+          <div style="position: relative; display: flex; align-items: center;">
+            <input type="password" id="editUserPasswordInput" class="form-control" placeholder="Yeni şifre yazınız..." style="padding-right: 2.5rem;">
+            <button type="button" onclick="app.togglePasswordVisibility('editUserPasswordInput', this)" style="position: absolute; right: 8px; background: none; border: none; cursor: pointer; color: #64748b; font-size: 0.95rem; padding: 4px;" title="Şifreyi Göster / Gizle">👁️</button>
+          </div>
+          <small style="color: #64748b; font-size: 0.74rem;">Kullanıcının sisteme giriş yaparken kullanacağı şifre</small>
+        </div>
+
+        <div class="form-group" style="margin-bottom: 0;">
+          <label class="form-label">Görev / Açıklama:</label>
+          <input type="text" id="editUserDescInput" class="form-control" placeholder="Örn: Kat tali panoları ve meğer testleri sorumlusu">
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" onclick="app.closeModal('modalEditUser')">İptal</button>
+        <button class="btn btn-primary" onclick="app.saveEditUser()">
+          <span>💾</span>
+          <span>Değişiklikleri Kaydet</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: Kullanıcı Şifresi Değiştir (Hızlı) -->
   <div id="modalChangeUserPassword" class="modal-overlay">
     <div class="modal-box" style="max-width: 420px;">
       <div class="modal-header">
         <div>
-          <h2 class="modal-title">🔑 Şifre Belirle & Güncelle</h2>
+          <h2 class="modal-title">🔑 Şifre Güncelle</h2>
           <div style="font-size: 0.8rem; color: #64748b;" id="changeUserPwSubtitle">Kullanıcı giriş şifresini değiştirin</div>
         </div>
         <button class="modal-close" onclick="app.closeModal('modalChangeUserPassword')">&times;</button>
@@ -5095,7 +5158,10 @@ body {
         </div>
         <div class="form-group" style="margin-bottom: 0;">
           <label class="form-label">Yeni Giriş Şifresi: <span style="color:red;">*</span></label>
-          <input type="text" id="changeUserPwNewPassword" class="form-control" placeholder="Yeni şifreyi yazınız...">
+          <div style="position: relative; display: flex; align-items: center;">
+            <input type="password" id="changeUserPwNewPassword" class="form-control" placeholder="Yeni şifreyi yazınız..." style="padding-right: 2.5rem;">
+            <button type="button" onclick="app.togglePasswordVisibility('changeUserPwNewPassword', this)" style="position: absolute; right: 8px; background: none; border: none; cursor: pointer; color: #64748b; font-size: 0.95rem; padding: 4px;" title="Şifreyi Göster / Gizle">👁️</button>
+          </div>
           <small style="color: #64748b; font-size: 0.74rem;">Kullanıcı sisteme girerken bu şifreyi kullanacaktır</small>
         </div>
       </div>
