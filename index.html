@@ -3582,9 +3582,9 @@ body {
             <span>Haftalık İlerleme Raporu</span>
           </button>
 
-          <button class="btn btn-outline btn-sm" onclick="app.openNewStageModal()" title="Yeni Takip Edilecek İmalat / Aşama Ekle (Örn: Elektrik Montaj)">
-            <span>➕</span>
-            <span>Yeni Aşama Ekle</span>
+          <button class="btn btn-outline btn-sm" onclick="app.openNewStageModal()" title="Yeni Takip Edilecek İmalat Ekle veya Mevcutları Sil">
+            <span>🛠️</span>
+            <span>İmalat Ekle / Sil</span>
           </button>
 
           <button class="btn btn-primary btn-sm" onclick="app.openCreateSnapshotModal()" title="Bu haftanın durumunu kalıcı olarak arşive kaydet">
@@ -5081,17 +5081,23 @@ body {
     </div>
   </div>
 
-  <!-- MODAL: Yeni Takip Aşaması / İmalat Ekle -->
+  <!-- MODAL: Yeni Takip Aşaması / İmalat Yönetimi (Ekle & Sil) -->
   <div id="modalNewStage" class="modal-overlay">
-    <div class="modal-box" style="max-width: 520px;">
+    <div class="modal-box" style="max-width: 580px;">
       <div class="modal-header">
         <div>
-          <h2 class="modal-title">➕ Yeni İmalat / Aşama Ekle</h2>
-          <div style="font-size: 0.8rem; color: #94a3b8;">Şantiyede sıralı takip edilecek yeni iş kalemi ekleyin (Örn: Elektrik Montaj)</div>
+          <h2 class="modal-title" id="newStageModalTitle">🛠️ Özel İmalat Yönetimi (Ekle & Sil)</h2>
+          <div style="font-size: 0.8rem; color: #94a3b8;" id="newStageModalSubtitle">Şantiyede takip edilecek özel iş kalemlerini ekleyin, düzenleyin veya silin</div>
         </div>
         <button class="modal-close" onclick="app.closeModal('modalNewStage')">&times;</button>
       </div>
       <div class="modal-body">
+        <!-- Edit Mode Banner (shows only when editing an existing stage) -->
+        <div id="stageEditModeBanner" style="display: none; background: #eff6ff; border: 1.5px solid #93c5fd; border-radius: 6px; padding: 0.45rem 0.8rem; margin-bottom: 0.85rem; font-size: 0.8rem; color: #1e40af; display: none; align-items: center; justify-content: space-between;">
+          <span>✏️ <strong id="stageEditModeText">Aşama Düzenleniyor</strong></span>
+          <button type="button" class="btn btn-sm btn-outline" onclick="app.cancelEditStage()" style="padding: 2px 7px; font-size: 0.72rem; background: #ffffff;">Yeni Ekleme Moduna Dön</button>
+        </div>
+
         <div class="form-group">
           <label class="form-label">Aşama / İmalat Adı: <span style="color:#dc2626;">*</span></label>
           <input type="text" id="newStageName" class="form-control" placeholder="Örn: Elektrik Montaj & Armatür">
@@ -5153,16 +5159,31 @@ body {
           </div>
         </div>
 
-        <div class="form-group" style="margin-bottom: 0;">
+        <div class="form-group" style="margin-bottom: 0.5rem;">
           <label class="form-label">Varsayılan Uygulayıcı Taşeron / Ekip:</label>
           <input type="text" id="newStageDefaultCompany" class="form-control" placeholder="Örn: Üçay Elektrik Montaj Ekibi">
         </div>
+
+        <!-- MEVCUT ÖZEL İMALATLAR LİSTESİ VE SİLME BÖLÜMÜ -->
+        <div class="existing-stages-section" style="margin-top: 1.25rem; border-top: 2px dashed #cbd5e1; padding-top: 0.85rem;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.65rem;">
+            <div style="font-weight: 800; font-size: 0.85rem; color: #1e293b; display: flex; align-items: center; gap: 6px;">
+              <span>📋</span>
+              <span>Mevcut Takip Edilen Özel İmalatlar</span>
+              <span id="customStagesCountBadge" style="background: #e2e8f0; color: #475569; font-size: 0.72rem; padding: 1px 7px; border-radius: 9999px; font-weight: 700;">0</span>
+            </div>
+            <div style="font-size: 0.7rem; color: #64748b;">(İstediğiniz imalatı silebilirsiniz)</div>
+          </div>
+          <div id="modalExistingStagesList" style="display: flex; flex-direction: column; gap: 0.5rem; max-height: 220px; overflow-y: auto;">
+            <!-- Dynamically populated via app.renderCustomStagesListInModal() -->
+          </div>
+        </div>
       </div>
       <div class="modal-footer">
-        <button class="btn btn-secondary" onclick="app.closeModal('modalNewStage')">İptal</button>
-        <button class="btn btn-primary" onclick="app.saveNewStage()">
-          <span>💾</span>
-          <span>Aşamayı Oluştur ve Başlat</span>
+        <button class="btn btn-secondary" onclick="app.closeModal('modalNewStage')">Kapat</button>
+        <button class="btn btn-primary" id="btnSaveStage" onclick="app.saveNewStage()">
+          <span id="btnSaveStageIcon">💾</span>
+          <span id="btnSaveStageText">Aşamayı Oluştur ve Başlat</span>
         </button>
       </div>
     </div>
@@ -5416,12 +5437,12 @@ body {
             </div>
           </button>
 
-          <!-- 3. Yeni Aşama Ekle -->
+          <!-- 3. Özel İmalatları Yönet & Sil -->
           <button class="settings-tile" onclick="app.closeModal('modalSettingsCenter'); app.openNewStageModal();">
-            <div class="settings-tile-icon" style="background: #fef3c7; color: #d97706;">➕</div>
+            <div class="settings-tile-icon" style="background: #fef3c7; color: #d97706;">🛠️</div>
             <div>
-              <div style="font-weight: 700; font-size: 0.85rem; color: #0f172a;">Yeni İmalat / Aşama Ekle</div>
-              <div style="font-size: 0.72rem; color: #64748b;">Elektrik montaj vb. yeni iş kalemi başlatın</div>
+              <div style="font-weight: 700; font-size: 0.85rem; color: #0f172a;">Özel İmalatları Yönet & Sil</div>
+              <div style="font-size: 0.72rem; color: #64748b;">Yeni iş kalemi ekleyin veya mevcut aşamaları silin</div>
             </div>
           </button>
 

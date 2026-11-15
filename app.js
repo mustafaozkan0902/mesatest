@@ -116,6 +116,7 @@ class SantiyeApp {
       }
     };
     this.stageColors = null;
+    this.editingStageId = null;
   }
 
   async init() {
@@ -295,8 +296,8 @@ class SantiyeApp {
       });
     }
 
-    // Ensure customStages exists
-    if (!this.data.customStages || !Array.isArray(this.data.customStages)) {
+    // Ensure customStages exists (if not initialized before)
+    if (this.data.customStages === undefined || this.data.customStages === null) {
       this.data.customStages = [
         {
           id: 'elektrikMontaj',
@@ -304,11 +305,16 @@ class SantiyeApp {
           code: 'EM',
           icon: '💡',
           color: '#db2777',
+          bg: '#fce7f3',
+          borderColor: '#db2777',
+          textColor: '#9d174d',
           prerequisiteStage: 'asmaTavan',
           company: 'Üçay Elektrik Montaj Ekibi',
           order: 6
         }
       ];
+    } else if (!Array.isArray(this.data.customStages)) {
+      this.data.customStages = [];
     }
 
     // Ensure customStages fields exist on each unit
@@ -1358,13 +1364,15 @@ class SantiyeApp {
     return '⏳ Bekliyor';
   }
 
-  // --- DİNAMİK AŞAMA EKLEME ---
+  // --- DİNAMİK AŞAMA / İMALAT YÖNETİMİ (EKLE, DÜZENLE, SİL) ---
   openNewStageModal() {
-    if (!this.requireLogin('Yeni aşama eklemek için lütfen yönetici girişi yapınız.')) return;
+    if (!this.requireLogin('İmalatları yönetmek için lütfen yönetici girişi yapınız.')) return;
     if (!this.isAdmin) {
-      this.showToast('Yeni aşama ekleme yetkisi yalnızca yöneticilere aittir.', 'warning');
+      this.showToast('İmalat ekleme ve silme yetkisi yalnızca yöneticilere aittir.', 'warning');
       return;
     }
+
+    this.cancelEditStage(true);
 
     const prereqSelect = document.getElementById('newStagePrereq');
     if (prereqSelect) {
@@ -1395,7 +1403,138 @@ class SantiyeApp {
     if (compEl) compEl.value = '';
     this.updateNewStageColorPreview('#db2777');
 
+    this.renderCustomStagesListInModal();
     this.openModal('modalNewStage');
+  }
+
+  renderCustomStagesListInModal() {
+    const container = document.getElementById('modalExistingStagesList');
+    const badge = document.getElementById('customStagesCountBadge');
+    if (!container) return;
+
+    const stages = this.data?.customStages || [];
+    if (badge) badge.textContent = stages.length;
+
+    if (stages.length === 0) {
+      container.innerHTML = `
+        <div style="text-align: center; padding: 1.25rem 0.5rem; color: #94a3b8; font-size: 0.78rem; background: #f8fafc; border-radius: 6px; border: 1.5px dashed #cbd5e1;">
+          Henüz eklenmiş özel bir imalat bulunmuyor. Yukarıdaki formu kullanarak yeni iş kalemi ekleyebilirsiniz.
+        </div>
+      `;
+      return;
+    }
+
+    const prereqNames = {
+      'none': 'Ön şartsız (Bağımsız)',
+      'asmaTavan': '5. Asma Tavan Kapatma',
+      'elektrikTest': '4. Elektrik Testi',
+      'mesa': '3. MESA Kabul Onayı'
+    };
+
+    let html = '';
+    stages.forEach(cs => {
+      const csBg = cs.bg || this.getSoftTintFromHex(cs.color);
+      const csBorder = cs.borderColor || cs.color;
+      const csText = cs.textColor || this.getDarkTextFromHex(cs.color);
+
+      let prereqText = prereqNames[cs.prerequisiteStage];
+      if (!prereqText) {
+        const parentStage = stages.find(s => s.id === cs.prerequisiteStage);
+        prereqText = parentStage ? `${parentStage.icon} ${parentStage.name}` : cs.prerequisiteStage;
+      }
+
+      html += `
+        <div class="stage-manage-card" style="display: flex; justify-content: space-between; align-items: center; padding: 0.55rem 0.75rem; background: #ffffff; border: 1.5px solid #e2e8f0; border-left: 4px solid ${cs.color}; border-radius: 6px; gap: 0.65rem;">
+          <div style="display: flex; align-items: center; gap: 0.65rem; min-width: 0; flex: 1;">
+            <div style="font-size: 1.15rem; width: 32px; height: 32px; min-width: 32px; border-radius: 6px; background: ${csBg}; display: flex; align-items: center; justify-content: center; border: 1px solid ${csBorder};">
+              ${cs.icon}
+            </div>
+            <div style="min-width: 0; flex: 1;">
+              <div style="font-weight: 800; font-size: 0.82rem; color: #0f172a; display: flex; align-items: center; gap: 6px; flex-wrap: wrap;">
+                <span style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${this.escapeHtml(cs.name)}</span>
+                <span class="sub-badge" style="background: ${csBg}; color: ${csText}; border: 1px solid ${csBorder}; font-weight: 800; font-size: 9px; padding: 1px 5px; border-radius: 3px;">${cs.code}</span>
+              </div>
+              <div style="font-size: 0.7rem; color: #64748b; margin-top: 1px;">
+                <span>Ön Şart: <strong>${this.escapeHtml(prereqText)}</strong></span>
+                ${cs.company ? ` • <span>${this.escapeHtml(cs.company)}</span>` : ''}
+              </div>
+            </div>
+          </div>
+          <div style="display: flex; align-items: center; gap: 4px; flex-shrink: 0;">
+            <button type="button" class="btn btn-sm btn-outline" onclick="app.editCustomStage('${cs.id}')" title="${this.escapeHtml(cs.name)} imalatını düzenle" style="padding: 0.25rem 0.55rem; font-size: 0.72rem; display: inline-flex; align-items: center; gap: 3px; font-weight: 700; border-color: #cbd5e1; background: #ffffff; color: #0f172a;">
+              <span>✏️ Düzenle</span>
+            </button>
+            <button type="button" class="btn btn-sm btn-danger" onclick="app.deleteCustomStage('${cs.id}')" title="${this.escapeHtml(cs.name)} imalatını sil" style="padding: 0.25rem 0.6rem; font-size: 0.72rem; display: inline-flex; align-items: center; gap: 3px; background: #fee2e2; color: #dc2626; border: 1px solid #fca5a5; font-weight: 700;">
+              <span>🗑️ Sil</span>
+            </button>
+          </div>
+        </div>
+      `;
+    });
+
+    container.innerHTML = html;
+  }
+
+  editCustomStage(stageId) {
+    const cs = (this.data?.customStages || []).find(s => s.id === stageId);
+    if (!cs) return;
+
+    this.editingStageId = stageId;
+
+    const nameEl = document.getElementById('newStageName');
+    const codeEl = document.getElementById('newStageCode');
+    const iconEl = document.getElementById('newStageIcon');
+    const prereqEl = document.getElementById('newStagePrereq');
+    const compEl = document.getElementById('newStageDefaultCompany');
+    const banner = document.getElementById('stageEditModeBanner');
+    const bannerText = document.getElementById('stageEditModeText');
+    const titleEl = document.getElementById('newStageModalTitle');
+    const saveBtnText = document.getElementById('btnSaveStageText');
+
+    if (nameEl) nameEl.value = cs.name || '';
+    if (codeEl) codeEl.value = cs.code || '';
+    if (iconEl) iconEl.value = cs.icon || '💡';
+    if (prereqEl) prereqEl.value = cs.prerequisiteStage || 'none';
+    if (compEl) compEl.value = cs.company || '';
+
+    this.updateNewStageColorPreview(cs.color || '#db2777');
+
+    if (banner) banner.style.display = 'flex';
+    if (bannerText) bannerText.textContent = `"${cs.name}" imalatı düzenleniyor`;
+    if (titleEl) titleEl.textContent = `✏️ İmalat Düzenle: ${cs.name}`;
+    if (saveBtnText) saveBtnText.textContent = 'Değişiklikleri Kaydet';
+
+    const modalBody = document.querySelector('#modalNewStage .modal-body');
+    if (modalBody) modalBody.scrollTop = 0;
+  }
+
+  cancelEditStage(silent = false) {
+    this.editingStageId = null;
+
+    const nameEl = document.getElementById('newStageName');
+    const codeEl = document.getElementById('newStageCode');
+    const iconEl = document.getElementById('newStageIcon');
+    const prereqEl = document.getElementById('newStagePrereq');
+    const compEl = document.getElementById('newStageDefaultCompany');
+    const banner = document.getElementById('stageEditModeBanner');
+    const titleEl = document.getElementById('newStageModalTitle');
+    const saveBtnText = document.getElementById('btnSaveStageText');
+
+    if (nameEl) nameEl.value = '';
+    if (codeEl) codeEl.value = '';
+    if (iconEl) iconEl.value = '💡';
+    if (prereqEl) prereqEl.value = 'asmaTavan';
+    if (compEl) compEl.value = '';
+
+    this.updateNewStageColorPreview('#db2777');
+
+    if (banner) banner.style.display = 'none';
+    if (titleEl) titleEl.textContent = '🛠️ Özel İmalat Yönetimi (Ekle & Sil)';
+    if (saveBtnText) saveBtnText.textContent = 'Aşamayı Oluştur ve Başlat';
+
+    if (!silent) {
+      this.showToast('Yeni imalat ekleme moduna dönüldü.', 'info');
+    }
   }
 
   async saveNewStage() {
@@ -1415,6 +1554,38 @@ class SantiyeApp {
 
     if (!this.data.customStages) this.data.customStages = [];
 
+    if (this.editingStageId) {
+      // Edit existing stage in place
+      const stage = this.data.customStages.find(s => s.id === this.editingStageId);
+      if (stage) {
+        stage.name = name;
+        stage.code = code;
+        stage.icon = icon;
+        stage.color = color;
+        stage.bg = this.getSoftTintFromHex(color);
+        stage.borderColor = color;
+        stage.textColor = this.getDarkTextFromHex(color);
+        stage.prerequisiteStage = prereq;
+        stage.company = company;
+
+        if (company && this.data.units) {
+          Object.values(this.data.units).forEach(u => {
+            if (u[stage.id] && !u[stage.id].company) {
+              u[stage.id].company = company;
+            }
+          });
+        }
+      }
+      const updatedName = name;
+      this.cancelEditStage(true);
+      await this.saveData(this.data);
+      this.renderAll();
+      this.renderCustomStagesListInModal();
+      this.showToast(`✅ "${updatedName}" imalatı başarıyla güncellendi!`, 'success');
+      return;
+    }
+
+    // New stage creation
     const stageId = 'stage_' + Date.now().toString(36);
     const newStage = {
       id: stageId,
@@ -1431,6 +1602,7 @@ class SantiyeApp {
     };
 
     this.data.customStages.push(newStage);
+    this.data.stagesInitialized = true;
 
     // Initialize on all units
     Object.values(this.data.units).forEach(u => {
@@ -1449,9 +1621,83 @@ class SantiyeApp {
     });
 
     await this.saveData(this.data);
-    this.closeModal('modalNewStage');
+    this.cancelEditStage(true);
     this.renderAll();
+    this.renderCustomStagesListInModal();
     this.showToast(`✅ "${name}" aşaması başarıyla eklendi ve tüm katlara uygulandı!`, 'success');
+  }
+
+  async deleteCustomStage(stageId) {
+    if (!this.requireLogin('İmalat silmek için lütfen yönetici girişi yapınız.')) return;
+    if (!this.isAdmin) {
+      this.showToast('İmalat silme yetkisi yalnızca yöneticilere aittir.', 'warning');
+      return;
+    }
+
+    const stage = (this.data?.customStages || []).find(s => s.id === stageId);
+    if (!stage) {
+      this.showToast('Silinecek imalat bulunamadı.', 'error');
+      return;
+    }
+
+    const confirmMsg = `"${stage.name}" imalatını ve bu aşamaya ait 80 kattaki tüm takip verilerini kalıcı olarak silmek istediğinize emin misiniz?`;
+    if (!confirm(confirmMsg)) {
+      return;
+    }
+
+    // If currently editing this stage, cancel edit
+    if (this.editingStageId === stageId) {
+      this.cancelEditStage(true);
+    }
+
+    // 1. Remove from customStages array
+    this.data.customStages = (this.data.customStages || []).filter(s => s.id !== stageId);
+    this.data.stagesInitialized = true;
+
+    // 2. Remove stage property from all units
+    if (this.data.units) {
+      Object.values(this.data.units).forEach(u => {
+        if (u && u[stageId]) {
+          delete u[stageId];
+        }
+      });
+    }
+
+    // 3. Fix any custom stages that had this stage as prerequisite
+    (this.data.customStages || []).forEach(cs => {
+      if (cs.prerequisiteStage === stageId) {
+        cs.prerequisiteStage = 'asmaTavan';
+      }
+    });
+
+    // 4. Update prerequisite options in modal if open
+    const prereqSelect = document.getElementById('newStagePrereq');
+    if (prereqSelect) {
+      let opts = `
+        <option value="asmaTavan" selected>5. Asma Tavan Kapatma bittikten sonra başlasın</option>
+        <option value="elektrikTest">4. Elektrik Testi bittikten sonra başlasın</option>
+        <option value="mesa">3. MESA Kabul Onayı bittikten sonra başlasın</option>
+        <option value="none">Ön şart olmadan bağımsız başlasın</option>
+      `;
+      (this.data?.customStages || []).forEach(cs => {
+        opts += `<option value="${cs.id}">${cs.icon} ${cs.name} bittikten sonra başlasın</option>`;
+      });
+      prereqSelect.innerHTML = opts;
+    }
+
+    // 5. Save to storage & cloud
+    await this.saveData(this.data);
+
+    // 6. Re-render UI
+    this.renderAll();
+
+    // 7. Refresh modal lists
+    this.renderCustomStagesListInModal();
+    if (document.getElementById('modalColorSettings')?.classList.contains('active')) {
+      this.openColorSettingsModal();
+    }
+
+    this.showToast(`🗑️ "${stage.name}" imalatı başarıyla silindi ve tüm katlardan kaldırıldı.`, 'success');
   }
 
   // --- TAB 1: MATRIX / HEATMAP ---
@@ -5714,9 +5960,12 @@ class SantiyeApp {
                 ${cs.icon} ${this.escapeHtml(cs.name)}
               </span>
             </div>
-            <div style="display:flex; align-items:center; gap: 8px;">
+            <div style="display:flex; align-items:center; gap: 6px;">
               <label style="font-size: 0.72rem; color: #64748b;">Rozet Rengi:</label>
               <input type="color" id="colorInputCustom_${cs.id}" value="${cs.color}" class="color-picker-input" onchange="app.previewCustomStageColorChange('${cs.id}', this.value)">
+              <button type="button" class="btn btn-sm btn-danger" onclick="app.deleteCustomStage('${cs.id}')" title="${this.escapeHtml(cs.name)} imalatını sil" style="padding: 0.2rem 0.55rem; font-size: 0.7rem; background: #fee2e2; color: #dc2626; border: 1px solid #fca5a5; font-weight: 700; margin-left: 4px;">
+                <span>🗑️ Sil</span>
+              </button>
             </div>
           </div>
         `;
