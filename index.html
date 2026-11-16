@@ -3656,10 +3656,21 @@ body {
           <span style="display: flex; align-items: center; gap: 5px;"><span id="legSwatchProg" style="display:inline-block; width:15px; height:15px; border-radius:4px; background:var(--stage-prog-bg); border:1.5px solid var(--stage-prog-border);"></span> <strong style="color:var(--stage-prog-text);">Sarı:</strong> 🚧 İmalat Sürüyor</span>
           <span id="customLegendStages" style="display:contents;"></span>
           <span style="display: flex; align-items: center; gap: 5px;"><span id="legSwatchWaiting" style="display:inline-block; width:15px; height:15px; border-radius:4px; background:var(--stage-waiting-bg); border:1.5px solid var(--stage-waiting-border);"></span> <strong style="color:var(--stage-waiting-text);">Gri:</strong> ⏳ Başlanmadı</span>
-          <span style="display: flex; align-items: center; gap: 6px; padding-left: 6px; border-left: 1px solid #cbd5e1; color: #64748b;">
-            <span>Ön Şart Rozetleri:</span>
-            <span class="sub-badge mek-ok" style="display:inline-flex; align-items:center; justify-content:center; width:15px; height:15px; font-size:8px;">M</span> <strong style="color:#c2410c;">Mekanik</strong>
-            <span class="sub-badge kli-ok" style="display:inline-flex; align-items:center; justify-content:center; width:15px; height:15px; font-size:8px; margin-left:3px;">K</span> <strong style="color:#0e7490;">Klima</strong>
+          <span style="display: flex; align-items: center; gap: 6px; padding-left: 6px; border-left: 1px solid #cbd5e1; color: #475569;">
+            <span>Alt Rozetler:</span>
+            <span class="sub-badge ok" style="width:16px; height:16px; font-size:8px;">✓</span> <strong style="color:#166534;">Yeşil: Bitti</strong>
+            <span class="sub-badge wait" style="width:16px; height:16px; font-size:8px; margin-left:3px;">⏳</span> <strong style="color:#991b1b;">Kırmızı: Bekliyor</strong>
+          </span>
+          <span style="display: flex; align-items: center; gap: 5px; padding-left: 6px; border-left: 1px solid #cbd5e1; color: #475569;">
+            <span>Çerçeve:</span>
+            <span style="display:inline-block; width:12px; height:12px; border-radius:3px; border:2px solid #ef4444; background:#fff;"></span>
+            <span style="font-size:0.7rem; color:#ef4444; font-weight:700;">%0</span>
+            <span style="font-size:0.7rem; color:#94a3b8;">➔</span>
+            <span style="display:inline-block; width:12px; height:12px; border-radius:3px; border:2px solid #f59e0b; background:#fff;"></span>
+            <span style="font-size:0.7rem; color:#f59e0b; font-weight:700;">%40</span>
+            <span style="font-size:0.7rem; color:#94a3b8;">➔</span>
+            <span style="display:inline-block; width:12px; height:12px; border-radius:3px; border:2px solid #059669; background:#fff;"></span>
+            <span style="font-size:0.7rem; color:#059669; font-weight:700;">%100</span>
           </span>
         </div>
       </div>
@@ -3787,9 +3798,9 @@ body {
         </div>
 
         <div>
-          <button id="btnExportExcel" class="btn btn-secondary" onclick="app.exportToExcel()" style="display: none;">
-            <span>📊</span>
-            <span>CSV / Excel İndir</span>
+          <button id="btnExportExcel" class="btn btn-secondary" onclick="app.exportToExcel()" style="display: none;" title="Mevcut kat durum tablosunu Excel formatında indirin">
+            <span>📥</span>
+            <span>Tablo İndir</span>
           </button>
         </div>
       </div>
@@ -5649,12 +5660,12 @@ body {
             </div>
           </button>
 
-          <!-- 8. Excel İndir (Yönetici) -->
+          <!-- 8. Tablo İndir (Yönetici) -->
           <button class="settings-tile admin-tile" id="tileExcel" onclick="app.closeModal('modalSettingsCenter'); app.exportToExcel();">
             <div class="settings-tile-icon" style="background: #ecfdf5; color: #16a34a;">📥</div>
             <div>
-              <div style="font-weight: 700; font-size: 0.85rem; color: #0f172a;">Excel / CSV Raporu İndir</div>
-              <div style="font-size: 0.72rem; color: #64748b;">Tüm blok ve kat durumunu tablo olarak aktarın</div>
+              <div style="font-weight: 700; font-size: 0.85rem; color: #0f172a;">Tablo İndir</div>
+              <div style="font-size: 0.72rem; color: #64748b;">Mevcut kat durum tablosunu Excel formatında indirin</div>
             </div>
           </button>
 

@@ -793,20 +793,20 @@ body {
 
 /* Küçük Rozetler (Sub-badges): Bitenler YEŞİL, Bekleyenler KIRMIZI, Sürenler SARI */
 .sub-badge {
-  width: 17px;
-  height: 17px;
+  width: 18px;
+  height: 18px;
   border-radius: 4px;
   font-size: 8.5px;
-  font-weight: 800;
+  font-weight: 900;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  border: 1px solid rgba(0,0,0,0.15);
+  border: 1.5px solid rgba(0,0,0,0.15);
   box-shadow: 0 1px 2px rgba(0,0,0,0.06);
   transition: transform 0.15s ease;
 }
 
-/* BİTENLER / TAMAMLANANLAR -> YEŞİL */
+/* BİTENLER / TAMAMLANANLAR -> CANLI YEŞİL TONLARI */
 .sub-badge.ok,
 .sub-badge.mek-ok,
 .sub-badge.kli-ok,
@@ -814,45 +814,47 @@ body {
 .sub-badge.tavan-ok,
 .sub-badge.custom-ok {
   background: #dcfce7 !important;
-  color: #15803d !important;
-  border-color: #86efac !important;
+  color: #14532d !important;
+  border: 1.5px solid #22c55e !important;
   font-weight: 900 !important;
 }
 
-/* BEKLEYENLER / KİLİTLİ / BAŞLANMAYANLAR -> KIRMIZI */
+/* BEKLEYENLER / KİLİTLİ / BAŞLANMAYANLAR -> CANLI KIRMIZI TONLARI */
 .sub-badge.wait,
 .sub-badge.mek-wait,
-.sub-badge.kli-wait {
+.sub-badge.kli-wait,
+.sub-badge.test-wait,
+.sub-badge.tavan-wait {
   background: #fee2e2 !important;
-  color: #dc2626 !important;
-  border-color: #fca5a5 !important;
-  font-weight: 800 !important;
+  color: #991b1b !important;
+  border: 1.5px solid #ef4444 !important;
+  font-weight: 900 !important;
 }
 
-/* SÜRENLER / DEVAM EDENLER -> SARI / TURUNCU */
+/* SÜRENLER / DEVAM EDENLER -> SARI / KEHRİBAR */
 .sub-badge.prog,
 .sub-badge.mek-prog,
 .sub-badge.kli-prog {
   background: #fef3c7 !important;
-  color: #b45309 !important;
-  border-color: #fcd34d !important;
+  color: #92400e !important;
+  border: 1.5px solid #f59e0b !important;
   font-weight: 800 !important;
 }
 
-/* REVIZYON -> KIRMIZI */
+/* REVIZYON / UYGUNSUZLUK -> KIRMIZI */
 .sub-badge.rev {
   background: #fee2e2 !important;
-  color: #dc2626 !important;
-  border-color: #fca5a5 !important;
-  font-weight: 800 !important;
+  color: #991b1b !important;
+  border: 1.5px solid #ef4444 !important;
+  font-weight: 900 !important;
 }
 
-/* TESTE / TAVANA HAZIR -> MAVİ (Aksiyon Bekliyor) */
+/* TESTE / TAVANA HAZIR -> AÇIK MAVİ (Aksiyon Bekliyor) */
 .sub-badge.test-ready,
 .sub-badge.tavan-ready {
   background: #e0f2fe !important;
   color: #0369a1 !important;
-  border-color: #7dd3fc !important;
+  border: 1.5px solid #0284c7 !important;
   font-weight: 800 !important;
 }
 

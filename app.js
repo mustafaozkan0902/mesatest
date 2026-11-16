@@ -1920,24 +1920,50 @@ class SantiyeApp {
 
         const opacityStyle = isFilteredIn ? 'opacity: 1;' : 'opacity: 0.25; filter: grayscale(80%);';
 
-        // Badges for the stages (Mekanik: mek-*, Klima: kli-*)
-        const bMek = u.mekanik?.status === 'tamamlandi' ? 'mek-ok' : (u.mekanik?.status === 'devam' ? 'mek-prog' : 'mek-wait');
-        const bKli = u.klima?.status === 'tamamlandi' ? 'kli-ok' : (u.klima?.status === 'devam' ? 'kli-prog' : 'kli-wait');
-        const bMesa = u.mesa?.status === 'onaylandi' ? 'ok' : (u.mesa?.status === 'revizyon' ? 'rev' : 'wait');
-        const bTest = u.elektrikTest?.status === 'tamamlandi' ? 'test-ok' : (u.elektrikTest?.status === 'hazir' || (u.mekanik?.status === 'tamamlandi' && u.klima?.status === 'tamamlandi') ? 'test-ready' : 'wait');
-        const bTavan = u.asmaTavan?.status === 'tamamlandi' ? 'tavan-ok' : (u.asmaTavan?.status === 'devam' ? 'prog' : (u.mesa?.status === 'onaylandi' ? 'tavan-ready' : 'wait'));
+        const isMekDone = u.mekanik?.status === 'tamamlandi';
+        const isKliDone = u.klima?.status === 'tamamlandi';
+        const isTestDone = u.elektrikTest?.status === 'tamamlandi';
+        const isMesaApproved = u.mesa?.status === 'onaylandi';
+        const isTavanDone = u.asmaTavan?.status === 'tamamlandi';
 
-        // Custom badges
+        // 1. Kat Bitme Yüzdesi (5 ana aşama + varsa özel aşamalar)
+        let doneStagesCount = 0;
+        const totalUnitStages = 5 + (this.data.customStages || []).length;
+        if (isMekDone) doneStagesCount++;
+        if (isKliDone) doneStagesCount++;
+        if (isTestDone) doneStagesCount++;
+        if (isMesaApproved) doneStagesCount++;
+        if (isTavanDone) doneStagesCount++;
+        (this.data.customStages || []).forEach(cs => {
+          if (u[cs.id]?.status === 'tamamlandi') doneStagesCount++;
+        });
+
+        const completionPct = Math.round((doneStagesCount / totalUnitStages) * 100);
+
+        // 2. Büyük Çerçeve Rengi: Kırmızıdan yeşile doğru ara renk skalası
+        // %0: Kırmızı -> %20: Turuncu -> %40: Kehribar -> %60: Fıstık Yeşili -> %80: Açık Yeşil -> %100: Koyu Zümrüt Yeşili
+        let frameBorderColor = '#ef4444'; // %0 Kırmızı
+        if (completionPct >= 100) frameBorderColor = '#059669'; // %100 Koyu Zümrüt Yeşili
+        else if (completionPct >= 80) frameBorderColor = '#22c55e'; // %80 Açık Yeşil
+        else if (completionPct >= 60) frameBorderColor = '#84cc16'; // %60 Fıstık Yeşili
+        else if (completionPct >= 40) frameBorderColor = '#f59e0b'; // %40 Kehribar / Turuncu
+        else if (completionPct >= 20) frameBorderColor = '#f97316'; // %20 Kırmızı-Turuncu
+
+        // 3. Alt Rozetler (Bitenler -> Yeşil, Bekleyenler -> Kırmızı, Sürenler -> Sarı, Hazır -> Mavi)
+        const bMek = isMekDone ? 'mek-ok' : (u.mekanik?.status === 'devam' ? 'mek-prog' : 'wait');
+        const bKli = isKliDone ? 'kli-ok' : (u.klima?.status === 'devam' ? 'kli-prog' : 'wait');
+        const bTest = isTestDone ? 'test-ok' : (u.elektrikTest?.status === 'suruyor' ? 'prog' : (u.elektrikTest?.status === 'hazir' || (isMekDone && isKliDone) ? 'test-ready' : 'wait'));
+        const bMesa = isMesaApproved ? 'ok' : (u.mesa?.status === 'revizyon' ? 'rev' : 'wait');
+        const bTavan = isTavanDone ? 'tavan-ok' : (u.asmaTavan?.status === 'devam' ? 'prog' : (isMesaApproved ? 'tavan-ready' : 'wait'));
+
+        // Custom badges (Biten yeşil, bekleyen kırmızı)
         let customBadgesHtml = '';
         (this.data.customStages || []).forEach(cs => {
           const isDone = u[cs.id]?.status === 'tamamlandi';
           const isProg = u[cs.id]?.status === 'devam';
-          const csBg = cs.bg || this.getSoftTintFromHex(cs.color);
-          const csBorder = cs.borderColor || cs.color;
-          const csText = cs.textColor || this.getDarkTextFromHex(cs.color);
           const bStyle = isDone
-            ? "background: #dcfce7 !important; color: #15803d !important; border-color: #86efac !important; font-weight: 900;"
-            : (isProg ? "background: #fef3c7 !important; color: #b45309 !important; border-color: #fcd34d !important; font-weight: 800;" : "background: #fee2e2 !important; color: #dc2626 !important; border-color: #fca5a5 !important; font-weight: 800;");
+            ? "background: #dcfce7 !important; color: #14532d !important; border: 1.5px solid #22c55e !important; font-weight: 900;"
+            : (isProg ? "background: #fef3c7 !important; color: #92400e !important; border: 1.5px solid #f59e0b !important; font-weight: 800;" : "background: #fee2e2 !important; color: #991b1b !important; border: 1.5px solid #ef4444 !important; font-weight: 900;");
           customBadgesHtml += `<span class="sub-badge" style="${bStyle}" title="${cs.name}: ${u[cs.id]?.status || 'kilitli'}">${cs.code}</span>`;
         });
 
@@ -1954,8 +1980,11 @@ class SantiyeApp {
         }
 
         html += `
-          <td class="${cellClass}" style="${opacityStyle} ${customInlineStyle}" onclick="app.openEditUnitModal('${uKey}')" title="${b.name} - ${f.name} Detayı için tıklayın">
-            <span class="cell-main-title">${mainLabel}</span>
+          <td class="${cellClass}" style="${opacityStyle} border: 2.5px solid ${frameBorderColor} !important; ${customInlineStyle}" onclick="app.openEditUnitModal('${uKey}')" title="${b.name} - ${f.name} (İlerleme: %${completionPct} - ${doneStagesCount}/${totalUnitStages} Aşama Tamamlandı)">
+            <div style="display: flex; justify-content: space-between; align-items: center; width: 100%; margin-bottom: 2px;">
+              <span class="cell-main-title" style="flex: 1; text-align: left;">${mainLabel}</span>
+              <span class="cell-pct-pill" style="font-size: 0.62rem; font-weight: 800; color: ${frameBorderColor}; background: rgba(255,255,255,0.85); padding: 0.5px 3.5px; border-radius: 4px; border: 1px solid ${frameBorderColor}; margin-left: 3px; flex-shrink: 0;">%${completionPct}</span>
+            </div>
             <div class="cell-badges">
               <span class="sub-badge ${bMek}" title="1. Mekanik: ${u.mekanik?.status || 'bekliyor'}">M</span>
               <span class="sub-badge ${bKli}" title="2. Klima: ${u.klima?.status || 'bekliyor'}">K</span>
@@ -3463,53 +3492,119 @@ class SantiyeApp {
     this.showToast('Şifreniz başarıyla güncellendi! ✅', 'success');
   }
 
-  // --- EXPORT TO EXCEL / CSV ---
+  // --- SADECE TABLO İNDİR (EXCEL / CSV) ---
   exportToExcel() {
     if (!this.hasAllPermissions()) {
-      this.showToast('Excel raporu indirme yetkisi yalnızca tam yetkili yöneticilere aittir.', 'warning');
+      this.showToast('Tablo indirme yetkisi yalnızca tam yetkili yöneticilere aittir.', 'warning');
       return;
     }
     if (!this.data || !this.data.units) return;
 
-    const units = Object.values(this.data.units);
-    let csv = '\uFEFF'; // UTF-8 BOM for proper Turkish characters in Excel
-    csv += 'Blok;Kat;Mekanik Durumu;Mekanik Bitiş;Mekanik Not;Klima Durumu;Klima Bitiş;Klima Not;Elektrik Test Durumu;Test Tarihi;Test Ekibi;Test Rapor No;Test Sonuç Notu;MESA Durumu;MESA Onay Tarihi;MESA Yetkilisi;MESA Tutanak No;MESA Not;Asma Tavan Durumu;Asma Tavan Tarih;Asma Tavan Ekip;Asma Tavan Not;Son Güncelleme\n';
+    // Tabloda o an filtrelenmiş katlar varsa onları, yoksa tüm katları aktar
+    let units = Object.values(this.getCurrentUnits());
+
+    const search = document.getElementById('tableSearchInput')?.value.toLowerCase().trim() || '';
+    const blockFilter = document.getElementById('tableBlockFilter')?.value || 'all';
+    const statusFilter = document.getElementById('tableStatusFilter')?.value || 'all';
+
+    if (search || blockFilter !== 'all' || statusFilter !== 'all') {
+      const filtered = units.filter(u => {
+        if (blockFilter !== 'all' && String(u.blockId) !== blockFilter) return false;
+        const overall = this.getUnitOverallStatus(u);
+        if (statusFilter === 'ready' && overall !== 'ready') return false;
+        if (statusFilter === 'mesa_wait' && overall !== 'mesa_wait') return false;
+        if (statusFilter === 'prereq_wait' && (overall === 'done' || overall === 'ready' || overall === 'mesa_wait' || overall === 'tavan_done' || overall.endsWith('_done'))) return false;
+        if (statusFilter === 'done' && overall !== 'done') return false;
+        if (statusFilter === 'tavan_done' && overall !== 'tavan_done') return false;
+        if (search) {
+          const text = `${u.blockName} ${u.floorName}`.toLowerCase();
+          if (!text.includes(search)) return false;
+        }
+        return true;
+      });
+      if (filtered.length > 0) {
+        units = filtered;
+      }
+    }
+
+    let csv = '\uFEFF'; // UTF-8 BOM - Excel Türkçe karakter uyumu
+    let headers = ['Blok', 'Kat', '1. Mekanik Durumu', '2. Klima Durumu', '3. Elektrik Testi Durumu', '4. MESA Kabul & Onay', '5. Asma Tavan Durumu'];
+
+    const customStages = this.data?.customStages || [];
+    customStages.forEach(cs => {
+      headers.push(cs.name || 'Özel Aşama');
+    });
+    headers.push('Son Güncelleme');
+
+    csv += headers.join(';') + '\n';
 
     units.forEach(u => {
-      const row = [
+      const isMekDone = u.mekanik?.status === 'tamamlandi';
+      const isKliDone = u.klima?.status === 'tamamlandi';
+      const isTestDone = u.elektrikTest?.status === 'tamamlandi';
+      const isMesaApproved = u.mesa?.status === 'onaylandi';
+      const isTavanDone = u.asmaTavan?.status === 'tamamlandi';
+
+      // 1. Mekanik
+      let mekText = 'Bekliyor';
+      if (isMekDone) mekText = 'Tamamlandı';
+      else if (u.mekanik?.status === 'devam') mekText = 'İmalat Sürüyor';
+
+      // 2. Klima
+      let kliText = 'Bekliyor';
+      if (isKliDone) kliText = 'Tamamlandı';
+      else if (u.klima?.status === 'devam') kliText = 'İmalat Sürüyor';
+
+      // 3. Elektrik Testi
+      let testText = 'Kilitli';
+      if (isTestDone) testText = 'Başarılı';
+      else if (u.elektrikTest?.status === 'hazir' || (isMekDone && isKliDone)) testText = 'Teste Hazır';
+      else if (u.elektrikTest?.status === 'suruyor') testText = 'Test Sürüyor';
+      else if (u.elektrikTest?.status === 'basarisiz') testText = 'Uygunsuzluk';
+
+      // 4. MESA Kabul Onayı
+      let mesaText = 'Kilitli (Test Bekleniyor)';
+      if (isMesaApproved) mesaText = 'MESA Onayladı';
+      else if (u.mesa?.status === 'revizyon') mesaText = 'Revizyon Gerekli';
+      else if (isTestDone) mesaText = 'Onay Bekliyor';
+
+      // 5. Asma Tavan
+      let tavanText = 'Kilitli (MESA Bekleniyor)';
+      if (isTavanDone) tavanText = 'Tavan Kapandı';
+      else if (u.asmaTavan?.status === 'devam') tavanText = 'Kapatılıyor';
+      else if (isMesaApproved) tavanText = 'Kapatmaya Hazır';
+
+      let row = [
         u.blockName,
         u.floorName,
-        u.mekanik?.status || '',
-        u.mekanik?.date || '',
-        `"${(u.mekanik?.note || '').replace(/"/g, '""')}"`,
-        u.klima?.status || '',
-        u.klima?.date || '',
-        `"${(u.klima?.note || '').replace(/"/g, '""')}"`,
-        u.elektrikTest?.status || '',
-        u.elektrikTest?.date || '',
-        `"${(u.elektrikTest?.tester || '').replace(/"/g, '""')}"`,
-        `"${(u.elektrikTest?.reportNo || '').replace(/"/g, '""')}"`,
-        `"${(u.elektrikTest?.note || '').replace(/"/g, '""')}"`,
-        u.mesa?.status || '',
-        u.mesa?.date || '',
-        `"${(u.mesa?.officer || '').replace(/"/g, '""')}"`,
-        `"${(u.mesa?.docNo || '').replace(/"/g, '""')}"`,
-        `"${(u.mesa?.note || '').replace(/"/g, '""')}"`,
-        u.asmaTavan?.status || '',
-        u.asmaTavan?.date || '',
-        `"${(u.asmaTavan?.company || '').replace(/"/g, '""')}"`,
-        `"${(u.asmaTavan?.note || '').replace(/"/g, '""')}"`,
-        u.updatedAt || ''
+        mekText,
+        kliText,
+        testText,
+        mesaText,
+        tavanText
       ];
-      csv += row.join(';') + '\n';
+
+      // Custom stages
+      customStages.forEach(cs => {
+        const csData = u[cs.id] || {};
+        let csText = 'Kilitli';
+        if (csData.status === 'tamamlandi') csText = 'Tamamlandı';
+        else if (csData.status === 'devam') csText = 'Sürüyor';
+        else if (csData.status === 'hazir') csText = 'Hazır';
+        row.push(csText);
+      });
+
+      row.push(u.updatedAt || '-');
+
+      csv += row.map(v => `"${String(v).replace(/"/g, '""')}"`).join(';') + '\n';
     });
 
     const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
     const link = document.createElement('a');
     link.href = URL.createObjectURL(blob);
-    link.download = `MESA_Santiye_Elektrik_Test_Takip_${new Date().toISOString().split('T')[0]}.csv`;
+    link.download = `MESA_Santiye_Tablo_${new Date().toISOString().split('T')[0]}.csv`;
     link.click();
-    this.showToast('Excel / CSV raporu başarıyla indirildi.', 'success');
+    this.showToast('Tablo başarıyla indirildi. ✅', 'success');
   }
 
   // --- CLOUD / FIREBASE SETTINGS ---
