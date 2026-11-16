@@ -134,6 +134,12 @@ class SantiyeApp {
     this.currentTestSubTab = initialTestSub;
     this.currentInternalSubTab = localStorage.getItem('santiye_active_internal_sub_tab') || 'internal_plan';
 
+    // Clear historical transaction logs as requested
+    if (this.data) {
+      this.data.logs = [];
+      try { localStorage.setItem(this.fallbackKey, JSON.stringify(this.data)); } catch(e) {}
+    }
+
     // Immediately render from built-in 80 units so UI is instantly complete!
     if (this.data) {
       this.renderAll();
@@ -240,6 +246,11 @@ class SantiyeApp {
     }
     if (!this.data.rolePermissions || typeof this.data.rolePermissions !== 'object') {
       this.data.rolePermissions = window.DEFAULT_SANTIYE_DATA?.rolePermissions || {};
+    }
+    if (!this.data.logs || !Array.isArray(this.data.logs)) {
+      this.data.logs = [];
+    } else if (this.data.logs.some(l => l.id === 'log-init' || l.action === 'Saha Takip Sistemi Başlatıldı')) {
+      this.data.logs = [];
     }
     const defaultUsers = [
       { id: 'u1', username: 'admin', name: 'Yönetici', role: 'admin', password: '12345', allPermissions: true, permissions: { all: true, stages: ['*'] }, desc: 'Tam yetkili sistem yöneticisi' },
@@ -634,7 +645,15 @@ class SantiyeApp {
     const roleSelectWrap = document.getElementById('profileModeSelectorWrap');
     const btnLogin = document.getElementById('btnLoginModal');
     const btnLogoutUser = document.getElementById('btnLogoutUser');
+    const btnHeaderChangePassword = document.getElementById('btnHeaderChangePassword');
     const btnHeaderUsers = document.getElementById('btnHeaderUsers');
+    const btnHeaderColors = document.getElementById('btnHeaderColors');
+    const btnSettingsMenu = document.getElementById('btnSettingsMenu');
+    const floatingQuickBar = document.getElementById('floatingQuickBar');
+    const btnExportExcel = document.getElementById('btnExportExcel');
+    const btnTimelineNewStage = document.getElementById('btnTimelineNewStage');
+    const btnTimelineSnapshot = document.getElementById('btnTimelineSnapshot');
+    const btnClearLogs = document.getElementById('btnClearLogs');
     const adminActions = document.getElementById('adminActions');
     const adminBlockControls = document.getElementById('adminBlockControls');
     const anaFirmaBanner = document.getElementById('anaFirmaModeBanner');
@@ -642,45 +661,61 @@ class SantiyeApp {
     if (roleSelectWrap) roleSelectWrap.style.display = 'none';
     if (anaFirmaBanner) anaFirmaBanner.style.display = 'none';
 
+    // 1. Role Badge & Prominent Logged-In User Name
     if (roleBadge) {
       if (!isAuth) {
         roleBadge.className = 'role-badge viewer';
         roleBadge.innerHTML = '<span>👁️</span><span>Salt Okunur (Giriş Yapılmadı)</span>';
       } else if (hasAll) {
         roleBadge.className = 'role-badge admin';
-        const name = this.currentUser?.name || 'Yönetici';
-        roleBadge.innerHTML = `<span>🛡️</span><span>${this.escapeHtml(name)} (Tam Yetki)</span>`;
+        const name = this.currentUser?.name || this.currentUser?.username || 'Yönetici';
+        roleBadge.innerHTML = `<span>🛡️</span><span><strong>${this.escapeHtml(name)}</strong> (Tam Yetkili Yönetici)</span>`;
       } else {
         roleBadge.className = 'role-badge internal';
-        const name = this.currentUser?.name || 'Kullanıcı';
+        const name = this.currentUser?.name || this.currentUser?.username || 'Kullanıcı';
         const permNames = this.getPermittedStageNames().join(', ') || 'Salt Okunur';
-        roleBadge.innerHTML = `<span>👤</span><span>${this.escapeHtml(name)} (Yetki: ${this.escapeHtml(permNames)})</span>`;
+        roleBadge.innerHTML = `<span>👤</span><span><strong>${this.escapeHtml(name)}</strong> • Yetki: ${this.escapeHtml(permNames)}</span>`;
       }
     }
 
+    // 2. Auth Buttons & Password Change
     if (btnLogin) btnLogin.style.display = isAuth ? 'none' : 'inline-flex';
     if (btnLogoutUser) btnLogoutUser.style.display = isAuth ? 'inline-flex' : 'none';
+    if (btnHeaderChangePassword) btnHeaderChangePassword.style.display = isAuth ? 'inline-flex' : 'none';
+
+    // 3. Admin-Only Header & Navigation Buttons
     if (btnHeaderUsers) btnHeaderUsers.style.display = hasAll ? 'inline-flex' : 'none';
+    if (btnHeaderColors) btnHeaderColors.style.display = hasAll ? 'inline-flex' : 'none';
+    if (btnSettingsMenu) btnSettingsMenu.style.display = hasAll ? 'inline-flex' : 'none';
+    if (floatingQuickBar) floatingQuickBar.style.display = hasAll ? 'flex' : 'none';
+    if (btnExportExcel) btnExportExcel.style.display = hasAll ? 'inline-flex' : 'none';
+    if (btnTimelineNewStage) btnTimelineNewStage.style.display = hasAll ? 'inline-flex' : 'none';
+    if (btnTimelineSnapshot) btnTimelineSnapshot.style.display = hasAll ? 'inline-flex' : 'none';
+    if (btnClearLogs) btnClearLogs.style.display = hasAll ? 'inline-flex' : 'none';
 
     if (adminActions) adminActions.style.display = hasAll ? 'flex' : 'none';
     if (adminBlockControls) adminBlockControls.style.display = hasAll ? 'block' : 'none';
 
+    // 4. Admin-Only Tiles inside Settings Center Modal
+    document.querySelectorAll('.admin-tile').forEach(tile => {
+      tile.style.display = hasAll ? 'flex' : 'none';
+    });
+
     const btnMasterInternal = document.getElementById('btnMasterInternal');
     const subTabBtnPrivate = document.getElementById('subTabBtn-private_notes');
     const subTabBtnInternal = document.getElementById('subTabBtn-internal_plan');
-    const canSeeInternal = this.hasPermission('internal_plan', 'view') || this.hasPermission('private_notes', 'view');
+    const canSeeInternal = hasAll;
 
     if (btnMasterInternal) {
       btnMasterInternal.style.display = canSeeInternal ? 'flex' : 'none';
     }
     if (subTabBtnPrivate) {
-      subTabBtnPrivate.style.display = this.hasPermission('private_notes', 'view') ? 'inline-flex' : 'none';
+      subTabBtnPrivate.style.display = canSeeInternal ? 'inline-flex' : 'none';
     }
     if (subTabBtnInternal) {
-      subTabBtnInternal.style.display = this.hasPermission('internal_plan', 'view') ? 'inline-flex' : 'none';
+      subTabBtnInternal.style.display = canSeeInternal ? 'inline-flex' : 'none';
     }
 
-    // Ana firma / MESA veya salt okunur izleyici moduna gecildiyse ve secili sekme 2. Kisim ise test sekmesine dondur
     if (!canSeeInternal && this.currentMasterTab === 'internal') {
       this.switchMasterTab('test');
     }
@@ -1280,22 +1315,10 @@ class SantiyeApp {
   }
 
   openCreateSnapshotModal() {
-    if (!this.requireLogin('Haftalık durum arşivlemek için lütfen giriş yapınız.')) return;
-    if (!this.hasPermission('units', 'edit')) {
-      this.showToast('Arşiv kaydı oluşturma yetkiniz bulunmamaktadır.', 'error');
+    if (!this.hasAllPermissions()) {
+      this.showToast('Haftalık arşiv kaydetme yetkisi yalnızca tam yetkili yöneticilere aittir.', 'warning');
       return;
     }
-
-    const today = new Date().toISOString().split('T')[0];
-    const snapCount = (this.data?.snapshots?.length || 0) + 44;
-    const titleInput = document.getElementById('snapshotTitleInput');
-    const dateInput = document.getElementById('snapshotDateInput');
-    const notesInput = document.getElementById('snapshotNoteInput');
-
-    if (titleInput) titleInput.value = `${snapCount}. Hafta (${new Date().toLocaleDateString('tr-TR', { day: '2-digit', month: 'short', year: 'numeric' })})`;
-    if (dateInput) dateInput.value = today;
-    if (notesInput) notesInput.value = '';
-
     this.openModal('modalCreateSnapshot');
   }
 
@@ -1493,44 +1516,11 @@ class SantiyeApp {
 
   // --- DİNAMİK AŞAMA / İMALAT YÖNETİMİ (EKLE, DÜZENLE, SİL) ---
   openNewStageModal() {
-    if (!this.requireLogin('İmalatları yönetmek için lütfen yönetici girişi yapınız.')) return;
-    if (!this.isAdmin) {
-      this.showToast('İmalat ekleme ve silme yetkisi yalnızca yöneticilere aittir.', 'warning');
+    if (!this.hasAllPermissions()) {
+      this.showToast('Özel imalat ekleme ve silme yetkisi yalnızca tam yetkili yöneticilere aittir.', 'warning');
       return;
     }
-
-    this.cancelEditStage(true);
-
-    const prereqSelect = document.getElementById('newStagePrereq');
-    if (prereqSelect) {
-      let opts = `
-        <option value="asmaTavan" selected>5. Asma Tavan Kapatma bittikten sonra başlasın</option>
-        <option value="elektrikTest">4. Elektrik Testi bittikten sonra başlasın</option>
-        <option value="mesa">3. MESA Kabul Onayı bittikten sonra başlasın</option>
-        <option value="none">Ön şart olmadan bağımsız başlasın</option>
-      `;
-      (this.data?.customStages || []).forEach(cs => {
-        opts += `<option value="${cs.id}">${cs.icon} ${cs.name} bittikten sonra başlasın</option>`;
-      });
-      prereqSelect.innerHTML = opts;
-    }
-
-    const nameEl = document.getElementById('newStageName');
-    const codeEl = document.getElementById('newStageCode');
-    const compEl = document.getElementById('newStageDefaultCompany');
-    if (nameEl) {
-      nameEl.value = '';
-      nameEl.oninput = () => this.updateNewStageColorPreview();
-    }
-    const iconEl = document.getElementById('newStageIcon');
-    if (iconEl) {
-      iconEl.onchange = () => this.updateNewStageColorPreview();
-    }
-    if (codeEl) codeEl.value = '';
-    if (compEl) compEl.value = '';
-    this.updateNewStageColorPreview('#db2777');
-
-    this.renderCustomStagesListInModal();
+    this.renderCustomStagesList();
     this.openModal('modalNewStage');
   }
 
@@ -2439,6 +2429,20 @@ class SantiyeApp {
   }
 
   // --- TAB 5: AUDIT LOGS ---
+  async clearAuditLogs() {
+    if (!this.hasAllPermissions()) {
+      this.showToast('İşlem geçmişini silme yetkisi yalnızca tam yetkili yöneticilere aittir.', 'warning');
+      return;
+    }
+    if (!confirm('Tüm işlem ve onay geçmişi kalıcı olarak silinecektir. Onaylıyor musunuz?')) {
+      return;
+    }
+    this.data.logs = [];
+    await this.saveData(this.data);
+    this.renderLogs();
+    this.showToast('İşlem geçmişi başarıyla temizlendi! 🗑️', 'info');
+  }
+
   renderLogs() {
     const tbody = document.getElementById('auditLogsBody');
     if (!tbody || !this.data) return;
@@ -2947,11 +2951,8 @@ class SantiyeApp {
 
   // --- BULK OPERATIONS ---
   openBulkModal() {
-    if (!this.requireLogin('Toplu güncelleme yapmak için lütfen yönetici girişi yapınız.')) {
-      return;
-    }
-    if (!this.isAdmin) {
-      this.showToast('Toplu güncelleme yetkisi yalnızca yöneticilere aittir.', 'warning');
+    if (!this.hasAllPermissions()) {
+      this.showToast('Toplu güncelleme yetkisi yalnızca tam yetkili yöneticilere aittir.', 'warning');
       return;
     }
     this.openModal('modalBulk');
@@ -3400,6 +3401,10 @@ class SantiyeApp {
   }
   // --- EXPORT TO EXCEL / CSV ---
   exportToExcel() {
+    if (!this.hasAllPermissions()) {
+      this.showToast('Excel raporu indirme yetkisi yalnızca tam yetkili yöneticilere aittir.', 'warning');
+      return;
+    }
     if (!this.data || !this.data.units) return;
 
     const units = Object.values(this.data.units);
@@ -3445,6 +3450,10 @@ class SantiyeApp {
 
   // --- CLOUD / FIREBASE SETTINGS ---
   openCloudSettingsModal() {
+    if (!this.hasAllPermissions()) {
+      this.showToast('Bulut ayarları yalnızca tam yetkili yöneticilere açıktır.', 'warning');
+      return;
+    }
     const statusText = document.getElementById('firebaseStatusText');
     if (this.isCloudActive) {
       statusText.innerHTML = '<span style="color: #16a34a;">🟢 Firebase Firestore Bulut Senkronizasyonu Aktif!</span> (Netlify üzerinde tüm telefonlar canlı senkronize olur)';
@@ -3474,6 +3483,10 @@ class SantiyeApp {
 
   // --- BACKUP & RESTORE ---
   openBackupModal() {
+    if (!this.hasAllPermissions()) {
+      this.showToast('Veri yedekleme yetkisi yalnızca tam yetkili yöneticilere aittir.', 'warning');
+      return;
+    }
     this.openModal('modalBackup');
   }
 
@@ -5740,6 +5753,10 @@ class SantiyeApp {
   // PERMISSIONS & USER MANAGEMENT MODAL
   // =========================================================================
   openPermissionsModal() {
+    if (!this.hasAllPermissions()) {
+      this.showToast('Kullanıcı ve yetki yönetimi yalnızca tam yetkili yöneticilere açıktır.', 'warning');
+      return;
+    }
     const tbody = document.getElementById('permMatrixBody');
     if (!tbody) return;
 
@@ -6245,6 +6262,10 @@ class SantiyeApp {
   }
 
   openColorSettingsModal() {
+    if (!this.hasAllPermissions()) {
+      this.showToast('Renk paletini özelleştirme yetkisi yalnızca tam yetkili yöneticilere aittir.', 'warning');
+      return;
+    }
     this.applyStageColors();
     const colors = this.stageColors || this.defaultStageColors;
 
@@ -6458,6 +6479,10 @@ class SantiyeApp {
 
   // --- SETTINGS CENTER MODAL ---
   openSettingsCenterModal() {
+    if (!this.hasAllPermissions()) {
+      this.showToast('Şantiye ayarları menüsü yalnızca tam yetkili yöneticilere açıktır.', 'warning');
+      return;
+    }
     const isAuth = this.isLoggedIn();
     const btnLogout = document.getElementById('btnSettingsLogout');
     if (btnLogout) {

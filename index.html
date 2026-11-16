@@ -3379,14 +3379,20 @@ body {
           <span>Kullanıcılar</span>
         </button>
 
-        <!-- Renkler Butonu (Tek tıkla renk ayarları) -->
-        <button class="btn btn-outline btn-sm" onclick="app.openColorSettingsModal()" title="Isı Haritası Renklerini Özelleştir" style="font-weight: 700; border-color: #cbd5e1; background: #ffffff; color: #1e293b; padding: 0.3rem 0.65rem;">
+        <!-- Şifremi Değiştir (Giriş Yapan Her Kullanıcı) -->
+        <button id="btnHeaderChangePassword" class="btn btn-outline btn-sm" onclick="app.openChangePasswordModal()" style="display: none; border-color: #cbd5e1; background: #ffffff; color: #1e293b; padding: 0.3rem 0.65rem; font-weight: 700;" title="Kendi Şifrenizi Değiştirin">
+          <span>🔒</span>
+          <span>Şifremi Değiştir</span>
+        </button>
+
+        <!-- Renkler Butonu (Yöneticiye özel) -->
+        <button id="btnHeaderColors" class="btn btn-outline btn-sm" onclick="app.openColorSettingsModal()" title="Isı Haritası Renklerini Özelleştir" style="display: none; font-weight: 700; border-color: #cbd5e1; background: #ffffff; color: #1e293b; padding: 0.3rem 0.65rem;">
           <span>🎨</span>
           <span>Renkler</span>
         </button>
 
-        <!-- Ayarlar & Menü Butonu (Yönetim & Araçlar) -->
-        <button id="btnSettingsMenu" class="btn btn-outline btn-sm" onclick="app.openSettingsCenterModal()" title="Şantiye Ayarları & Yönetim Menüsü" style="font-weight: 700; border-color: #cbd5e1; background: #ffffff; color: #1e293b; padding: 0.3rem 0.65rem;">
+        <!-- Ayarlar & Menü Butonu (Yöneticiye özel) -->
+        <button id="btnSettingsMenu" class="btn btn-outline btn-sm" onclick="app.openSettingsCenterModal()" title="Şantiye Ayarları & Yönetim Menüsü" style="display: none; font-weight: 700; border-color: #cbd5e1; background: #ffffff; color: #1e293b; padding: 0.3rem 0.65rem;">
           <span>⚙️</span>
           <span>Ayarlar & Menü ▾</span>
         </button>
@@ -3599,12 +3605,12 @@ body {
             <span>Haftalık İlerleme Raporu</span>
           </button>
 
-          <button class="btn btn-outline btn-sm" onclick="app.openNewStageModal()" title="Yeni Takip Edilecek İmalat Ekle veya Mevcutları Sil">
+          <button id="btnTimelineNewStage" class="btn btn-outline btn-sm" onclick="app.openNewStageModal()" title="Yeni Takip Edilecek İmalat Ekle veya Mevcutları Sil" style="display: none;">
             <span>🛠️</span>
             <span>İmalat Ekle / Sil</span>
           </button>
 
-          <button class="btn btn-primary btn-sm" onclick="app.openCreateSnapshotModal()" title="Bu haftanın durumunu kalıcı olarak arşive kaydet">
+          <button id="btnTimelineSnapshot" class="btn btn-primary btn-sm" onclick="app.openCreateSnapshotModal()" title="Bu haftanın durumunu kalıcı olarak arşive kaydet" style="display: none;">
             <span>📸</span>
             <span>Bu Haftayı Arşivle</span>
           </button>
@@ -3774,7 +3780,7 @@ body {
         </div>
 
         <div>
-          <button class="btn btn-secondary" onclick="app.exportToExcel()">
+          <button id="btnExportExcel" class="btn btn-secondary" onclick="app.exportToExcel()" style="display: none;">
             <span>📊</span>
             <span>CSV / Excel İndir</span>
           </button>
@@ -3819,8 +3825,14 @@ body {
       <section id="view-logs" class="view-panel">
       <div class="table-card">
         <div style="padding: 1rem 1.25rem; border-bottom: 1px solid #e2e8f0; display:flex; justify-content:space-between; align-items:center;">
-          <h3 style="font-size: 1rem; font-weight: 700;">Şantiye İşlem & Onay Günlüğü</h3>
-          <span style="font-size: 0.8rem; color: #64748b;">Mekanik, Klima, MESA ve Elektrik Testi hareket kayıtları</span>
+          <div>
+            <h3 style="font-size: 1rem; font-weight: 700;">Şantiye İşlem & Onay Günlüğü</h3>
+            <span style="font-size: 0.8rem; color: #64748b;">Mekanik, Klima, MESA ve Elektrik Testi hareket kayıtları</span>
+          </div>
+          <button id="btnClearLogs" class="btn btn-danger btn-sm" onclick="app.clearAuditLogs()" style="display: none; padding: 0.25rem 0.65rem; font-size: 0.78rem;">
+            <span>🗑️</span>
+            <span>Geçmişi Temizle</span>
+          </button>
         </div>
         <div class="data-table-wrapper">
           <table class="data-table">
@@ -4488,7 +4500,7 @@ body {
   <div id="modalChangePassword" class="modal-overlay">
     <div class="modal-box" style="max-width: 420px;">
       <div class="modal-header">
-        <h2 class="modal-title">🔒 Yönetici Şifresini Değiştir</h2>
+        <h2 class="modal-title" id="changePasswordModalTitle">🔒 Şifremi Değiştir</h2>
         <button class="modal-close" onclick="app.closeModal('modalChangePassword')">&times;</button>
       </div>
       <div class="modal-body">
@@ -5567,8 +5579,8 @@ body {
       </div>
       <div class="modal-body">
         <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 0.65rem;">
-          <!-- 1. Toplu İşlem -->
-          <button class="settings-tile" onclick="app.closeModal('modalSettingsCenter'); app.openBulkModal();">
+          <!-- 1. Toplu İşlem (Yönetici) -->
+          <button class="settings-tile admin-tile" id="tileBulk" onclick="app.closeModal('modalSettingsCenter'); app.openBulkModal();">
             <div class="settings-tile-icon" style="background: #e0f2fe; color: #0284c7;">⚡</div>
             <div>
               <div style="font-weight: 700; font-size: 0.85rem; color: #0f172a;">Toplu Kat / Blok Güncelleme</div>
@@ -5576,8 +5588,8 @@ body {
             </div>
           </button>
 
-          <!-- 2. Renk Ayarları -->
-          <button class="settings-tile" onclick="app.closeModal('modalSettingsCenter'); app.openColorSettingsModal();">
+          <!-- 2. Renk Ayarları (Yönetici) -->
+          <button class="settings-tile admin-tile" id="tileColors" onclick="app.closeModal('modalSettingsCenter'); app.openColorSettingsModal();">
             <div class="settings-tile-icon" style="background: #fdf2f8; color: #db2777;">🎨</div>
             <div>
               <div style="font-weight: 700; font-size: 0.85rem; color: #0f172a;">Renk Paleti & Ayarları</div>
@@ -5585,8 +5597,8 @@ body {
             </div>
           </button>
 
-          <!-- 3. Özel İmalatları Yönet & Sil -->
-          <button class="settings-tile" onclick="app.closeModal('modalSettingsCenter'); app.openNewStageModal();">
+          <!-- 3. Özel İmalatları Yönet & Sil (Yönetici) -->
+          <button class="settings-tile admin-tile" id="tileNewStage" onclick="app.closeModal('modalSettingsCenter'); app.openNewStageModal();">
             <div class="settings-tile-icon" style="background: #fef3c7; color: #d97706;">🛠️</div>
             <div>
               <div style="font-weight: 700; font-size: 0.85rem; color: #0f172a;">Özel İmalatları Yönet & Sil</div>
@@ -5594,8 +5606,8 @@ body {
             </div>
           </button>
 
-          <!-- 4. Haftalık Arşiv / Snapshot -->
-          <button class="settings-tile" onclick="app.closeModal('modalSettingsCenter'); app.openCreateSnapshotModal();">
+          <!-- 4. Haftalık Arşiv / Snapshot (Yönetici) -->
+          <button class="settings-tile admin-tile" id="tileSnapshot" onclick="app.closeModal('modalSettingsCenter'); app.openCreateSnapshotModal();">
             <div class="settings-tile-icon" style="background: #ecfdf5; color: #059669;">📸</div>
             <div>
               <div style="font-weight: 700; font-size: 0.85rem; color: #0f172a;">Bu Haftayı Arşivle</div>
@@ -5603,26 +5615,17 @@ body {
             </div>
           </button>
 
-          <!-- 5. Yetkiler & Kullanıcılar -->
-          <button class="settings-tile" onclick="app.closeModal('modalSettingsCenter'); app.openPermissionsModal();">
+          <!-- 5. Yetkiler & Kullanıcılar (Yönetici) -->
+          <button class="settings-tile admin-tile" id="tileUsers" onclick="app.closeModal('modalSettingsCenter'); app.openPermissionsModal();">
             <div class="settings-tile-icon" style="background: #f3e8ff; color: #7c3aed;">👥</div>
             <div>
               <div style="font-weight: 700; font-size: 0.85rem; color: #0f172a;">Kullanıcı & Yetki Yönetimi</div>
-              <div style="font-size: 0.72rem; color: #64748b;">MESA, Üçay Elektrik ve yönetici rolleri</div>
+              <div style="font-size: 0.72rem; color: #64748b;">Saha ekipleri ve imalat bazlı yetkilendirme</div>
             </div>
           </button>
 
-          <!-- 6. Bulut Senkronizasyon -->
-          <button class="settings-tile" onclick="app.closeModal('modalSettingsCenter'); app.openCloudSettingsModal();">
-            <div class="settings-tile-icon" style="background: #eff6ff; color: #2563eb;">☁️</div>
-            <div>
-              <div style="font-weight: 700; font-size: 0.85rem; color: #0f172a;">Firebase Bulut Ayarları</div>
-              <div style="font-size: 0.72rem; color: #64748b;">Netlify canlı bulut veri senkronizasyonu</div>
-            </div>
-          </button>
-
-          <!-- 7. Veri Yedekleme / Yükleme -->
-          <button class="settings-tile" onclick="app.closeModal('modalSettingsCenter'); app.openBackupModal();">
+          <!-- 6. Veri Yedekleme / Yükleme (Yönetici) -->
+          <button class="settings-tile admin-tile" id="tileBackup" onclick="app.closeModal('modalSettingsCenter'); app.openBackupModal();">
             <div class="settings-tile-icon" style="background: #f1f5f9; color: #475569;">💾</div>
             <div>
               <div style="font-weight: 700; font-size: 0.85rem; color: #0f172a;">Veri Yedekleme & Geri Yükleme</div>
@@ -5630,8 +5633,8 @@ body {
             </div>
           </button>
 
-          <!-- 8. Şifre Değiştir -->
-          <button class="settings-tile" onclick="app.closeModal('modalSettingsCenter'); app.openChangePasswordModal();">
+          <!-- 7. Şifre Değiştir (Herkes) -->
+          <button class="settings-tile" id="tileChangePassword" onclick="app.closeModal('modalSettingsCenter'); app.openChangePasswordModal();">
             <div class="settings-tile-icon" style="background: #fee2e2; color: #dc2626;">🔒</div>
             <div>
               <div style="font-weight: 700; font-size: 0.85rem; color: #0f172a;">Şifre Değiştir</div>
@@ -5639,8 +5642,8 @@ body {
             </div>
           </button>
 
-          <!-- 9. Excel İndir -->
-          <button class="settings-tile" onclick="app.closeModal('modalSettingsCenter'); app.exportToExcel();">
+          <!-- 8. Excel İndir (Yönetici) -->
+          <button class="settings-tile admin-tile" id="tileExcel" onclick="app.closeModal('modalSettingsCenter'); app.exportToExcel();">
             <div class="settings-tile-icon" style="background: #ecfdf5; color: #16a34a;">📥</div>
             <div>
               <div style="font-weight: 700; font-size: 0.85rem; color: #0f172a;">Excel / CSV Raporu İndir</div>
@@ -5648,15 +5651,14 @@ body {
             </div>
           </button>
 
-          <!-- 10. Yazdır / PDF -->
-          <button class="settings-tile" onclick="app.closeModal('modalSettingsCenter'); window.print();">
+          <!-- 9. Yazdır / PDF (Yönetici) -->
+          <button class="settings-tile admin-tile" id="tilePrint" onclick="app.closeModal('modalSettingsCenter'); window.print();">
             <div class="settings-tile-icon" style="background: #f8fafc; color: #334155;">🖨️</div>
             <div>
               <div style="font-weight: 700; font-size: 0.85rem; color: #0f172a;">Yazdır / PDF Rapor</div>
               <div style="font-size: 0.72rem; color: #64748b;">A4 formatında şantiye sunum çıktısı alın</div>
             </div>
-          </button>
-        </div>
+          </button></div>
       </div>
       <div class="modal-footer" style="display: flex; justify-content: space-between; align-items: center;">
         <button id="btnSettingsLogout" class="btn btn-danger btn-sm" onclick="app.closeModal('modalSettingsCenter'); app.logout();" style="display: none;">
