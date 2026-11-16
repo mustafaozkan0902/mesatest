@@ -3619,15 +3619,21 @@ body {
       </div>
 
       <!-- Arşiv Modu Uyarı Bildirim Bandı (Geçmiş hafta seçilince açılır) -->
-      <div id="snapshotActiveBanner" style="display: none; background: #eff6ff; border: 1.5px solid #93c5fd; border-radius: 8px; padding: 0.65rem 1rem; margin-bottom: 1rem; align-items: center; justify-content: space-between; gap: 0.75rem;">
+      <div id="snapshotActiveBanner" style="display: none; background: #eff6ff; border: 1.5px solid #93c5fd; border-radius: 8px; padding: 0.65rem 1rem; margin-bottom: 1rem; align-items: center; justify-content: space-between; gap: 0.75rem; flex-wrap: wrap;">
         <div style="display: flex; align-items: center; gap: 0.5rem; color: #1e40af; font-size: 0.85rem; font-weight: 700;">
           <span style="font-size: 1.1rem;">📅</span>
           <span id="snapshotBannerText">45. Hafta Isı Haritası Arşivi Görüntüleniyor (8 Kasım 2026 Durumu)</span>
         </div>
-        <button class="btn btn-sm btn-primary" onclick="app.returnToLiveSnapshot()" style="padding: 0.3rem 0.75rem; font-size: 0.78rem;">
-          <span>🔙</span>
-          <span>Canlı Güncel Duruma Dön</span>
-        </button>
+        <div style="display: flex; gap: 0.5rem; align-items: center;">
+          <button id="btnDeleteCurrentSnapshot" class="btn btn-sm btn-danger" onclick="app.confirmDeleteCurrentSnapshot()" style="display: none; padding: 0.3rem 0.65rem; font-size: 0.78rem;" title="Bu haftalık arşivi kalıcı olarak sil">
+            <span>🗑️</span>
+            <span>Bu Arşivi Sil</span>
+          </button>
+          <button class="btn btn-sm btn-primary" onclick="app.returnToLiveSnapshot()" style="padding: 0.3rem 0.75rem; font-size: 0.78rem;">
+            <span>🔙</span>
+            <span>Canlı Güncel Duruma Dön</span>
+          </button>
+        </div>
       </div>
 
       <div class="toolbar">
@@ -5046,12 +5052,12 @@ body {
         </div>
 
         <div class="form-group">
-          <label class="form-label">Giriş Şifresi: <span style="color:red;">*</span></label>
+          <label class="form-label">İlk Geçici Şifre: <span style="color:red;">*</span></label>
           <div style="position: relative; display: flex; align-items: center;">
-            <input type="password" id="newUserPasswordInput" class="form-control" placeholder="Kullanıcı şifresi belirleyiniz" style="padding-right: 2.5rem;">
+            <input type="password" id="newUserPasswordInput" class="form-control" placeholder="İlk giriş şifresini belirleyiniz" style="padding-right: 2.5rem;">
             <button type="button" onclick="app.togglePasswordVisibility('newUserPasswordInput', this)" style="position: absolute; right: 8px; background: none; border: none; cursor: pointer; color: #64748b; font-size: 0.95rem; padding: 4px;" title="Şifreyi Göster / Gizle">👁️</button>
           </div>
-          <small style="color: #64748b; font-size: 0.74rem;">Kullanıcının sisteme giriş yaparken kullanacağı şifre</small>
+          <small style="color: #64748b; font-size: 0.74rem;">Kullanıcı ilk girişte bu şifreyi kullanır; sonrasında şifresini değiştirebilir ve şifre yöneticiler dahil herkesten gizlenir.</small>
         </div>
 
         <!-- Yetkilendirme Seçenekleri: Tüm Yetki vs Seçmeli İmalat Yetkileri -->
@@ -5126,12 +5132,12 @@ body {
         </div>
 
         <div class="form-group">
-          <label class="form-label">Giriş Şifresi: <span style="color:red;">*</span></label>
+          <label class="form-label">Yeni Geçici Şifre Ata (Opsiyonel):</label>
           <div style="position: relative; display: flex; align-items: center;">
-            <input type="password" id="editUserPasswordInput" class="form-control" placeholder="Yeni şifre yazınız..." style="padding-right: 2.5rem;">
+            <input type="password" id="editUserPasswordInput" class="form-control" placeholder="Mevcut şifreyi korumak için boş bırakınız..." style="padding-right: 2.5rem;">
             <button type="button" onclick="app.togglePasswordVisibility('editUserPasswordInput', this)" style="position: absolute; right: 8px; background: none; border: none; cursor: pointer; color: #64748b; font-size: 0.95rem; padding: 4px;" title="Şifreyi Göster / Gizle">👁️</button>
           </div>
-          <small style="color: #64748b; font-size: 0.74rem;">Kullanıcının sisteme giriş yaparken kullanacağı şifre</small>
+          <small style="color: #64748b; font-size: 0.74rem;">Kullanıcının mevcut şifresi gizlidir. Yalnızca şifre sıfırlanmak istendiğinde buraya yeni geçici şifre yazınız.</small>
         </div>
 
         <!-- Yetkilendirme Seçenekleri -->
@@ -5182,13 +5188,13 @@ body {
     </div>
   </div>
 
-  <!-- MODAL: Kullanıcı Şifresi Değiştir (Hızlı) -->
+  <!-- MODAL: Kullanıcı Şifresi Değiştir (Geçici Şifre Ata) -->
   <div id="modalChangeUserPassword" class="modal-overlay">
     <div class="modal-box" style="max-width: 420px;">
       <div class="modal-header">
         <div>
-          <h2 class="modal-title">🔑 Şifre Güncelle</h2>
-          <div style="font-size: 0.8rem; color: #64748b;" id="changeUserPwSubtitle">Kullanıcı giriş şifresini değiştirin</div>
+          <h2 class="modal-title">🔑 Yeni Geçici Şifre Ata</h2>
+          <div style="font-size: 0.8rem; color: #64748b;" id="changeUserPwSubtitle">Kullanıcı için yeni bir geçici giriş şifresi belirleyin</div>
         </div>
         <button class="modal-close" onclick="app.closeModal('modalChangeUserPassword')">&times;</button>
       </div>
@@ -5199,19 +5205,19 @@ body {
           <input type="text" id="changeUserPwName" class="form-control" readonly style="background:#f1f5f9; font-weight:600;">
         </div>
         <div class="form-group" style="margin-bottom: 0;">
-          <label class="form-label">Yeni Giriş Şifresi: <span style="color:red;">*</span></label>
+          <label class="form-label">Yeni Geçici Şifre: <span style="color:red;">*</span></label>
           <div style="position: relative; display: flex; align-items: center;">
-            <input type="password" id="changeUserPwNewPassword" class="form-control" placeholder="Yeni şifreyi yazınız..." style="padding-right: 2.5rem;">
+            <input type="password" id="changeUserPwNewPassword" class="form-control" placeholder="Yeni geçici şifre yazınız..." style="padding-right: 2.5rem;">
             <button type="button" onclick="app.togglePasswordVisibility('changeUserPwNewPassword', this)" style="position: absolute; right: 8px; background: none; border: none; cursor: pointer; color: #64748b; font-size: 0.95rem; padding: 4px;" title="Şifreyi Göster / Gizle">👁️</button>
           </div>
-          <small style="color: #64748b; font-size: 0.74rem;">Kullanıcı sisteme girerken bu şifreyi kullanacaktır</small>
+          <small style="color: #64748b; font-size: 0.74rem;">Mevcut şifre gizlidir. Kullanıcı bu geçici şifre ile giriş yaptıktan sonra şifresini kendisi güncelleyebilir.</small>
         </div>
       </div>
       <div class="modal-footer">
         <button class="btn btn-secondary" onclick="app.closeModal('modalChangeUserPassword')">İptal</button>
         <button class="btn btn-primary" onclick="app.saveUserPassword()">
           <span>💾</span>
-          <span>Şifreyi Güncelle</span>
+          <span>Geçici Şifreyi Kaydet</span>
         </button>
       </div>
     </div>

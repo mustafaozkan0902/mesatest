@@ -365,61 +365,9 @@ class SantiyeApp {
       });
     }
 
-    // Ensure snapshots exist with baseline 44th and 45th weeks
-    if (!this.data.snapshots || !Array.isArray(this.data.snapshots) || this.data.snapshots.length === 0) {
-      const snap44Units = JSON.parse(JSON.stringify(this.data.units));
-      Object.values(snap44Units).forEach(u => {
-        u.elektrikTest = { status: 'kilitli', date: '', tester: '', reportNo: '', note: 'MESA onayı bekleniyor' };
-        u.asmaTavan = { status: 'kilitli', date: '', company: 'Asma Tavan & Alçıpan Ekibi', note: '' };
-        if (u.elektrikMontaj) u.elektrikMontaj = { status: 'kilitli', date: '', company: 'Üçay Elektrik Montaj Ekibi', note: '' };
-        if (['1_kat1', '1_zemin', '2_zemin'].includes(u.id)) {
-          u.mekanik = { status: 'tamamlandi', date: '2026-10-28', company: 'Mekanik Tesisat A.Ş.', note: 'Tamamlandı' };
-          u.klima = { status: 'tamamlandi', date: '2026-10-29', company: 'VRF Klima Sistemleri', note: 'Tamamlandı' };
-          u.mesa = { status: 'bekliyor', date: '', officer: '', docNo: '', note: 'Kontrol bekleniyor' };
-        } else {
-          u.mekanik = { status: 'devam', date: '', company: 'Mekanik Tesisat A.Ş.', note: 'Montaj sürüyor' };
-          u.klima = { status: 'bekliyor', date: '', company: 'VRF Klima Sistemleri', note: '' };
-          u.mesa = { status: 'bekliyor', date: '', officer: '', docNo: '', note: '' };
-        }
-      });
-
-      const snap45Units = JSON.parse(JSON.stringify(snap44Units));
-      ['1_zemin', '1_kat1'].forEach(id => {
-        if (snap45Units[id]) {
-          snap45Units[id].mesa = { status: 'onaylandi', date: '2026-11-04', officer: 'MESA Heyeti', docNo: 'MS-4501', note: 'Onaylandı' };
-          snap45Units[id].elektrikTest = { status: 'tamamlandi', date: '2026-11-06', tester: 'Ahmet Usta (Üçay)', reportNo: 'TR-101', note: 'Test Başarılı' };
-          snap45Units[id].asmaTavan = { status: 'devam', date: '', company: 'Asma Tavan & Alçıpan Ekibi', note: 'Karkas kuruluyor' };
-        }
-      });
-      ['1_kat2', '2_zemin', '3_zemin'].forEach(id => {
-        if (snap45Units[id]) {
-          snap45Units[id].mekanik = { status: 'tamamlandi', date: '2026-11-05', company: 'Mekanik Tesisat A.Ş.', note: 'Tamamlandı' };
-          snap45Units[id].klima = { status: 'tamamlandi', date: '2026-11-05', company: 'VRF Klima Sistemleri', note: 'Tamamlandı' };
-          snap45Units[id].mesa = { status: 'onaylandi', date: '2026-11-07', officer: 'MESA Heyeti', docNo: 'MS-4502', note: 'Onaylandı' };
-          snap45Units[id].elektrikTest = { status: 'hazir', date: '', tester: '', reportNo: '', note: 'Teste hazır' };
-        }
-      });
-
-      this.data.snapshots = [
-        {
-          id: 'snap-week-44',
-          title: '44. Hafta (31 Eki 2026)',
-          date: '2026-10-31',
-          notes: 'MESA şantiye başlangıç koordinasyonu. Mekanik ve klima montajları başladı.',
-          createdAt: '2026-10-31T17:00:00Z',
-          units: snap44Units,
-          customStages: JSON.parse(JSON.stringify(this.data.customStages))
-        },
-        {
-          id: 'snap-week-45',
-          title: '45. Hafta (07 Kas 2026)',
-          date: '2026-11-07',
-          notes: 'Blok 1 zemin ve 1. kat elektrik testleri başarıyla tamamlandı. Asma tavan ekipleri sahaya girdi.',
-          createdAt: '2026-11-07T17:00:00Z',
-          units: snap45Units,
-          customStages: JSON.parse(JSON.stringify(this.data.customStages))
-        }
-      ];
+    // Ensure snapshots array exists (empty array is valid when snapshots are deleted)
+    if (!this.data.snapshots || !Array.isArray(this.data.snapshots)) {
+      this.data.snapshots = [];
     }
   }
 
@@ -1279,12 +1227,21 @@ class SantiyeApp {
     `;
 
     const snapshots = this.data?.snapshots || [];
+    const canManage = this.hasAllPermissions();
+
     snapshots.forEach(s => {
       const isActive = this.activeSnapshotId === s.id;
       html += `
-        <button class="timeline-pill ${isActive ? 'active' : ''}" onclick="app.viewSnapshot('${s.id}')" title="${s.notes || s.title}">
-          📅 ${s.title}
-        </button>
+        <div style="display:inline-flex; align-items:center; position:relative; margin-right:4px;">
+          <button class="timeline-pill ${isActive ? 'active' : ''}" onclick="app.viewSnapshot('${s.id}')" title="${this.escapeHtml(s.notes || s.title)}">
+            📅 ${this.escapeHtml(s.title)}
+          </button>
+          ${canManage ? `
+            <button type="button" onclick="event.stopPropagation(); app.confirmDeleteSnapshot('${s.id}')" title="Bu haftalık arşivi kalıcı olarak sil" style="margin-left:-8px; z-index:3; background:#fee2e2; color:#dc2626; border:1px solid #fca5a5; border-radius:50%; width:18px; height:18px; font-size:10px; display:inline-flex; align-items:center; justify-content:center; cursor:pointer; padding:0; line-height:1; box-shadow:0 1px 2px rgba(0,0,0,0.1);">
+              ✕
+            </button>
+          ` : ''}
+        </div>
       `;
     });
 
@@ -1293,16 +1250,61 @@ class SantiyeApp {
     // Snapshot banner handling
     const banner = document.getElementById('snapshotActiveBanner');
     const bannerText = document.getElementById('snapshotBannerText');
+    const btnDelCurrent = document.getElementById('btnDeleteCurrentSnapshot');
 
     if (this.activeSnapshotId) {
       const activeSnap = snapshots.find(s => s.id === this.activeSnapshotId);
       if (activeSnap && banner) {
         banner.style.display = 'flex';
-        if (bannerText) bannerText.innerText = `${activeSnap.title} Isı Haritası Arşivi Görüntüleniyor (${activeSnap.date} Durumu)`;
+        if (bannerText) bannerText.innerText = `${activeSnap.title} Isı Haritası Arşivi Görüntüleniyor (${activeSnap.date || ''} Durumu)`;
+        if (btnDelCurrent) {
+          btnDelCurrent.style.display = canManage ? 'inline-flex' : 'none';
+        }
       }
     } else {
       if (banner) banner.style.display = 'none';
+      if (btnDelCurrent) btnDelCurrent.style.display = 'none';
     }
+  }
+
+  confirmDeleteCurrentSnapshot() {
+    if (!this.activeSnapshotId) return;
+    this.confirmDeleteSnapshot(this.activeSnapshotId);
+  }
+
+  async confirmDeleteSnapshot(snapshotId) {
+    if (!this.hasAllPermissions()) {
+      this.showToast('Haftalık arşivi silme yetkisi yalnızca tam yetkili yöneticilere aittir.', 'warning');
+      return;
+    }
+
+    const snap = (this.data?.snapshots || []).find(s => s.id === snapshotId);
+    if (!snap) {
+      this.showToast('Silinecek haftalık arşiv bulunamadı!', 'error');
+      return;
+    }
+
+    const confirmed = window.confirm(
+      `⚠️ DİKKAT! Son kez teyit ediniz:\n\n` +
+      `"${snap.title}" (${snap.date || 'Tarihsiz'}) haftalık arşivi KALICI OLARAK SİLİNECEKTİR.\n\n` +
+      `Bu işlem geri alınamaz!\n\n` +
+      `Bu haftayı silmek istediğinizden kesinlikle emin misiniz?`
+    );
+
+    if (!confirmed) {
+      return;
+    }
+
+    if (this.activeSnapshotId === snapshotId) {
+      this.activeSnapshotId = null;
+    }
+
+    this.data.snapshots = (this.data.snapshots || []).filter(s => s.id !== snapshotId);
+    await this.saveData(this.data);
+
+    this.renderWeeklyTimeline();
+    this.renderAll();
+    this.showToast(`🗑️ "${snap.title}" arşivi kalıcı olarak silindi.`, 'success');
   }
 
   viewSnapshot(snapshotId) {
@@ -3162,18 +3164,7 @@ class SantiyeApp {
   }
 
   toggleUserCardPw(userId) {
-    const el = document.getElementById(`userPwDisplay_${userId}`);
-    if (!el) return;
-    const user = (this.data?.users || []).find(u => u.id === userId);
-    if (!user) return;
-    const actualPw = user.password || (user.role === 'admin' ? '12345' : 'saha123');
-    if (el.getAttribute('data-shown') === '1') {
-      el.innerText = '••••••';
-      el.removeAttribute('data-shown');
-    } else {
-      el.innerText = actualPw;
-      el.setAttribute('data-shown', '1');
-    }
+    // Şifreler kullanıcılara özel olup yönetici dahil sistemde gizlidir.
   }
 
   async login() {
@@ -3194,36 +3185,53 @@ class SantiyeApp {
       name: 'Yönetici (Ben)',
       username: 'admin',
       role: 'admin',
-      password: '12345'
+      password: this.data?.settings?.adminPassword || '12345'
     };
     const adminPw = adminUser.password || this.data?.settings?.adminPassword || '12345';
 
     let loggedInUser = null;
 
-    // 1. Check admin login (User specifically requested: username: admin, password: 12345)
-    if ((username === 'admin' || username === 'yonetici' || username === '') && (pw === '12345' || pw === adminPw)) {
-      loggedInUser = adminUser;
-    }
-
-    // 2. If username entered, match user by username/id/name
-    if (!loggedInUser && username) {
-      const u = users.find(x => (x.username && x.username.toLowerCase() === username) || x.id.toLowerCase() === username || (x.name && x.name.toLowerCase() === username));
-      if (u) {
-        const expectedPw = u.password || (u.role === 'admin' ? '12345' : u.role === 'internal_team' ? 'saha123' : u.role === 'ana_firma' ? 'mesa123' : 'izleyici123');
-        if (pw === expectedPw || (u.role === 'admin' && (pw === '12345' || pw === adminPw))) {
-          loggedInUser = u;
+    // 1. If username was provided
+    if (username) {
+      if (username === 'admin' || username === 'yonetici') {
+        // Master admin check: only accept admin password (or default 12345)
+        if (pw === adminPw || pw === '12345') {
+          loggedInUser = adminUser;
+        } else {
+          this.showToast('Hatalı yönetici şifresi! Lütfen kontrol ediniz.', 'error');
+          if (pwInput) { pwInput.select(); pwInput.focus(); }
+          return;
+        }
+      } else {
+        // Find user by username, id, or exact name
+        const u = users.find(x => (x.username && x.username.toLowerCase() === username) || x.id.toLowerCase() === username || (x.name && x.name.toLowerCase() === username));
+        if (u) {
+          const expectedPw = u.password;
+          if (expectedPw && pw === expectedPw) {
+            loggedInUser = u;
+          } else {
+            this.showToast('Hatalı kullanıcı şifresi! Lütfen kontrol ediniz.', 'error');
+            if (pwInput) { pwInput.select(); pwInput.focus(); }
+            return;
+          }
+        } else {
+          this.showToast(`"${username}" kullanıcı adı sistemde kayıtlı değil!`, 'error');
+          if (usernameInput) { usernameInput.select(); usernameInput.focus(); }
+          return;
         }
       }
-    }
-
-    // 3. Fallback: If only password entered or matching master admin password
-    if (!loggedInUser) {
-      if (pw === '12345' || pw === adminPw) {
+    } else {
+      // 2. If username was omitted: check if password matches admin or unique user
+      if (pw === adminPw || pw === '12345') {
         loggedInUser = adminUser;
       } else {
-        const matched = users.find(u => u.password === pw);
-        if (matched) {
-          loggedInUser = matched;
+        const matches = users.filter(u => u.password && u.password === pw);
+        if (matches.length === 1) {
+          loggedInUser = matches[0];
+        } else if (matches.length > 1) {
+          this.showToast('Birden fazla kullanıcı aynı şifreye sahip. Lütfen kullanıcı adınızı da giriniz.', 'warning');
+          if (usernameInput) usernameInput.focus();
+          return;
         }
       }
     }
@@ -3310,12 +3318,19 @@ class SantiyeApp {
     if (confEl) confEl.value = '';
 
     const titleEl = document.querySelector('#modalChangePassword .modal-title');
-    const targetUser = (this.currentUser && this.data?.users)
-      ? this.data.users.find(u => u.id === this.currentUser.id)
-      : (this.data?.users || []).find(u => u.role === 'admin' || u.id === 'u1');
+    let targetUser = null;
+    if (this.currentUser && this.currentUser.id) {
+      targetUser = (this.data?.users || []).find(u => u.id === this.currentUser.id);
+    }
+    if (!targetUser && this.currentUser && this.currentUser.username) {
+      targetUser = (this.data?.users || []).find(u => u.username && u.username.toLowerCase() === this.currentUser.username.toLowerCase());
+    }
+    if (!targetUser) {
+      targetUser = (this.data?.users || []).find(u => u.role === 'admin' || u.id === 'u1' || u.username === 'admin');
+    }
 
     if (titleEl) {
-      if (targetUser && targetUser.role !== 'admin') {
+      if (targetUser && targetUser.username !== 'admin' && targetUser.id !== 'u1') {
         titleEl.textContent = `🔒 ${targetUser.name} Şifresini Değiştir`;
       } else {
         titleEl.textContent = '🔒 Yönetici Şifresini Değiştir';
@@ -3351,30 +3366,33 @@ class SantiyeApp {
       this.data.users = [];
     }
 
-    let targetUser = (this.currentUser && this.data.users)
-      ? this.data.users.find(u => u.id === this.currentUser.id || (this.isAdmin && (u.username === 'admin' || u.id === 'u1')))
-      : this.data.users.find(u => u.role === 'admin' || u.id === 'u1' || u.username === 'admin');
-
+    // STRICT TARGET: Target exclusively the currently logged-in user
+    let targetUser = null;
+    if (this.currentUser && this.currentUser.id) {
+      targetUser = this.data.users.find(u => u.id === this.currentUser.id);
+    }
+    if (!targetUser && this.currentUser && this.currentUser.username) {
+      targetUser = this.data.users.find(u => u.username && u.username.toLowerCase() === this.currentUser.username.toLowerCase());
+    }
     if (!targetUser) {
-      targetUser = {
-        id: 'u1',
-        username: 'admin',
-        name: 'Yönetici',
-        role: 'admin',
-        allPermissions: true,
-        permissions: { all: true, stages: ['*'] },
-        desc: 'Tam yetkili sistem yöneticisi',
-        password: '12345'
-      };
-      this.data.users.unshift(targetUser);
+      targetUser = this.data.users.find(u => u.role === 'admin' || u.id === 'u1' || u.username === 'admin');
     }
 
-    const isMasterAdmin = (this.isAdmin || this.hasAllPermissions() || targetUser.username === 'admin' || targetUser.id === 'u1' || targetUser.role === 'admin' || targetUser.allPermissions);
-    const adminExpectedPw = targetUser.password || this.data.settings?.adminPassword || '12345';
-    const currentExpectedPw = targetUser.password || (isMasterAdmin ? adminExpectedPw : 'saha');
+    if (!targetUser) {
+      this.showToast('Kullanıcı hesabı bulunamadı!', 'error');
+      return;
+    }
 
-    // Verify current password: allow current stored password, or if admin allow 12345 / adminExpectedPw
-    const isPwCorrect = (curPw === currentExpectedPw) || (curPw === targetUser.password) || (isMasterAdmin && (curPw === '12345' || curPw === adminExpectedPw || curPw === (this.data.settings?.adminPassword || '12345')));
+    const isMasterAdmin = (targetUser.id === 'u1' || targetUser.username === 'admin');
+    const adminExpectedPw = targetUser.password || this.data.settings?.adminPassword || '12345';
+
+    // Verify current password strictly
+    let isPwCorrect = false;
+    if (isMasterAdmin) {
+      isPwCorrect = (curPw === targetUser.password) || (curPw === adminExpectedPw) || (curPw === '12345');
+    } else {
+      isPwCorrect = (curPw === targetUser.password);
+    }
 
     if (!isPwCorrect) {
       this.showToast('Mevcut şifreniz hatalı! Lütfen kontrol ediniz.', 'error');
@@ -3383,7 +3401,7 @@ class SantiyeApp {
       return;
     }
 
-    // Update password in data
+    // Update password strictly on targetUser
     targetUser.password = newPw;
     if (isMasterAdmin) {
       targetUser.role = 'admin';
@@ -5813,17 +5831,16 @@ class SantiyeApp {
           </div>
 
           <div style="display:flex; justify-content:space-between; align-items:center; font-size:0.8rem; padding-top:0.4rem; border-top:1px dashed #e2e8f0; flex-wrap:wrap; gap:0.4rem;">
-            <div style="display:flex; align-items:center; gap:6px; color:#475569;">
-              <span>🔑</span>
-              <span>Şifre:</span>
-              <strong id="userPwDisplay_${u.id}" style="font-family:monospace; background:#f1f5f9; color:#334155; padding:2px 8px; border-radius:4px; border:1px solid #cbd5e1; letter-spacing: 2px;">
-                ••••••
-              </strong>
-              <button type="button" class="btn btn-sm btn-outline" style="padding: 1px 6px; font-size: 0.72rem;" onclick="app.toggleUserCardPw('${u.id}')" title="Şifreyi Göster / Gizle">👁️</button>
+            <div style="display:flex; align-items:center; gap:6px; color:#64748b; font-size:0.75rem;">
+              <span>🔒</span>
+              <span>Şifre: <strong style="font-weight:600; color:#475569;">Gizli</strong> <span style="color:#94a3b8;">(Yalnızca kullanıcı tarafından bilinir)</span></span>
             </div>
             <div style="display:flex; gap:0.35rem; align-items:center;">
-              <button class="btn btn-sm btn-outline" style="padding:0.25rem 0.6rem; font-size:0.75rem;" onclick="app.openEditUserModal('${u.id}')" title="Kullanıcı Bilgilerini, Yetkilerini ve Şifresini Düzenle">
+              <button class="btn btn-sm btn-outline" style="padding:0.25rem 0.6rem; font-size:0.75rem;" onclick="app.openEditUserModal('${u.id}')" title="Kullanıcı Bilgilerini ve Yetkilerini Düzenle">
                 <span>✏️ Düzenle / Yetkiler</span>
+              </button>
+              <button class="btn btn-sm btn-outline" style="padding:0.25rem 0.6rem; font-size:0.75rem;" onclick="app.openChangeUserPasswordModal('${u.id}')" title="Kullanıcı İçin Yeni Geçici Şifre Ata">
+                <span>🔑 Şifre Ata</span>
               </button>
               <button class="btn btn-sm btn-secondary" style="padding:0.25rem 0.6rem; font-size:0.75rem;" onclick="app.loginAsUser('${u.id}')" title="Bu kullanıcı olarak anında giriş yap ve yetkisini test et">
                 <span>🔄 Giriş Yap</span>
@@ -5924,7 +5941,7 @@ class SantiyeApp {
     document.getElementById('editUserId').value = user.id;
     document.getElementById('editUserNameInput').value = user.name || '';
     document.getElementById('editUserUsernameInput').value = user.username || user.id;
-    document.getElementById('editUserPasswordInput').value = user.password || '';
+    document.getElementById('editUserPasswordInput').value = ''; // Mevcut şifre gizlidir ve gösterilmez
     document.getElementById('editUserDescInput').value = user.desc || '';
 
     const isMasterAdmin = (user.id === 'u1' || user.username === 'admin');
@@ -5965,8 +5982,8 @@ class SantiyeApp {
     if (!username) {
       username = name.toLowerCase().replace(/[^a-z0-9]/g, '_');
     }
-    if (!password) {
-      this.showToast('Lütfen giriş şifresi belirleyiniz.', 'warning');
+    if (password && password.length < 3) {
+      this.showToast('Yeni şifre en az 3 karakter olmalıdır.', 'warning');
       return;
     }
 
@@ -6001,7 +6018,13 @@ class SantiyeApp {
 
     user.name = name;
     user.username = username;
-    user.password = password;
+    if (password) {
+      user.password = password;
+      if (isMasterAdmin) {
+        if (!this.data.settings) this.data.settings = {};
+        this.data.settings.adminPassword = password;
+      }
+    }
     user.desc = desc;
     user.allPermissions = isAllPerms;
     user.permissions = {
@@ -6009,11 +6032,6 @@ class SantiyeApp {
       stages: selectedStages
     };
     user.role = isAllPerms ? 'admin' : 'custom';
-
-    if (isMasterAdmin) {
-      if (!this.data.settings) this.data.settings = {};
-      this.data.settings.adminPassword = password;
-    }
 
     await this.saveData(this.data);
     this.closeModal('modalEditUser');
@@ -6031,7 +6049,7 @@ class SantiyeApp {
 
     if (idEl) idEl.value = user.id;
     if (nameEl) nameEl.value = `${user.name} (@${user.username || user.id})`;
-    if (pwEl) pwEl.value = user.password || '';
+    if (pwEl) pwEl.value = ''; // Mevcut şifre gizlidir ve gösterilmez
 
     this.openModal('modalChangeUserPassword');
   }
