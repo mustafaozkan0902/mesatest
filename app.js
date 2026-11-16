@@ -1932,8 +1932,8 @@ class SantiyeApp {
           const csBorder = cs.borderColor || cs.color;
           const csText = cs.textColor || this.getDarkTextFromHex(cs.color);
           const bStyle = isDone
-            ? `background: ${csBg}; color: ${csText}; border-color: ${csBorder}; font-weight: 800;`
-            : (isProg ? 'background: #fef3c7; color: #b45309; border-color: #f59e0b;' : 'background: #f1f5f9; color: #94a3b8; border-color: #cbd5e1;');
+            ? "background: #dcfce7 !important; color: #15803d !important; border-color: #86efac !important; font-weight: 900;"
+            : (isProg ? "background: #fef3c7 !important; color: #b45309 !important; border-color: #fcd34d !important; font-weight: 800;" : "background: #fee2e2 !important; color: #dc2626 !important; border-color: #fca5a5 !important; font-weight: 800;");
           customBadgesHtml += `<span class="sub-badge" style="${bStyle}" title="${cs.name}: ${u[cs.id]?.status || 'kilitli'}">${cs.code}</span>`;
         });
 

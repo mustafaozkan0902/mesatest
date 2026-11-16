@@ -791,36 +791,70 @@ body {
   margin-top: 4px;
 }
 
+/* Küçük Rozetler (Sub-badges): Bitenler YEŞİL, Bekleyenler KIRMIZI, Sürenler SARI */
 .sub-badge {
-  width: 15px;
-  height: 15px;
-  border-radius: 3px;
-  font-size: 8px;
+  width: 17px;
+  height: 17px;
+  border-radius: 4px;
+  font-size: 8.5px;
   font-weight: 800;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   border: 1px solid rgba(0,0,0,0.15);
+  box-shadow: 0 1px 2px rgba(0,0,0,0.06);
+  transition: transform 0.15s ease;
 }
-.sub-badge.ok { background: #dcfce7; color: #15803d; border-color: #86efac; }
-.sub-badge.wait { background: #f1f5f9; color: #94a3b8; border-color: #cbd5e1; }
-.sub-badge.prog { background: #fef3c7; color: #b45309; border-color: #fde68a; }
-.sub-badge.rev { background: #fee2e2; color: #dc2626; border-color: #fca5a5; }
-.sub-badge.test-ok { background: #dcfce7; color: #15803d; border-color: #86efac; }
-.sub-badge.test-ready { background: #e0f2fe; color: #0369a1; border-color: #7dd3fc; }
-.sub-badge.tavan-ok { background: #ccfbf1; color: #0f766e; border-color: #5eead4; }
-.sub-badge.tavan-ready { background: #e0f2fe; color: #0369a1; border-color: #7dd3fc; }
-.sub-badge.custom-ok { background: #fce7f3; color: #9d174d; border-color: #f472b6; }
 
-/* 1. Mekanik Rozetleri (Turuncu / Amber) */
-.sub-badge.mek-ok { background: #ffedd5 !important; color: #c2410c !important; border-color: #ea580c !important; font-weight: 800 !important; }
-.sub-badge.mek-prog { background: #fff7ed !important; color: #ea580c !important; border-color: #f97316 !important; border-style: dashed !important; font-weight: 800 !important; }
-.sub-badge.mek-wait { background: #f8fafc !important; color: #94a3b8 !important; border-color: #fdba74 !important; }
+/* BİTENLER / TAMAMLANANLAR -> YEŞİL */
+.sub-badge.ok,
+.sub-badge.mek-ok,
+.sub-badge.kli-ok,
+.sub-badge.test-ok,
+.sub-badge.tavan-ok,
+.sub-badge.custom-ok {
+  background: #dcfce7 !important;
+  color: #15803d !important;
+  border-color: #86efac !important;
+  font-weight: 900 !important;
+}
 
-/* 2. Klima Rozetleri (Buz Mavisi / Parlak Cyan) */
-.sub-badge.kli-ok { background: #cffafe !important; color: #0e7490 !important; border-color: #06b6d4 !important; font-weight: 800 !important; }
-.sub-badge.kli-prog { background: #ecfeff !important; color: #0891b2 !important; border-color: #06b6d4 !important; border-style: dashed !important; font-weight: 800 !important; }
-.sub-badge.kli-wait { background: #f0f9ff !important; color: #0284c7 !important; border-color: #7dd3fc !important; border-style: dashed !important; }
+/* BEKLEYENLER / KİLİTLİ / BAŞLANMAYANLAR -> KIRMIZI */
+.sub-badge.wait,
+.sub-badge.mek-wait,
+.sub-badge.kli-wait {
+  background: #fee2e2 !important;
+  color: #dc2626 !important;
+  border-color: #fca5a5 !important;
+  font-weight: 800 !important;
+}
+
+/* SÜRENLER / DEVAM EDENLER -> SARI / TURUNCU */
+.sub-badge.prog,
+.sub-badge.mek-prog,
+.sub-badge.kli-prog {
+  background: #fef3c7 !important;
+  color: #b45309 !important;
+  border-color: #fcd34d !important;
+  font-weight: 800 !important;
+}
+
+/* REVIZYON -> KIRMIZI */
+.sub-badge.rev {
+  background: #fee2e2 !important;
+  color: #dc2626 !important;
+  border-color: #fca5a5 !important;
+  font-weight: 800 !important;
+}
+
+/* TESTE / TAVANA HAZIR -> MAVİ (Aksiyon Bekliyor) */
+.sub-badge.test-ready,
+.sub-badge.tavan-ready {
+  background: #e0f2fe !important;
+  color: #0369a1 !important;
+  border-color: #7dd3fc !important;
+  font-weight: 800 !important;
+}
 
 .cell-main-title {
   font-size: 0.72rem;
