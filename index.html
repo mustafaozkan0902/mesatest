@@ -3502,19 +3502,6 @@ body {
         </div>
       </div>
 
-      <!-- MESA Approval Done -->
-      <div class="kpi-card">
-        <div class="kpi-icon purple">🏢</div>
-        <div class="kpi-info">
-          <div class="kpi-title">MESA Teslim & Onaylı</div>
-          <div class="kpi-value-row">
-            <span class="kpi-value" id="kpiMesaDone">0</span>
-            <span class="kpi-sub" id="kpiMesaPct">%0</span>
-          </div>
-          <div class="kpi-progress"><div id="barMesa" class="kpi-bar" style="background: #a855f7;"></div></div>
-        </div>
-      </div>
-
       <!-- Elektrik Teste Hazır -->
       <div class="kpi-card">
         <div class="kpi-icon cyan">⚡</div>
@@ -3538,6 +3525,19 @@ body {
             <span class="kpi-sub" id="kpiTestDonePct">%0</span>
           </div>
           <div class="kpi-progress"><div id="barTestDone" class="kpi-bar" style="background: #22c55e;"></div></div>
+        </div>
+      </div>
+
+      <!-- MESA Approval Done -->
+      <div class="kpi-card">
+        <div class="kpi-icon purple">🏢</div>
+        <div class="kpi-info">
+          <div class="kpi-title">MESA Teslim & Onaylı</div>
+          <div class="kpi-value-row">
+            <span class="kpi-value" id="kpiMesaDone">0</span>
+            <span class="kpi-sub" id="kpiMesaPct">%0</span>
+          </div>
+          <div class="kpi-progress"><div id="barMesa" class="kpi-bar" style="background: #a855f7;"></div></div>
         </div>
       </div>
 
@@ -3688,14 +3688,14 @@ body {
               <span style="font-size: 0.65rem; color: #0891b2; font-weight: 800;">[BİTMELİ]</span>
             </div>
             <span class="step-arrow" style="font-size: 0.75rem; color: #94a3b8;">➔</span>
-            <div class="step-item mesa" style="border-left: 3px solid #9333ea; background: #f3e8ff; color: #6b21a8; padding: 0.15rem 0.4rem; font-size: 0.7rem;">
-              <span style="font-weight: 700;">🏢 3. MESA Onayı</span>
-              <span style="font-size: 0.65rem; color: #7c3aed; font-weight: 800;">[GEREKLİ]</span>
+            <div class="step-item test" style="border-left: 3px solid #0284c7; background: #e0f2fe; color: #0369a1; padding: 0.15rem 0.4rem; font-size: 0.7rem;">
+              <span style="font-weight: 700;">⚡ 3. Elektrik Testi</span>
+              <span style="font-size: 0.65rem; color: #0284c7; font-weight: 800;">[TEST YAP]</span>
             </div>
             <span class="step-arrow" style="font-size: 0.75rem; color: #94a3b8;">➔</span>
-            <div class="step-item test" style="border-left: 3px solid #0284c7; background: #e0f2fe; color: #0369a1; padding: 0.15rem 0.4rem; font-size: 0.7rem;">
-              <span style="font-weight: 700;">⚡ 4. Elektrik Testi</span>
-              <span style="font-size: 0.65rem; color: #0284c7; font-weight: 800;">[HAZIR]</span>
+            <div class="step-item mesa" style="border-left: 3px solid #9333ea; background: #f3e8ff; color: #6b21a8; padding: 0.15rem 0.4rem; font-size: 0.7rem;">
+              <span style="font-weight: 700;">🏢 4. MESA Onayı</span>
+              <span style="font-size: 0.65rem; color: #7c3aed; font-weight: 800;">[ONAYLA]</span>
             </div>
             <span class="step-arrow" style="font-size: 0.75rem; color: #94a3b8;">➔</span>
             <div class="step-item tavan" style="border-left: 3px solid #0d9488; background: #ccfbf1; color: #0f766e; padding: 0.15rem 0.4rem; font-size: 0.7rem;">
@@ -3802,8 +3802,8 @@ body {
                 <th>Blok & Kat</th>
                 <th>1. Mekanik Durumu</th>
                 <th>2. Klima Durumu</th>
-                <th>3. MESA Kabul & Onay</th>
-                <th>4. Elektrik Testi Durumu</th>
+                <th>3. Elektrik Testi Durumu</th>
+                <th>4. MESA Kabul & Onay</th>
                 <th>5. Asma Tavan Durumu</th>
                 <th>Son Güncelleme</th>
                 <th style="text-align: right;">İşlem</th>
@@ -4196,7 +4196,7 @@ body {
         <!-- Kural Açıklama Kutusu -->
         <div id="editRuleAlert" class="form-rule-alert info">
           <span>ℹ️</span>
-          <span id="editRuleAlertText">Mekanik ve Klima işleri tamamlanmadan MESA onayı verilemez. MESA onayı olmadan Elektrik Testine başlanamaz.</span>
+          <span id="editRuleAlertText">Mekanik ve Klima tamamlanmadan Elektrik Testi yapılamaz. Elektrik Testi tamamlanmadan MESA Onayı verilemez. MESA Onayı olmadan Asma Tavan kapatılamaz.</span>
         </div>
 
         <!-- 1. Mekanik İşi -->
@@ -4253,17 +4253,62 @@ body {
           </div>
         </div>
 
-        <!-- 3. MESA Teslim & Kabul Onayı -->
+        <!-- 3. Elektrik Testi -->
+        <div style="background: #f0fdf4; border: 1.5px solid #bbf7d0; border-radius: 8px; padding: 1rem; margin-bottom: 1rem;">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 0.5rem;">
+            <strong style="color: #16a34a;">⚡ 3. Aşama: Elektrik Testi</strong>
+            <span id="elektrikTestPermBadge" class="stage-val-badge" style="display:none; background:#f1f5f9; color:#64748b; font-size:0.72rem; font-weight:600;">🔒 Salt Okunur</span>
+            <span id="elkBadgeStatus" class="stage-val-badge badge-ready">TESTE HAZIR</span>
+          </div>
+
+          <div id="elkPrereqWarning" class="form-rule-alert warn" style="display:none;">
+            <span>🔒</span>
+            <span>Mekanik ve VRF Klima tamamlanmadan Elektrik Testi durumuna geçilemez!</span>
+          </div>
+
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem;">
+            <div class="form-group" style="margin-bottom: 0;">
+              <label class="form-label">Elektrik Test Durumu:</label>
+              <select id="editElkStatus" class="form-select" onchange="app.handleModalStateChange()">
+                <option value="kilitli">🔒 Kilitli (Mekanik & Klima Bekleniyor)</option>
+                <option value="hazir">⚡ Teste Hazır (Mekanik & Klima Bitti)</option>
+                <option value="suruyor">🔄 Test Aşamasında (Sürüyor)</option>
+                <option value="tamamlandi">✅ Test Başarılı (Tamamlandı)</option>
+                <option value="basarisiz">❌ Test Başarısız / Uygunsuzluk</option>
+              </select>
+            </div>
+            <div class="form-group" style="margin-bottom: 0;">
+              <label class="form-label">Test Tarihi:</label>
+              <input type="date" id="editElkDate" class="form-control">
+            </div>
+          </div>
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; margin-top: 0.5rem;">
+            <div class="form-group" style="margin-bottom: 0;">
+              <label class="form-label">Testi Yapan Ekip / Mühendis:</label>
+              <input type="text" id="editElkTester" class="form-control" placeholder="Örn: Elektrik Test Grubu">
+            </div>
+            <div class="form-group" style="margin-bottom: 0;">
+              <label class="form-label">Test Rapor / Tutanak No:</label>
+              <input type="text" id="editElkReport" class="form-control" placeholder="Örn: ELK-TST-2026-042">
+            </div>
+          </div>
+          <div class="form-group" style="margin-top: 0.5rem; margin-bottom: 0;">
+            <label class="form-label">Test Notu & Ölçüm Değerleri:</label>
+            <input type="text" id="editElkNote" class="form-control" placeholder="Meger, izolasyon ve süreklilik ölçüm sonuçları">
+          </div>
+        </div>
+
+        <!-- 4. MESA Teslim & Kabul Onayı -->
         <div style="background: #faf5ff; border: 1.5px solid #e9d5ff; border-radius: 8px; padding: 1rem; margin-bottom: 1rem;">
           <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 0.5rem;">
-            <strong style="color: #7c3aed;">🏢 3. Aşama: MESA Teslim & Kabul Onayı</strong>
+            <strong style="color: #7c3aed;">🏢 4. Aşama: MESA Teslim & Kabul Onayı</strong>
             <span id="mesaPermBadge" class="stage-val-badge" style="display:none; background:#f1f5f9; color:#64748b; font-size:0.72rem; font-weight:600;">🔒 Salt Okunur</span>
             <span id="mesaBadgeStatus" class="stage-val-badge badge-wait">Bekliyor</span>
           </div>
           
           <div id="mesaPrereqWarning" class="form-rule-alert warn" style="display:none;">
             <span>⚠️</span>
-            <span>MESA onayı verebilmek için Mekanik ve Klima işlerinin ikisinin de <strong>Tamamlandı</strong> olması zorunludur!</span>
+            <span>MESA onayı verebilmek için Elektrik Testinin başarıyla <strong>Tamamlandı</strong> olması zorunludur!</span>
           </div>
 
           <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem;">
@@ -4296,70 +4341,25 @@ body {
           </div>
         </div>
 
-        <!-- 4. Elektrik Testi -->
-        <div style="background: #f0fdf4; border: 1.5px solid #bbf7d0; border-radius: 8px; padding: 1rem;">
-          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 0.5rem;">
-            <strong style="color: #16a34a;">⚡ 4. Aşama: Elektrik Testi</strong>
-            <span id="elektrikTestPermBadge" class="stage-val-badge" style="display:none; background:#f1f5f9; color:#64748b; font-size:0.72rem; font-weight:600;">🔒 Salt Okunur</span>
-            <span id="elkBadgeStatus" class="stage-val-badge badge-ready">TESTE HAZIR</span>
-          </div>
-
-          <div id="elkPrereqWarning" class="form-rule-alert warn" style="display:none;">
-            <span>🔒</span>
-            <span>MESA Teslim Onayı alınmadan Elektrik Testi durumuna geçilemez!</span>
-          </div>
-
-          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem;">
-            <div class="form-group" style="margin-bottom: 0;">
-              <label class="form-label">Elektrik Test Durumu:</label>
-              <select id="editElkStatus" class="form-select">
-                <option value="kilitli">🔒 Kilitli (Ön Şart & MESA Bekleniyor)</option>
-                <option value="hazir">⚡ Teste Hazır (MESA Onayı Alındı)</option>
-                <option value="suruyor">🔄 Test Aşamasında (Sürüyor)</option>
-                <option value="tamamlandi">✅ Test Başarılı (Tamamlandı)</option>
-                <option value="basarisiz">❌ Test Başarısız / Uygunsuzluk</option>
-              </select>
-            </div>
-            <div class="form-group" style="margin-bottom: 0;">
-              <label class="form-label">Test Tarihi:</label>
-              <input type="date" id="editElkDate" class="form-control">
-            </div>
-          </div>
-          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; margin-top: 0.5rem;">
-            <div class="form-group" style="margin-bottom: 0;">
-              <label class="form-label">Testi Yapan Ekip / Mühendis:</label>
-              <input type="text" id="editElkTester" class="form-control" placeholder="Örn: Elektrik Test Grubu">
-            </div>
-            <div class="form-group" style="margin-bottom: 0;">
-              <label class="form-label">Test Rapor / Tutanak No:</label>
-              <input type="text" id="editElkReport" class="form-control" placeholder="Örn: ELK-TST-2026-042">
-            </div>
-          </div>
-          <div class="form-group" style="margin-top: 0.5rem; margin-bottom: 0;">
-            <label class="form-label">Test Notu & Ölçüm Değerleri:</label>
-            <input type="text" id="editElkNote" class="form-control" placeholder="Meger, izolasyon ve süreklilik ölçüm sonuçları">
-          </div>
-        </div>
-
         <!-- 5. Asma Tavan Kapatma İmalatı -->
         <div style="background: #ecfdf5; border: 1.5px solid #a7f3d0; border-radius: 8px; padding: 1rem; margin-top: 1rem;">
           <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 0.5rem;">
             <strong style="color: #059669;">🏗️ 5. Aşama: Asma Tavan Kapatma İmalatı</strong>
             <span id="asmaTavanPermBadge" class="stage-val-badge" style="display:none; background:#f1f5f9; color:#64748b; font-size:0.72rem; font-weight:600;">🔒 Salt Okunur</span>
-            <span id="tavanBadgeStatus" class="stage-val-badge badge-locked">🔒 TEST BEKLENİYOR</span>
+            <span id="tavanBadgeStatus" class="stage-val-badge badge-locked">🔒 MESA ONAYI BEKLENİYOR</span>
           </div>
 
           <div id="tavanPrereqWarning" class="form-rule-alert warn" style="display:none;">
             <span>🔒</span>
-            <span>Elektrik Testi başarıyla tamamlanmadan (Tamamlandı) Asma Tavan kapatılamaz!</span>
+            <span>MESA Kabul Onayı verilmeden (Onaylandı) Asma Tavan kapatılamaz!</span>
           </div>
 
           <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem;">
             <div class="form-group" style="margin-bottom: 0;">
               <label class="form-label">Asma Tavan Durumu:</label>
               <select id="editAsmaTavanStatus" class="form-select" onchange="app.handleModalStateChange()">
-                <option value="kilitli">🔒 Kilitli (Elektrik Testi Bekleniyor)</option>
-                <option value="hazir">⚡ Kapatmaya Hazır (Test Bitti)</option>
+                <option value="kilitli">🔒 Kilitli (MESA Onayı Bekleniyor)</option>
+                <option value="hazir">⚡ Kapatmaya Hazır (MESA Onayladı)</option>
                 <option value="devam">🚧 Asma Tavan Kapatılıyor (Sürüyor)</option>
                 <option value="tamamlandi">✅ Asma Tavan Kapatıldı (Tamamlandı)</option>
               </select>
@@ -4476,9 +4476,9 @@ body {
           <select id="bulkFieldSelect" class="form-select" onchange="app.handleBulkFieldChange()">
             <option value="mekanik">🔧 1. Mekanik İmalatı</option>
             <option value="klima">❄️ 2. Klima İmalatı</option>
-            <option value="mesa">🏢 3. MESA Teslim Onayı (Ön şartı tamam olanlar için)</option>
-            <option value="elektrikTest">⚡ 4. Elektrik Test Durumu (MESA onaylı olanlar için)</option>
-            <option value="asmaTavan">🏗️ 5. Asma Tavan Kapatma (Elektrik testi tamamlananlar için)</option>
+            <option value="elektrikTest">⚡ 3. Elektrik Testi (Mekanik & Klima tamamlananlar için)</option>
+            <option value="mesa">🏢 4. MESA Teslim & Kabul Onayı (Elektrik testi tamamlananlar için)</option>
+            <option value="asmaTavan">🏗️ 5. Asma Tavan Kapatma (MESA onaylı olanlar için)</option>
           </select>
         </div>
 
@@ -5317,8 +5317,8 @@ body {
           <label class="form-label">Ön Şart Kuralı (Bu İş Neden Sonra Başlasın?):</label>
           <select id="newStagePrereq" class="form-select">
             <option value="asmaTavan">5. Asma Tavan Kapatma bittikten sonra başlasın</option>
-            <option value="elektrikTest">4. Elektrik Testi bittikten sonra başlasın</option>
-            <option value="mesa">3. MESA Kabul Onayı bittikten sonra başlasın</option>
+            <option value="mesa">4. MESA Kabul Onayı verildikten sonra başlasın</option>
+            <option value="elektrikTest">3. Elektrik Testi bittikten sonra başlasın</option>
             <option value="none">Ön şart olmadan bağımsız başlasın</option>
           </select>
           <div style="font-size:0.75rem; color:#64748b; margin-top:0.35rem;">
