@@ -615,24 +615,48 @@ body {
 }
 
 .sub-badge {
-  width: 14px;
-  height: 14px;
+  width: 15px;
+  height: 15px;
   border-radius: 3px;
   font-size: 8px;
-  font-weight: 800;
+  font-weight: 900;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  color: #fff;
 }
-.sub-badge.ok { background: #16a34a; }
-.sub-badge.wait { background: #94a3b8; }
-.sub-badge.prog { background: #f59e0b; }
-.sub-badge.rev { background: #dc2626; }
-.sub-badge.test-ok { background: #15803d; }
-.sub-badge.test-ready { background: #0284c7; }
-.sub-badge.tavan-ok { background: #059669; }
-.sub-badge.tavan-ready { background: #0284c7; }
+.sub-badge.ok,
+.sub-badge.mek-ok,
+.sub-badge.kli-ok,
+.sub-badge.test-ok,
+.sub-badge.tavan-ok,
+.sub-badge.custom-ok {
+  background: #dcfce7 !important;
+  color: #14532d !important;
+  border: 1.5px solid #22c55e !important;
+}
+.sub-badge.wait,
+.sub-badge.mek-wait,
+.sub-badge.kli-wait,
+.sub-badge.test-wait,
+.sub-badge.tavan-wait,
+.sub-badge.rev {
+  background: #fee2e2 !important;
+  color: #991b1b !important;
+  border: 1.5px solid #ef4444 !important;
+}
+.sub-badge.prog,
+.sub-badge.mek-prog,
+.sub-badge.kli-prog {
+  background: #fef3c7 !important;
+  color: #92400e !important;
+  border: 1.5px solid #f59e0b !important;
+}
+.sub-badge.test-ready,
+.sub-badge.tavan-ready {
+  background: #e0f2fe !important;
+  color: #0369a1 !important;
+  border: 1.5px solid #0284c7 !important;
+}
 
 .cell-main-title {
   font-size: 0.72rem;
@@ -3083,31 +3107,60 @@ body {
   margin-top: 3px !important;
 }
 .sub-badge {
-  width: 15px !important;
-  height: 15px !important;
+  width: 16px !important;
+  height: 16px !important;
   font-size: 8px !important;
   border-radius: 3px !important;
-  border: 1px solid rgba(0,0,0,0.15) !important;
+  font-weight: 900 !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
 }
-.sub-badge.ok { background: #dcfce7 !important; color: #15803d !important; border-color: #86efac !important; }
-.sub-badge.wait { background: #f1f5f9 !important; color: #94a3b8 !important; border-color: #cbd5e1 !important; }
-.sub-badge.prog { background: #fef3c7 !important; color: #b45309 !important; border-color: #fde68a !important; }
-.sub-badge.rev { background: #fee2e2 !important; color: #dc2626 !important; border-color: #fca5a5 !important; }
-.sub-badge.test-ok { background: #dcfce7 !important; color: #15803d !important; border-color: #86efac !important; }
-.sub-badge.test-ready { background: #e0f2fe !important; color: #0369a1 !important; border-color: #7dd3fc !important; }
-.sub-badge.tavan-ok { background: #ccfbf1 !important; color: #0f766e !important; border-color: #5eead4 !important; }
-.sub-badge.tavan-ready { background: #e0f2fe !important; color: #0369a1 !important; border-color: #7dd3fc !important; }
-.sub-badge.custom-ok { background: #fce7f3 !important; color: #9d174d !important; border-color: #f472b6 !important; }
 
-/* 1. Mekanik Rozetleri (Turuncu / Amber) */
-.sub-badge.mek-ok { background: #ffedd5 !important; color: #c2410c !important; border-color: #ea580c !important; font-weight: 800 !important; }
-.sub-badge.mek-prog { background: #fff7ed !important; color: #ea580c !important; border-color: #f97316 !important; border-style: dashed !important; font-weight: 800 !important; }
-.sub-badge.mek-wait { background: #f8fafc !important; color: #94a3b8 !important; border-color: #fdba74 !important; }
+/* BİTENLER -> NET VE CANLI YEŞİL */
+.sub-badge.ok,
+.sub-badge.mek-ok,
+.sub-badge.kli-ok,
+.sub-badge.test-ok,
+.sub-badge.tavan-ok,
+.sub-badge.custom-ok {
+  background: #dcfce7 !important;
+  color: #14532d !important;
+  border: 1.5px solid #22c55e !important;
+  font-weight: 900 !important;
+}
 
-/* 2. Klima Rozetleri (Buz Mavisi / Parlak Cyan) */
-.sub-badge.kli-ok { background: #cffafe !important; color: #0e7490 !important; border-color: #06b6d4 !important; font-weight: 800 !important; }
-.sub-badge.kli-prog { background: #ecfeff !important; color: #0891b2 !important; border-color: #06b6d4 !important; border-style: dashed !important; font-weight: 800 !important; }
-.sub-badge.kli-wait { background: #f0f9ff !important; color: #0284c7 !important; border-color: #7dd3fc !important; border-style: dashed !important; }
+/* BEKLEYENLER / KİLİTLİ -> NET VE CANLI KIRMIZI */
+.sub-badge.wait,
+.sub-badge.mek-wait,
+.sub-badge.kli-wait,
+.sub-badge.test-wait,
+.sub-badge.tavan-wait,
+.sub-badge.rev {
+  background: #fee2e2 !important;
+  color: #991b1b !important;
+  border: 1.5px solid #ef4444 !important;
+  font-weight: 900 !important;
+}
+
+/* SÜRENLER / DEVAM EDENLER -> KEHRİBAR / SARI */
+.sub-badge.prog,
+.sub-badge.mek-prog,
+.sub-badge.kli-prog {
+  background: #fef3c7 !important;
+  color: #92400e !important;
+  border: 1.5px solid #f59e0b !important;
+  font-weight: 800 !important;
+}
+
+/* TESTE / TAVANA HAZIR -> AÇIK MAVİ */
+.sub-badge.test-ready,
+.sub-badge.tavan-ready {
+  background: #e0f2fe !important;
+  color: #0369a1 !important;
+  border: 1.5px solid #0284c7 !important;
+  font-weight: 800 !important;
+}
 
 /* Status Classes with CSS Variables */
 .matrix-cell.status-tavan-done {
@@ -3391,6 +3444,12 @@ body {
           <span>Renkler</span>
         </button>
 
+        <!-- Özel İmalat Ekle Butonu (Tam Yetkiliye özel) -->
+        <button id="btnHeaderCustomStages" class="btn btn-outline btn-sm" onclick="app.openNewStageModal()" title="Yeni Takip Edilecek Özel İmalat Ekle veya Yönet" style="display: none; font-weight: 700; border-color: #cbd5e1; background: #ffffff; color: #1e293b; padding: 0.3rem 0.65rem;">
+          <span>🛠️</span>
+          <span>Özel İmalat Ekle</span>
+        </button>
+
         <!-- Ayarlar & Menü Butonu (Yöneticiye özel) -->
         <button id="btnSettingsMenu" class="btn btn-outline btn-sm" onclick="app.openSettingsCenterModal()" title="Şantiye Ayarları & Yönetim Menüsü" style="display: none; font-weight: 700; border-color: #cbd5e1; background: #ffffff; color: #1e293b; padding: 0.3rem 0.65rem;">
           <span>⚙️</span>
@@ -3528,11 +3587,24 @@ body {
         </div>
       </div>
 
+      <!-- 4. 2. Cil Mekanik Done -->
+      <div class="kpi-card">
+        <div class="kpi-icon" style="background: #ffedd5; color: #ea580c;">🔩</div>
+        <div class="kpi-info">
+          <div class="kpi-title">2. Cil Mekanik Biten</div>
+          <div class="kpi-value-row">
+            <span class="kpi-value" id="kpiMek2Done">0</span>
+            <span class="kpi-sub" id="kpiMek2Pct">%0</span>
+          </div>
+          <div class="kpi-progress"><div id="barMek2" class="kpi-bar" style="background: #ea580c;"></div></div>
+        </div>
+      </div>
+
       <!-- MESA Approval Done -->
       <div class="kpi-card">
         <div class="kpi-icon purple">🏢</div>
         <div class="kpi-info">
-          <div class="kpi-title">MESA Teslim & Onaylı</div>
+          <div class="kpi-title">MESA Kapama Onaylı</div>
           <div class="kpi-value-row">
             <span class="kpi-value" id="kpiMesaDone">0</span>
             <span class="kpi-sub" id="kpiMesaPct">%0</span>
@@ -3606,9 +3678,9 @@ body {
             <span>Haftalık İlerleme Raporu</span>
           </button>
 
-          <button id="btnTimelineNewStage" class="btn btn-outline btn-sm" onclick="app.openNewStageModal()" title="Yeni Takip Edilecek İmalat Ekle veya Mevcutları Sil" style="display: none;">
+          <button id="btnTimelineNewStage" class="btn btn-outline btn-sm" onclick="app.openNewStageModal()" title="Yeni Takip Edilecek Özel İmalat Ekle veya Mevcutları Yönet" style="display: none; font-weight: 700;">
             <span>🛠️</span>
-            <span>İmalat Ekle / Sil</span>
+            <span>Özel İmalat Ekle / Sil</span>
           </button>
 
           <button id="btnTimelineSnapshot" class="btn btn-primary btn-sm" onclick="app.openCreateSnapshotModal()" title="Bu haftanın durumunu kalıcı olarak arşive kaydet" style="display: none;">
@@ -3701,16 +3773,21 @@ body {
             <span class="step-arrow" style="font-size: 0.75rem; color: #94a3b8;">➔</span>
             <div class="step-item test" style="border-left: 3px solid #0284c7; background: #e0f2fe; color: #0369a1; padding: 0.15rem 0.4rem; font-size: 0.7rem;">
               <span style="font-weight: 700;">⚡ 3. Elektrik Testi</span>
-              <span style="font-size: 0.65rem; color: #0284c7; font-weight: 800;">[TEST YAP]</span>
+              <span style="font-size: 0.65rem; color: #0284c7; font-weight: 800;">[TEST BİTTİ]</span>
+            </div>
+            <span class="step-arrow" style="font-size: 0.75rem; color: #94a3b8;">+</span>
+            <div class="step-item req" style="border-left: 3px solid #ea580c; background: #fff7ed; color: #c2410c; padding: 0.15rem 0.4rem; font-size: 0.7rem;">
+              <span style="font-weight: 700;">🔩 4. 2. Cil Mekanik</span>
+              <span style="font-size: 0.65rem; color: #ea580c; font-weight: 800;">[2. CİL BİTTİ]</span>
             </div>
             <span class="step-arrow" style="font-size: 0.75rem; color: #94a3b8;">➔</span>
             <div class="step-item mesa" style="border-left: 3px solid #9333ea; background: #f3e8ff; color: #6b21a8; padding: 0.15rem 0.4rem; font-size: 0.7rem;">
-              <span style="font-weight: 700;">🏢 4. MESA Onayı</span>
+              <span style="font-weight: 700;">🏢 5. MESA Onayı</span>
               <span style="font-size: 0.65rem; color: #7c3aed; font-weight: 800;">[ONAYLA]</span>
             </div>
             <span class="step-arrow" style="font-size: 0.75rem; color: #94a3b8;">➔</span>
             <div class="step-item tavan" style="border-left: 3px solid #0d9488; background: #ccfbf1; color: #0f766e; padding: 0.15rem 0.4rem; font-size: 0.7rem;">
-              <span style="font-weight: 700;">🏗️ 5. Asma Tavan</span>
+              <span style="font-weight: 700;">🏗️ 6. Asma Tavan</span>
               <span style="font-size: 0.65rem; color: #0f766e; font-weight: 800;">[KAPAT]</span>
             </div>
             <div id="workflowCustomSteps" style="display:contents;"></div>
@@ -3814,8 +3891,9 @@ body {
                 <th>1. Mekanik Durumu</th>
                 <th>2. Klima Durumu</th>
                 <th>3. Elektrik Testi Durumu</th>
-                <th>4. MESA Kabul & Onay</th>
-                <th>5. Asma Tavan Durumu</th>
+                <th>4. 2. Cil Mekanik Durumu</th>
+                <th>5. MESA Tavan Kapama Onayı</th>
+                <th>6. Asma Tavan Durumu</th>
                 <th>Son Güncelleme</th>
                 <th style="text-align: right;">İşlem</th>
               </tr>
@@ -4207,7 +4285,7 @@ body {
         <!-- Kural Açıklama Kutusu -->
         <div id="editRuleAlert" class="form-rule-alert info">
           <span>ℹ️</span>
-          <span id="editRuleAlertText">Mekanik ve Klima tamamlanmadan Elektrik Testi yapılamaz. Elektrik Testi tamamlanmadan MESA Onayı verilemez. MESA Onayı olmadan Asma Tavan kapatılamaz.</span>
+          <span id="editRuleAlertText">1. Mekanik ve Klima tamamlanmadan Elektrik Testi yapılamaz. Elektrik Testi ve 2. Cil Mekanik tamamlanmadan MESA Tavan Kapama Onayı verilemez. MESA Kapama Onayı olmadan Asma Tavan kapatılamaz.</span>
         </div>
 
         <!-- 1. Mekanik İşi -->
@@ -4309,17 +4387,44 @@ body {
           </div>
         </div>
 
-        <!-- 4. MESA Teslim & Kabul Onayı -->
+        <!-- 4. 2. Cil Mekanik İşleri -->
+        <div style="background: #fff7ed; border: 1.5px solid #fed7aa; border-radius: 8px; padding: 1rem; margin-bottom: 1rem;">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 0.5rem;">
+            <strong style="color: #c2410c;">🔩 4. Aşama: 2. Cil Mekanik İşleri</strong>
+            <span id="mekanik2PermBadge" class="stage-val-badge" style="display:none; background:#f1f5f9; color:#64748b; font-size:0.72rem; font-weight:600;">🔒 Salt Okunur</span>
+            <span id="mekanik2BadgeStatus" class="stage-val-badge badge-prog">Devam Ediyor</span>
+          </div>
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem;">
+            <div class="form-group" style="margin-bottom: 0;">
+              <label class="form-label">2. Cil Mekanik Durumu:</label>
+              <select id="editMekanik2Status" class="form-select" onchange="app.handleModalStateChange()">
+                <option value="bekliyor">⏳ Bekliyor / Başlanmadı</option>
+                <option value="devam">🚧 İmalat Sürüyor</option>
+                <option value="tamamlandi">✅ Tamamlandı (2. Cil Bitti)</option>
+              </select>
+            </div>
+            <div class="form-group" style="margin-bottom: 0;">
+              <label class="form-label">Bitiş Tarihi:</label>
+              <input type="date" id="editMekanik2Date" class="form-control">
+            </div>
+          </div>
+          <div class="form-group" style="margin-top: 0.5rem; margin-bottom: 0;">
+            <label class="form-label">2. Cil Mekanik Notu / Açıklama:</label>
+            <input type="text" id="editMekanik2Note" class="form-control" placeholder="İkincil mekanik işleri tamamlanma durumu veya kontrol notu">
+          </div>
+        </div>
+
+        <!-- 5. MESA Tavan Kapama Onayı -->
         <div style="background: #faf5ff; border: 1.5px solid #e9d5ff; border-radius: 8px; padding: 1rem; margin-bottom: 1rem;">
           <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 0.5rem;">
-            <strong style="color: #7c3aed;">🏢 4. Aşama: MESA Teslim & Kabul Onayı</strong>
+            <strong style="color: #7c3aed;">🏢 5. Aşama: MESA Tavan Kapama Onayı</strong>
             <span id="mesaPermBadge" class="stage-val-badge" style="display:none; background:#f1f5f9; color:#64748b; font-size:0.72rem; font-weight:600;">🔒 Salt Okunur</span>
             <span id="mesaBadgeStatus" class="stage-val-badge badge-wait">Bekliyor</span>
           </div>
           
           <div id="mesaPrereqWarning" class="form-rule-alert warn" style="display:none;">
             <span>⚠️</span>
-            <span>MESA onayı verebilmek için Elektrik Testinin başarıyla <strong>Tamamlandı</strong> olması zorunludur!</span>
+            <span>MESA Tavan Kapama Onayı verebilmek için hem <strong>Elektrik Testinin</strong> hem de <strong>2. Cil Mekanik İşlerinin</strong> tamamlanmış (Bitti) olması zorunludur!</span>
           </div>
 
           <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem;">
@@ -4352,17 +4457,17 @@ body {
           </div>
         </div>
 
-        <!-- 5. Asma Tavan Kapatma İmalatı -->
+        <!-- 6. Asma Tavan Kapatma İmalatı -->
         <div style="background: #ecfdf5; border: 1.5px solid #a7f3d0; border-radius: 8px; padding: 1rem; margin-top: 1rem;">
           <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 0.5rem;">
-            <strong style="color: #059669;">🏗️ 5. Aşama: Asma Tavan Kapatma İmalatı</strong>
+            <strong style="color: #059669;">🏗️ 6. Aşama: Asma Tavan Kapatma İmalatı</strong>
             <span id="asmaTavanPermBadge" class="stage-val-badge" style="display:none; background:#f1f5f9; color:#64748b; font-size:0.72rem; font-weight:600;">🔒 Salt Okunur</span>
             <span id="tavanBadgeStatus" class="stage-val-badge badge-locked">🔒 MESA ONAYI BEKLENİYOR</span>
           </div>
 
           <div id="tavanPrereqWarning" class="form-rule-alert warn" style="display:none;">
             <span>🔒</span>
-            <span>MESA Kabul Onayı verilmeden (Onaylandı) Asma Tavan kapatılamaz!</span>
+            <span>MESA Tavan Kapama Onayı verilmeden (Onaylandı) Asma Tavan kapatılamaz!</span>
           </div>
 
           <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem;">
@@ -4488,8 +4593,9 @@ body {
             <option value="mekanik">🔧 1. Mekanik İmalatı</option>
             <option value="klima">❄️ 2. Klima İmalatı</option>
             <option value="elektrikTest">⚡ 3. Elektrik Testi (Mekanik & Klima tamamlananlar için)</option>
-            <option value="mesa">🏢 4. MESA Teslim & Kabul Onayı (Elektrik testi tamamlananlar için)</option>
-            <option value="asmaTavan">🏗️ 5. Asma Tavan Kapatma (MESA onaylı olanlar için)</option>
+            <option value="mekanik2">🔩 4. 2. Cil Mekanik İşleri</option>
+            <option value="mesa">🏢 5. MESA Tavan Kapama Onayı (Elektrik testi & 2. cil mekanik tamamlananlar için)</option>
+            <option value="asmaTavan">🏗️ 6. Asma Tavan Kapatma (MESA onaylı olanlar için)</option>
           </select>
         </div>
 
@@ -5327,9 +5433,12 @@ body {
         <div class="form-group">
           <label class="form-label">Ön Şart Kuralı (Bu İş Neden Sonra Başlasın?):</label>
           <select id="newStagePrereq" class="form-select">
-            <option value="asmaTavan">5. Asma Tavan Kapatma bittikten sonra başlasın</option>
-            <option value="mesa">4. MESA Kabul Onayı verildikten sonra başlasın</option>
+            <option value="asmaTavan">6. Asma Tavan Kapatma bittikten sonra başlasın</option>
+            <option value="mesa">5. MESA Tavan Kapama Onayı verildikten sonra başlasın</option>
+            <option value="mekanik2">4. 2. Cil Mekanik İşleri bittikten sonra başlasın</option>
             <option value="elektrikTest">3. Elektrik Testi bittikten sonra başlasın</option>
+            <option value="klima">2. Klima İmalatı bittikten sonra başlasın</option>
+            <option value="mekanik">1. Mekanik İmalatı bittikten sonra başlasın</option>
             <option value="none">Ön şart olmadan bağımsız başlasın</option>
           </select>
           <div style="font-size:0.75rem; color:#64748b; margin-top:0.35rem;">

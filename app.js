@@ -308,9 +308,16 @@ class SantiyeApp {
       });
     }
 
-    // Ensure asmaTavan exists on all units (Prerequisite: MESA Onayı)
+    // Ensure mekanik2 and asmaTavan exist on all units
     if (this.data.units) {
       Object.values(this.data.units).forEach(u => {
+        if (!u.mekanik2) {
+          u.mekanik2 = {
+            status: (u.mesa?.status === 'onaylandi' || u.asmaTavan?.status === 'tamamlandi' ? 'tamamlandi' : 'bekliyor'),
+            date: '',
+            note: ''
+          };
+        }
         if (!u.asmaTavan) {
           u.asmaTavan = {
             status: (u.mesa?.status === 'onaylandi' ? 'hazir' : 'kilitli'),
@@ -336,7 +343,7 @@ class SantiyeApp {
           textColor: '#9d174d',
           prerequisiteStage: 'asmaTavan',
           company: 'Üçay Elektrik Montaj Ekibi',
-          order: 6
+          order: 7
         }
       ];
     } else if (!Array.isArray(this.data.customStages)) {
@@ -350,8 +357,11 @@ class SantiyeApp {
           if (!u[cs.id]) {
             const prereqDone = cs.prerequisiteStage === 'none' ||
               (cs.prerequisiteStage === 'asmaTavan' && u.asmaTavan?.status === 'tamamlandi') ||
-              (cs.prerequisiteStage === 'elektrikTest' && u.elektrikTest?.status === 'tamamlandi') ||
               (cs.prerequisiteStage === 'mesa' && u.mesa?.status === 'onaylandi') ||
+              (cs.prerequisiteStage === 'mekanik2' && u.mekanik2?.status === 'tamamlandi') ||
+              (cs.prerequisiteStage === 'elektrikTest' && u.elektrikTest?.status === 'tamamlandi') ||
+              (cs.prerequisiteStage === 'klima' && u.klima?.status === 'tamamlandi') ||
+              (cs.prerequisiteStage === 'mekanik' && u.mekanik?.status === 'tamamlandi') ||
               (u[cs.prerequisiteStage]?.status === 'tamamlandi');
 
             u[cs.id] = {
@@ -423,6 +433,8 @@ class SantiyeApp {
     if (this.hasAllPermissions()) return true;
     const stages = this.currentUser?.permissions?.stages || [];
     if (stages.includes('*') || stages.includes('all')) return true;
+    if (stageId === 'mekanik2' && stages.includes('mekanik')) return true;
+    if (stageId === 'mekanik' && stages.includes('mekanik2')) return true;
     return stages.includes(stageId);
   }
 
@@ -441,10 +453,11 @@ class SantiyeApp {
     }
     const stages = u.permissions?.stages || [];
     const stageMap = {
-      'mekanik': 'Mekanik Tesisat',
+      'mekanik': '1. Mekanik Tesisat',
       'klima': 'Klima / VRF',
-      'mesa': 'MESA Onayı',
       'elektrikTest': 'Elektrik Testi',
+      'mekanik2': '2. Cil Mekanik',
+      'mesa': 'MESA Kapama Onayı',
       'asmaTavan': 'Asma Tavan'
     };
     (this.data?.customStages || []).forEach(cs => {
@@ -464,10 +477,11 @@ class SantiyeApp {
     if (!listEl) return;
 
     const coreStages = [
-      { id: 'mekanik', name: 'Mekanik Tesisat', icon: '🔧', color: '#c2410c' },
+      { id: 'mekanik', name: '1. Mekanik Tesisat', icon: '🔧', color: '#c2410c' },
       { id: 'klima', name: 'Klima / VRF İmalatı', icon: '❄️', color: '#0891b2' },
-      { id: 'mesa', name: 'MESA Teslim & Kabul Onayı', icon: '🏢', color: '#7c3aed' },
       { id: 'elektrikTest', name: 'Elektrik Testi', icon: '⚡', color: '#16a34a' },
+      { id: 'mekanik2', name: '2. Cil Mekanik İşleri', icon: '🔩', color: '#ea580c' },
+      { id: 'mesa', name: 'MESA Tavan Kapama Onayı', icon: '🏢', color: '#7c3aed' },
       { id: 'asmaTavan', name: 'Asma Tavan Kapatma', icon: '🏗️', color: '#059669' }
     ];
 
@@ -581,8 +595,9 @@ class SantiyeApp {
 
     setStageBlock('editMekanik', 'mekanik');
     setStageBlock('editKlima', 'klima');
-    setStageBlock('editMesa', 'mesa');
     setStageBlock('editElk', 'elektrikTest');
+    setStageBlock('editMekanik2', 'mekanik2');
+    setStageBlock('editMesa', 'mesa');
     setStageBlock('editAsmaTavan', 'asmaTavan');
 
     (this.data?.customStages || []).forEach(cs => {
@@ -600,6 +615,7 @@ class SantiyeApp {
     const btnHeaderChangePassword = document.getElementById('btnHeaderChangePassword');
     const btnHeaderUsers = document.getElementById('btnHeaderUsers');
     const btnHeaderColors = document.getElementById('btnHeaderColors');
+    const btnHeaderCustomStages = document.getElementById('btnHeaderCustomStages');
     const btnSettingsMenu = document.getElementById('btnSettingsMenu');
     const floatingQuickBar = document.getElementById('floatingQuickBar');
     const btnExportExcel = document.getElementById('btnExportExcel');
@@ -638,6 +654,7 @@ class SantiyeApp {
     // 3. Admin-Only Header & Navigation Buttons
     if (btnHeaderUsers) btnHeaderUsers.style.display = hasAll ? 'inline-flex' : 'none';
     if (btnHeaderColors) btnHeaderColors.style.display = hasAll ? 'inline-flex' : 'none';
+    if (btnHeaderCustomStages) btnHeaderCustomStages.style.display = hasAll ? 'inline-flex' : 'none';
     if (btnSettingsMenu) btnSettingsMenu.style.display = hasAll ? 'inline-flex' : 'none';
     if (floatingQuickBar) floatingQuickBar.style.display = hasAll ? 'flex' : 'none';
     if (btnExportExcel) btnExportExcel.style.display = hasAll ? 'inline-flex' : 'none';
@@ -1080,16 +1097,19 @@ class SantiyeApp {
     let mesaDone = 0;
     let testReady = 0;
     let testDone = 0;
+    let mekanik2Done = 0;
     let tavanDone = 0;
 
     units.forEach(u => {
       const isMekDone = u.mekanik?.status === 'tamamlandi';
       const isKliDone = u.klima?.status === 'tamamlandi';
       const isTestDone = u.elektrikTest?.status === 'tamamlandi';
+      const isMek2Done = u.mekanik2?.status === 'tamamlandi';
       if (isMekDone) mekanikDone++;
       if (isKliDone) klimaDone++;
       if (isTestDone) testDone++;
       else if (u.elektrikTest?.status === 'hazir' || (isMekDone && isKliDone)) testReady++;
+      if (isMek2Done) mekanik2Done++;
       if (u.mesa?.status === 'onaylandi') mesaDone++;
       if (u.asmaTavan?.status === 'tamamlandi') tavanDone++;
     });
@@ -1097,7 +1117,7 @@ class SantiyeApp {
     const kpiTotalEl = document.getElementById('kpiTotalUnits');
     if (kpiTotalEl) kpiTotalEl.innerText = total;
 
-    // Mekanik
+    // 1. Mekanik
     const mekPct = Math.round((mekanikDone / total) * 100);
     const kpiMekDoneEl = document.getElementById('kpiMekanikDone');
     const kpiMekPctEl = document.getElementById('kpiMekanikPct');
@@ -1106,7 +1126,7 @@ class SantiyeApp {
     if (kpiMekPctEl) kpiMekPctEl.innerText = `%${mekPct}`;
     if (barMekEl) barMekEl.style.width = `${mekPct}%`;
 
-    // Klima
+    // 2. Klima
     const klimaPct = Math.round((klimaDone / total) * 100);
     const kpiKliDoneEl = document.getElementById('kpiKlimaDone');
     const kpiKliPctEl = document.getElementById('kpiKlimaPct');
@@ -1115,16 +1135,7 @@ class SantiyeApp {
     if (kpiKliPctEl) kpiKliPctEl.innerText = `%${klimaPct}`;
     if (barKliEl) barKliEl.style.width = `${klimaPct}%`;
 
-    // MESA
-    const mesaPct = Math.round((mesaDone / total) * 100);
-    const kpiMesaDoneEl = document.getElementById('kpiMesaDone');
-    const kpiMesaPctEl = document.getElementById('kpiMesaPct');
-    const barMesaEl = document.getElementById('barMesa');
-    if (kpiMesaDoneEl) kpiMesaDoneEl.innerText = mesaDone;
-    if (kpiMesaPctEl) kpiMesaPctEl.innerText = `%${mesaPct}`;
-    if (barMesaEl) barMesaEl.style.width = `${mesaPct}%`;
-
-    // Test Ready & Done
+    // 3. Test Ready & Done
     const kpiReadyEl = document.getElementById('kpiTestReady');
     const barReadyEl = document.getElementById('barTestReady');
     if (kpiReadyEl) kpiReadyEl.innerText = testReady;
@@ -1138,7 +1149,25 @@ class SantiyeApp {
     if (kpiTestDonePctEl) kpiTestDonePctEl.innerText = `%${testPct}`;
     if (barTestDoneEl) barTestDoneEl.style.width = `${testPct}%`;
 
-    // Asma Tavan Done
+    // 4. 2. Cil Mekanik
+    const mek2Pct = Math.round((mekanik2Done / total) * 100);
+    const kpiMek2DoneEl = document.getElementById('kpiMek2Done');
+    const kpiMek2PctEl = document.getElementById('kpiMek2Pct');
+    const barMek2El = document.getElementById('barMek2');
+    if (kpiMek2DoneEl) kpiMek2DoneEl.innerText = mekanik2Done;
+    if (kpiMek2PctEl) kpiMek2PctEl.innerText = `%${mek2Pct}`;
+    if (barMek2El) barMek2El.style.width = `${mek2Pct}%`;
+
+    // 5. MESA
+    const mesaPct = Math.round((mesaDone / total) * 100);
+    const kpiMesaDoneEl = document.getElementById('kpiMesaDone');
+    const kpiMesaPctEl = document.getElementById('kpiMesaPct');
+    const barMesaEl = document.getElementById('barMesa');
+    if (kpiMesaDoneEl) kpiMesaDoneEl.innerText = mesaDone;
+    if (kpiMesaPctEl) kpiMesaPctEl.innerText = `%${mesaPct}`;
+    if (barMesaEl) barMesaEl.style.width = `${mesaPct}%`;
+
+    // 6. Asma Tavan Done
     const tavanPct = Math.round((tavanDone / total) * 100);
     const kpiTavanDoneEl = document.getElementById('kpiTavanDone');
     const kpiTavanPctEl = document.getElementById('kpiTavanPct');
@@ -1552,9 +1581,12 @@ class SantiyeApp {
 
     const prereqNames = {
       'none': 'Ön şartsız (Bağımsız)',
-      'asmaTavan': '5. Asma Tavan Kapatma',
-      'mesa': '4. MESA Kabul Onayı',
-      'elektrikTest': '3. Elektrik Testi'
+      'asmaTavan': '6. Asma Tavan Kapatma',
+      'mesa': '5. MESA Tavan Kapama Onayı',
+      'mekanik2': '4. 2. Cil Mekanik İşleri',
+      'elektrikTest': '3. Elektrik Testi',
+      'klima': '2. Klima İmalatı',
+      'mekanik': '1. Mekanik İmalatı'
     };
 
     let html = '';
@@ -1847,9 +1879,10 @@ class SantiyeApp {
     }
     if (u.asmaTavan?.status === 'tamamlandi') return 'tavan_done';
     if (u.mesa?.status === 'onaylandi') return 'done';
-    if (u.elektrikTest?.status === 'tamamlandi') return 'mesa_wait';
+    if (u.elektrikTest?.status === 'tamamlandi' && u.mekanik2?.status === 'tamamlandi') return 'mesa_wait';
+    if (u.elektrikTest?.status === 'tamamlandi') return 'in_progress';
     if (u.elektrikTest?.status === 'hazir' || (u.mekanik?.status === 'tamamlandi' && u.klima?.status === 'tamamlandi')) return 'ready';
-    if (u.mekanik?.status === 'devam' || u.klima?.status === 'devam' || u.elektrikTest?.status === 'suruyor' || u.asmaTavan?.status === 'devam') return 'in_progress';
+    if (u.mekanik?.status === 'devam' || u.klima?.status === 'devam' || u.mekanik2?.status === 'devam' || u.elektrikTest?.status === 'suruyor' || u.asmaTavan?.status === 'devam') return 'in_progress';
     return 'waiting';
   }
 
@@ -1923,15 +1956,17 @@ class SantiyeApp {
         const isMekDone = u.mekanik?.status === 'tamamlandi';
         const isKliDone = u.klima?.status === 'tamamlandi';
         const isTestDone = u.elektrikTest?.status === 'tamamlandi';
+        const isMek2Done = u.mekanik2?.status === 'tamamlandi';
         const isMesaApproved = u.mesa?.status === 'onaylandi';
         const isTavanDone = u.asmaTavan?.status === 'tamamlandi';
 
-        // 1. Kat Bitme Yüzdesi (5 ana aşama + varsa özel aşamalar)
+        // 1. Kat Bitme Yüzdesi (6 ana aşama + varsa özel aşamalar)
         let doneStagesCount = 0;
-        const totalUnitStages = 5 + (this.data.customStages || []).length;
+        const totalUnitStages = 6 + (this.data.customStages || []).length;
         if (isMekDone) doneStagesCount++;
         if (isKliDone) doneStagesCount++;
         if (isTestDone) doneStagesCount++;
+        if (isMek2Done) doneStagesCount++;
         if (isMesaApproved) doneStagesCount++;
         if (isTavanDone) doneStagesCount++;
         (this.data.customStages || []).forEach(cs => {
@@ -1949,12 +1984,13 @@ class SantiyeApp {
         else if (completionPct >= 40) frameBorderColor = '#f59e0b'; // %40 Kehribar / Turuncu
         else if (completionPct >= 20) frameBorderColor = '#f97316'; // %20 Kırmızı-Turuncu
 
-        // 3. Alt Rozetler (Bitenler -> Yeşil, Bekleyenler -> Kırmızı, Sürenler -> Sarı, Hazır -> Mavi)
-        const bMek = isMekDone ? 'mek-ok' : (u.mekanik?.status === 'devam' ? 'mek-prog' : 'wait');
-        const bKli = isKliDone ? 'kli-ok' : (u.klima?.status === 'devam' ? 'kli-prog' : 'wait');
-        const bTest = isTestDone ? 'test-ok' : (u.elektrikTest?.status === 'suruyor' ? 'prog' : (u.elektrikTest?.status === 'hazir' || (isMekDone && isKliDone) ? 'test-ready' : 'wait'));
+        // 3. Alt Rozetler (Bitenler -> Yeşil 'ok', Bekleyenler -> Kırmızı 'wait', Sürenler -> Sarı 'prog', Hazır -> Mavi 'test-ready' / 'tavan-ready')
+        const bMek = isMekDone ? 'ok' : (u.mekanik?.status === 'devam' ? 'prog' : 'wait');
+        const bKli = isKliDone ? 'ok' : (u.klima?.status === 'devam' ? 'prog' : 'wait');
+        const bTest = isTestDone ? 'ok' : (u.elektrikTest?.status === 'suruyor' ? 'prog' : (u.elektrikTest?.status === 'hazir' || (isMekDone && isKliDone) ? 'test-ready' : 'wait'));
+        const bMek2 = isMek2Done ? 'ok' : (u.mekanik2?.status === 'devam' ? 'prog' : 'wait');
         const bMesa = isMesaApproved ? 'ok' : (u.mesa?.status === 'revizyon' ? 'rev' : 'wait');
-        const bTavan = isTavanDone ? 'tavan-ok' : (u.asmaTavan?.status === 'devam' ? 'prog' : (isMesaApproved ? 'tavan-ready' : 'wait'));
+        const bTavan = isTavanDone ? 'ok' : (u.asmaTavan?.status === 'devam' ? 'prog' : (isMesaApproved ? 'tavan-ready' : 'wait'));
 
         // Custom badges (Biten yeşil, bekleyen kırmızı)
         let customBadgesHtml = '';
@@ -1986,11 +2022,12 @@ class SantiyeApp {
               <span class="cell-pct-pill" style="font-size: 0.62rem; font-weight: 800; color: ${frameBorderColor}; background: rgba(255,255,255,0.85); padding: 0.5px 3.5px; border-radius: 4px; border: 1px solid ${frameBorderColor}; margin-left: 3px; flex-shrink: 0;">%${completionPct}</span>
             </div>
             <div class="cell-badges">
-              <span class="sub-badge ${bMek}" title="1. Mekanik: ${u.mekanik?.status || 'bekliyor'}">M</span>
+              <span class="sub-badge ${bMek}" title="1. Mekanik: ${u.mekanik?.status || 'bekliyor'}">1M</span>
               <span class="sub-badge ${bKli}" title="2. Klima: ${u.klima?.status || 'bekliyor'}">K</span>
               <span class="sub-badge ${bTest}" title="3. Elektrik Testi: ${u.elektrikTest?.status || 'kilitli'}">T</span>
-              <span class="sub-badge ${bMesa}" title="4. MESA Onayı: ${u.mesa?.status || 'bekliyor'}">MS</span>
-              <span class="sub-badge ${bTavan}" title="5. Asma Tavan: ${u.asmaTavan?.status || 'kilitli'}">AT</span>
+              <span class="sub-badge ${bMek2}" title="4. 2. Cil Mekanik: ${u.mekanik2?.status || 'bekliyor'}">2M</span>
+              <span class="sub-badge ${bMesa}" title="5. MESA Onayı: ${u.mesa?.status || 'bekliyor'}">MS</span>
+              <span class="sub-badge ${bTavan}" title="6. Asma Tavan: ${u.asmaTavan?.status || 'kilitli'}">AT</span>
               ${customBadgesHtml}
             </div>
           </td>
@@ -2110,12 +2147,18 @@ class SantiyeApp {
       else if (isTestReady) testBadge = '<span class="stage-val-badge badge-ready">⚡ TESTE HAZIR</span>';
       else if (u.elektrikTest?.status === 'suruyor') testBadge = '<span class="stage-val-badge badge-prog">Test Yapılıyor</span>';
 
+      // 2. Cil Mekanik format
+      const isMek2Done = u.mekanik2?.status === 'tamamlandi';
+      const mek2Badge = isMek2Done
+        ? '<span class="stage-val-badge badge-ok">Tamamlandı ✓</span>'
+        : (u.mekanik2?.status === 'devam' ? '<span class="stage-val-badge badge-prog">Sürüyor</span>' : '<span class="stage-val-badge badge-wait">Bekliyor</span>');
+
       // MESA format
       const isMesaApproved = u.mesa?.status === 'onaylandi';
-      let mesaBadge = '<span class="stage-val-badge badge-locked">🔒 Test Bekleniyor</span>';
+      let mesaBadge = '<span class="stage-val-badge badge-locked">🔒 Test & 2. Cil Bekleniyor</span>';
       if (isMesaApproved) mesaBadge = '<span class="stage-val-badge badge-ok">MESA Onayladı ✓</span>';
       else if (u.mesa?.status === 'revizyon') mesaBadge = '<span class="stage-val-badge badge-rev">Revizyon İsteği</span>';
-      else if (isTestDone) mesaBadge = '<span class="stage-val-badge badge-ready" style="background:#faf5ff; color:#7c3aed;">Onay Bekliyor</span>';
+      else if (isTestDone && isMek2Done) mesaBadge = '<span class="stage-val-badge badge-ready" style="background:#faf5ff; color:#7c3aed;">Onay Bekliyor</span>';
 
       // Asma Tavan format
       const isTavanDone = u.asmaTavan?.status === 'tamamlandi';
@@ -2193,23 +2236,35 @@ class SantiyeApp {
               </div>
             </div>
 
-            <!-- 4. MESA Kabul Onayı -->
+            <!-- 4. 2. Cil Mekanik -->
+            <div class="stage-box" style="background: #fff7ed;">
+              <div class="stage-header">
+                <span class="stage-name" style="color: #ea580c;">🔩 4. 2. Cil Mekanik</span>
+                ${mek2Badge}
+              </div>
+              <div class="stage-detail" title="${u.mekanik2?.note || ''}">
+                ${u.mekanik2?.date ? `📅 ${u.mekanik2.date}` : 'Tarih girilmedi'}
+                ${u.mekanik2?.note ? ` • ${u.mekanik2.note}` : ''}
+              </div>
+            </div>
+
+            <!-- 5. MESA Tavan Kapama Onayı -->
             <div class="stage-box" style="background: #faf5ff;">
               <div class="stage-header">
-                <span class="stage-name" style="color: #7c3aed;">🏢 4. MESA Kabul</span>
+                <span class="stage-name" style="color: #7c3aed;">🏢 5. MESA Kapama Onayı</span>
                 ${mesaBadge}
               </div>
               <div class="stage-detail" title="${u.mesa?.officer || ''} ${u.mesa?.docNo || ''}">
-                ${u.mesa?.date ? `📅 ${u.mesa.date}` : (isTestDone ? 'MESA Onayına Hazır' : 'Elektrik testi bekleniyor')}
+                ${u.mesa?.date ? `📅 ${u.mesa.date}` : (isTestDone && isMek2Done ? 'MESA Onayına Hazır' : 'Test ve 2. cil mekanik bekleniyor')}
                 ${u.mesa?.officer ? ` • ${u.mesa.officer}` : ''}
                 ${u.mesa?.docNo ? ` • Tut: ${u.mesa.docNo}` : ''}
               </div>
             </div>
 
-            <!-- 5. Asma Tavan -->
+            <!-- 6. Asma Tavan -->
             <div class="stage-box" style="background: #ecfdf5;">
               <div class="stage-header">
-                <span class="stage-name" style="color: #059669;">🏗️ 5. Asma Tavan</span>
+                <span class="stage-name" style="color: #059669;">🏗️ 6. Asma Tavan</span>
                 ${tavanBadge}
               </div>
               <div class="stage-detail" title="${u.asmaTavan?.note || ''}">
@@ -2308,6 +2363,7 @@ class SantiyeApp {
 
       const isMekDone = u.mekanik?.status === 'tamamlandi';
       const isKliDone = u.klima?.status === 'tamamlandi';
+      const isMek2Done = u.mekanik2?.status === 'tamamlandi';
       const isMesaApproved = u.mesa?.status === 'onaylandi';
       const isTestDone = u.elektrikTest?.status === 'tamamlandi';
       const isTavanDone = u.asmaTavan?.status === 'tamamlandi';
@@ -2351,7 +2407,11 @@ class SantiyeApp {
             <div style="font-size:0.7rem; color:#64748b;">${u.elektrikTest?.date || ''} ${u.elektrikTest?.reportNo ? `(${u.elektrikTest.reportNo})` : ''}</div>
           </td>
           <td>
-            ${isMesaApproved ? '<span class="stage-val-badge badge-ok">✓ MESA Onayladı</span>' : (u.mesa?.status === 'revizyon' ? '<span class="stage-val-badge badge-rev">Revizyon</span>' : (!isTestDone ? '<span class="stage-val-badge badge-locked">🔒 Test Bekleniyor</span>' : '<span class="stage-val-badge badge-prog" style="background:#faf5ff; color:#7c3aed;">Onay Bekliyor</span>'))}
+            ${isMek2Done ? '<span class="stage-val-badge badge-ok">✓ Tamamlandı</span>' : (u.mekanik2?.status === 'devam' ? '<span class="stage-val-badge badge-prog">Sürüyor</span>' : '<span class="stage-val-badge badge-wait">Bekliyor</span>')}
+            <div style="font-size:0.7rem; color:#64748b;">${u.mekanik2?.date || ''}</div>
+          </td>
+          <td>
+            ${isMesaApproved ? '<span class="stage-val-badge badge-ok">✓ MESA Onayladı</span>' : (u.mesa?.status === 'revizyon' ? '<span class="stage-val-badge badge-rev">Revizyon</span>' : (!isTestDone || !isMek2Done ? '<span class="stage-val-badge badge-locked">🔒 Test & 2. Cil Bekleniyor</span>' : '<span class="stage-val-badge badge-prog" style="background:#faf5ff; color:#7c3aed;">Onay Bekliyor</span>'))}
             <div style="font-size:0.7rem; color:#64748b;">${u.mesa?.officer || ''} ${u.mesa?.docNo ? `(${u.mesa.docNo})` : ''}</div>
           </td>
           <td>
@@ -2547,14 +2607,22 @@ class SantiyeApp {
     document.getElementById('editElkReport').value = u.elektrikTest?.reportNo || '';
     document.getElementById('editElkNote').value = u.elektrikTest?.note || '';
 
-    // 4. MESA Kabul Onayı
+    // 4. 2. Cil Mekanik
+    const mek2El = document.getElementById('editMekanik2Status');
+    if (mek2El) mek2El.value = u.mekanik2?.status || 'bekliyor';
+    const mek2DateEl = document.getElementById('editMekanik2Date');
+    if (mek2DateEl) mek2DateEl.value = u.mekanik2?.date || '';
+    const mek2NoteEl = document.getElementById('editMekanik2Note');
+    if (mek2NoteEl) mek2NoteEl.value = u.mekanik2?.note || '';
+
+    // 5. MESA Kabul Onayı
     document.getElementById('editMesaStatus').value = u.mesa?.status || 'bekliyor';
     document.getElementById('editMesaDate').value = u.mesa?.date || '';
     document.getElementById('editMesaOfficer').value = u.mesa?.officer || '';
     document.getElementById('editMesaDocNo').value = u.mesa?.docNo || '';
     document.getElementById('editMesaNote').value = u.mesa?.note || '';
 
-    // 5. Asma Tavan
+    // 6. Asma Tavan
     const tavanStatus = u.asmaTavan?.status || (u.mesa?.status === 'onaylandi' ? 'hazir' : 'kilitli');
     const tavanEl = document.getElementById('editAsmaTavanStatus');
     if (tavanEl) tavanEl.value = tavanStatus;
@@ -2653,14 +2721,29 @@ class SantiyeApp {
     const container = document.getElementById('customStagesUnitModalContainer');
     if (!container) return;
 
+    const prereqNames = {
+      'none': 'Ön şartsız',
+      'asmaTavan': '6. Asma Tavan Kapatma',
+      'mesa': '5. MESA Tavan Kapama Onayı',
+      'mekanik2': '4. 2. Cil Mekanik İşleri',
+      'elektrikTest': '3. Elektrik Testi',
+      'klima': '2. Klima İmalatı',
+      'mekanik': '1. Mekanik İmalatı'
+    };
+
     let html = '';
     (this.data?.customStages || []).forEach(cs => {
       const stageData = u[cs.id] || { status: 'kilitli', date: '', company: cs.company || '', note: '' };
       const prereqMet = cs.prerequisiteStage === 'none' ||
         (cs.prerequisiteStage === 'asmaTavan' && u.asmaTavan?.status === 'tamamlandi') ||
-        (cs.prerequisiteStage === 'elektrikTest' && u.elektrikTest?.status === 'tamamlandi') ||
         (cs.prerequisiteStage === 'mesa' && u.mesa?.status === 'onaylandi') ||
+        (cs.prerequisiteStage === 'mekanik2' && u.mekanik2?.status === 'tamamlandi') ||
+        (cs.prerequisiteStage === 'elektrikTest' && u.elektrikTest?.status === 'tamamlandi') ||
+        (cs.prerequisiteStage === 'klima' && u.klima?.status === 'tamamlandi') ||
+        (cs.prerequisiteStage === 'mekanik' && u.mekanik?.status === 'tamamlandi') ||
         (u[cs.prerequisiteStage]?.status === 'tamamlandi');
+
+      const prereqLabel = prereqNames[cs.prerequisiteStage] || cs.prerequisiteStage;
 
       html += `
         <div class="stage-edit-card" style="border-left: 4px solid ${cs.color}; background: #ffffff; border-radius: 8px; padding: 1rem; margin-bottom: 1rem; border: 1.5px solid #e2e8f0; border-left: 4px solid ${cs.color};">
@@ -2677,7 +2760,7 @@ class SantiyeApp {
           ${!prereqMet ? `
             <div style="background:#fffbeb; border:1px solid #fde68a; color:#b45309; padding:6px 10px; border-radius:6px; font-size:0.78rem; margin-bottom:0.75rem; display:flex; align-items:center; gap:6px;">
               <span>⚠️</span>
-              <span>Bu aşamanın başlayabilmesi için ön koşul olan aşamanın (${cs.prerequisiteStage}) tamamlanması gerekir.</span>
+              <span>Bu aşamanın başlayabilmesi için ön koşul olan <strong>${prereqLabel}</strong> aşamasının tamamlanması gerekir.</span>
             </div>
           ` : ''}
 
@@ -2800,15 +2883,26 @@ class SantiyeApp {
 
     const isTestDone = bothMekKliDone && elkSelect && elkSelect.value === 'tamamlandi';
 
-    // --- STEP 4: MESA Kabul & Onay Rule Enforcement ---
-    // Ön şart: Elektrik Testi Tamamlandı (isTestDone)
+    // --- STEP 4: 2. Cil Mekanik Badges ---
+    const mek2Select = document.getElementById('editMekanik2Status');
+    const mek2Status = mek2Select?.value || 'bekliyor';
+    const isMek2Done = mek2Status === 'tamamlandi';
+    const mek2Badge = document.getElementById('mekanik2BadgeStatus');
+    if (mek2Badge) {
+      mek2Badge.className = isMek2Done ? 'stage-val-badge badge-ok' : (mek2Status === 'devam' ? 'stage-val-badge badge-prog' : 'stage-val-badge badge-wait');
+      mek2Badge.innerText = isMek2Done ? 'Tamamlandı ✓' : (mek2Status === 'devam' ? 'İmalat Sürüyor' : 'Bekliyor');
+    }
+
+    // --- STEP 5: MESA Tavan Kapama Onay Rule Enforcement ---
+    // Ön şart: ELEKTRİK TESTİ BİTTİ (isTestDone) + 2. CİL MEKANİK BİTTİ (isMek2Done)
+    const bothTestAndMek2Done = isTestDone && isMek2Done;
     const mesaAlert = document.getElementById('mesaPrereqWarning');
     const mesaBadge = document.getElementById('mesaBadgeStatus');
 
     if (mesaSelect) {
       const mesaOptionApproved = mesaSelect.querySelector('option[value="onaylandi"]');
 
-      if (!isTestDone) {
+      if (!bothTestAndMek2Done) {
         if (mesaAlert) mesaAlert.style.display = 'flex';
         if (mesaOptionApproved) mesaOptionApproved.disabled = true;
         if (mesaSelect.value === 'onaylandi') {
@@ -2820,7 +2914,7 @@ class SantiyeApp {
       }
 
       const mesaStatus = mesaSelect.value;
-      const isMesaApproved = isTestDone && mesaStatus === 'onaylandi';
+      const isMesaApproved = bothTestAndMek2Done && mesaStatus === 'onaylandi';
 
       if (mesaBadge) {
         mesaBadge.className = isMesaApproved ? 'stage-val-badge badge-ok' : (mesaStatus === 'revizyon' ? 'stage-val-badge badge-rev' : 'stage-val-badge badge-wait');
@@ -2828,9 +2922,9 @@ class SantiyeApp {
       }
     }
 
-    const isMesaApproved = isTestDone && mesaSelect && mesaSelect.value === 'onaylandi';
+    const isMesaApproved = bothTestAndMek2Done && mesaSelect && mesaSelect.value === 'onaylandi';
 
-    // --- STEP 5: Asma Tavan Rule Enforcement ---
+    // --- STEP 6: Asma Tavan Rule Enforcement ---
     // Ön şart: MESA Onayı (isMesaApproved)
     const tavanAlert = document.getElementById('tavanPrereqWarning');
     const tavanBadge = document.getElementById('tavanBadgeStatus');
@@ -2921,7 +3015,7 @@ class SantiyeApp {
         const isMekDone = updatedUnit.mekanik?.status === 'tamamlandi';
         const isKliDone = updatedUnit.klima?.status === 'tamamlandi';
         if (!isMekDone || !isKliDone) {
-          this.showToast('HATA: Mekanik ve VRF Klima tamamlanmadan Elektrik Testine başlanamaz!', 'error');
+          this.showToast('HATA: 1. Mekanik ve VRF Klima tamamlanmadan Elektrik Testine başlanamaz!', 'error');
           return;
         }
       }
@@ -2933,12 +3027,21 @@ class SantiyeApp {
       changedStages.push('Elektrik Testi');
     }
 
-    // 4. MESA Kabul Onayı
+    // 4. 2. Cil Mekanik
+    if (hasAll || this.canEditStage('mekanik2')) {
+      const mek2Status = document.getElementById('editMekanik2Status')?.value || u.mekanik2?.status || 'bekliyor';
+      const mek2Date = document.getElementById('editMekanik2Date')?.value || (mek2Status === 'tamamlandi' ? new Date().toISOString().split('T')[0] : '');
+      const mek2Note = document.getElementById('editMekanik2Note')?.value || '';
+      updatedUnit.mekanik2 = { status: mek2Status, date: mek2Date, note: mek2Note };
+      changedStages.push('2. Cil Mekanik');
+    }
+
+    // 5. MESA Tavan Kapama Onayı
     if (hasAll || this.canEditStage('mesa')) {
       const mesaStatus = document.getElementById('editMesaStatus')?.value || u.mesa?.status || 'bekliyor';
       if (mesaStatus === 'onaylandi') {
-        if (updatedUnit.elektrikTest?.status !== 'tamamlandi') {
-          this.showToast('HATA: Elektrik testi başarıyla tamamlanmadan MESA Onayı verilemez!', 'error');
+        if (updatedUnit.elektrikTest?.status !== 'tamamlandi' || updatedUnit.mekanik2?.status !== 'tamamlandi') {
+          this.showToast('HATA: Elektrik Testi ve 2. Cil Mekanik İşleri tamamlanmadan MESA Tavan Kapama Onayı verilemez!', 'error');
           return;
         }
       }
@@ -2950,11 +3053,11 @@ class SantiyeApp {
       changedStages.push('MESA Onayı');
     }
 
-    // 5. Asma Tavan
+    // 6. Asma Tavan
     if (hasAll || this.canEditStage('asmaTavan')) {
       const tavanStatus = document.getElementById('editAsmaTavanStatus')?.value || u.asmaTavan?.status || 'kilitli';
       if (tavanStatus === 'tamamlandi' && updatedUnit.mesa?.status !== 'onaylandi') {
-        this.showToast('HATA: MESA Kabul Onayı verilmeden Asma Tavan kapatılamaz!', 'error');
+        this.showToast('HATA: MESA Tavan Kapama Onayı verilmeden Asma Tavan kapatılamaz!', 'error');
         return;
       }
       const tavanDate = document.getElementById('editAsmaTavanDate')?.value || (tavanStatus === 'tamamlandi' ? new Date().toISOString().split('T')[0] : '');
@@ -3026,7 +3129,7 @@ class SantiyeApp {
     const statusSelect = document.getElementById('bulkStatusSelect');
 
     let options = '';
-    if (field === 'mekanik' || field === 'klima') {
+    if (field === 'mekanik' || field === 'klima' || field === 'mekanik2') {
       options = `
         <option value="tamamlandi">✅ Tamamlandı (Bitti)</option>
         <option value="devam">🚧 Devam Ediyor</option>
@@ -3040,7 +3143,7 @@ class SantiyeApp {
       `;
     } else if (field === 'mesa') {
       options = `
-        <option value="onaylandi">✅ MESA Onayladı (Sadece Elektrik Testi tamamlananlar onaylanır)</option>
+        <option value="onaylandi">✅ MESA Onayladı (Elektrik Testi ve 2. Cil Mekanik tamamlananlar onaylanır)</option>
         <option value="revizyon">❌ Revizyon Gerekli</option>
         <option value="bekliyor">⏳ Onay Bekliyor</option>
       `;
@@ -3085,7 +3188,7 @@ class SantiyeApp {
         if (u.mekanik?.status !== 'tamamlandi' || u.klima?.status !== 'tamamlandi') return;
       }
       if (field === 'mesa' && status === 'onaylandi') {
-        if (u.elektrikTest?.status !== 'tamamlandi') return;
+        if (u.elektrikTest?.status !== 'tamamlandi' || u.mekanik2?.status !== 'tamamlandi') return;
       }
       if (field === 'asmaTavan' && ['devam', 'tamamlandi'].includes(status)) {
         if (u.mesa?.status !== 'onaylandi') return;
@@ -3111,7 +3214,7 @@ class SantiyeApp {
         }
       }
 
-      if (u.elektrikTest?.status !== 'tamamlandi' && u.mesa?.status === 'onaylandi') {
+      if ((u.elektrikTest?.status !== 'tamamlandi' || u.mekanik2?.status !== 'tamamlandi') && u.mesa?.status === 'onaylandi') {
         u.mesa.status = 'bekliyor';
       }
 
@@ -3528,7 +3631,7 @@ class SantiyeApp {
     }
 
     let csv = '\uFEFF'; // UTF-8 BOM - Excel Türkçe karakter uyumu
-    let headers = ['Blok', 'Kat', '1. Mekanik Durumu', '2. Klima Durumu', '3. Elektrik Testi Durumu', '4. MESA Kabul & Onay', '5. Asma Tavan Durumu'];
+    let headers = ['Blok', 'Kat', '1. Mekanik Durumu', '2. Klima Durumu', '3. Elektrik Testi Durumu', '4. 2. Cil Mekanik Durumu', '5. MESA Kabul & Onay', '6. Asma Tavan Durumu'];
 
     const customStages = this.data?.customStages || [];
     customStages.forEach(cs => {
@@ -3542,6 +3645,7 @@ class SantiyeApp {
       const isMekDone = u.mekanik?.status === 'tamamlandi';
       const isKliDone = u.klima?.status === 'tamamlandi';
       const isTestDone = u.elektrikTest?.status === 'tamamlandi';
+      const isMek2Done = u.mekanik2?.status === 'tamamlandi';
       const isMesaApproved = u.mesa?.status === 'onaylandi';
       const isTavanDone = u.asmaTavan?.status === 'tamamlandi';
 
@@ -3557,19 +3661,24 @@ class SantiyeApp {
 
       // 3. Elektrik Testi
       let testText = 'Kilitli';
-      if (isTestDone) testText = 'Başarılı';
+      if (isTestDone) testText = 'Test Tamamlandı';
       else if (u.elektrikTest?.status === 'hazir' || (isMekDone && isKliDone)) testText = 'Teste Hazır';
       else if (u.elektrikTest?.status === 'suruyor') testText = 'Test Sürüyor';
       else if (u.elektrikTest?.status === 'basarisiz') testText = 'Uygunsuzluk';
 
-      // 4. MESA Kabul Onayı
-      let mesaText = 'Kilitli (Test Bekleniyor)';
+      // 4. 2. Cil Mekanik
+      let mek2Text = 'Bekliyor';
+      if (isMek2Done) mek2Text = '2. Cil Bitti';
+      else if (u.mekanik2?.status === 'devam') mek2Text = 'İmalat Sürüyor';
+
+      // 5. MESA Kabul Onayı
+      let mesaText = 'Kilitli (Test ve 2. Cil Mekanik Bekleniyor)';
       if (isMesaApproved) mesaText = 'MESA Onayladı';
       else if (u.mesa?.status === 'revizyon') mesaText = 'Revizyon Gerekli';
-      else if (isTestDone) mesaText = 'Onay Bekliyor';
+      else if (isTestDone && isMek2Done) mesaText = 'Onay Bekliyor';
 
-      // 5. Asma Tavan
-      let tavanText = 'Kilitli (MESA Bekleniyor)';
+      // 6. Asma Tavan
+      let tavanText = 'Kilitli (MESA Onayı Bekleniyor)';
       if (isTavanDone) tavanText = 'Tavan Kapandı';
       else if (u.asmaTavan?.status === 'devam') tavanText = 'Kapatılıyor';
       else if (isMesaApproved) tavanText = 'Kapatmaya Hazır';
@@ -3580,6 +3689,7 @@ class SantiyeApp {
         mekText,
         kliText,
         testText,
+        mek2Text,
         mesaText,
         tavanText
       ];
