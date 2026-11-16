@@ -265,13 +265,15 @@ class SantiyeApp {
     } else {
       this.data.users.forEach(u => {
         if (u.id === 'u1' || u.username === 'admin') {
-          u.name = 'Yönetici';
+          u.name = u.name || 'Yönetici';
           u.username = 'admin';
           u.role = 'admin';
           u.allPermissions = true;
           u.permissions = { all: true, stages: ['*'] };
           u.desc = 'Tam yetkili sistem yöneticisi';
-          u.password = '12345';
+          if (!u.password) {
+            u.password = this.data.settings?.adminPassword || '12345';
+          }
         } else if (!u.permissions) {
           if (u.role === 'admin') {
             u.allPermissions = true;
@@ -294,7 +296,9 @@ class SantiyeApp {
     }
 
     if (!this.data.settings) this.data.settings = {};
-    this.data.settings.adminPassword = '12345';
+    if (!this.data.settings.adminPassword) {
+      this.data.settings.adminPassword = '12345';
+    }
 
     if (this.data.privateNotes && Array.isArray(this.data.privateNotes)) {
       this.data.privateNotes.forEach(n => {
@@ -3348,25 +3352,29 @@ class SantiyeApp {
     }
 
     let targetUser = (this.currentUser && this.data.users)
-      ? this.data.users.find(u => u.id === this.currentUser.id)
+      ? this.data.users.find(u => u.id === this.currentUser.id || (this.isAdmin && (u.username === 'admin' || u.id === 'u1')))
       : this.data.users.find(u => u.role === 'admin' || u.id === 'u1' || u.username === 'admin');
 
     if (!targetUser) {
       targetUser = {
         id: 'u1',
         username: 'admin',
-        name: 'Yönetici (Ben)',
+        name: 'Yönetici',
         role: 'admin',
-        desc: 'Tam yetkili yönetici',
+        allPermissions: true,
+        permissions: { all: true, stages: ['*'] },
+        desc: 'Tam yetkili sistem yöneticisi',
         password: '12345'
       };
-      this.data.users.push(targetUser);
+      this.data.users.unshift(targetUser);
     }
 
-    const currentExpectedPw = targetUser.password || (targetUser.role === 'admin' ? '12345' : 'saha123');
+    const isMasterAdmin = (this.isAdmin || this.hasAllPermissions() || targetUser.username === 'admin' || targetUser.id === 'u1' || targetUser.role === 'admin' || targetUser.allPermissions);
+    const adminExpectedPw = targetUser.password || this.data.settings?.adminPassword || '12345';
+    const currentExpectedPw = targetUser.password || (isMasterAdmin ? adminExpectedPw : 'saha');
 
-    // Verify current password (allow 12345 as fallback for admin)
-    const isPwCorrect = (curPw === currentExpectedPw) || (targetUser.role === 'admin' && (curPw === '12345' || curPw === 'admin123'));
+    // Verify current password: allow current stored password, or if admin allow 12345 / adminExpectedPw
+    const isPwCorrect = (curPw === currentExpectedPw) || (curPw === targetUser.password) || (isMasterAdmin && (curPw === '12345' || curPw === adminExpectedPw || curPw === (this.data.settings?.adminPassword || '12345')));
 
     if (!isPwCorrect) {
       this.showToast('Mevcut şifreniz hatalı! Lütfen kontrol ediniz.', 'error');
@@ -3377,28 +3385,21 @@ class SantiyeApp {
 
     // Update password in data
     targetUser.password = newPw;
-    if (targetUser.role === 'admin' || targetUser.id === 'u1' || targetUser.username === 'admin') {
+    if (isMasterAdmin) {
+      targetUser.role = 'admin';
+      targetUser.allPermissions = true;
       if (!this.data.settings) this.data.settings = {};
       this.data.settings.adminPassword = newPw;
     }
 
     // Save to Firestore and localStorage
-    await this.saveData(this.data, false);
-
-    if (window.location.origin.includes('localhost') && (targetUser.role === 'admin' || targetUser.id === 'u1' || targetUser.username === 'admin')) {
-      try {
-        fetch(`${this.apiUrl}/api/auth/change-password`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ currentPassword: curPw, newPassword: newPw })
-        }).catch(() => {});
-      } catch (e) {}
-    }
+    await this.saveData(this.data);
 
     this.closeModal('modalChangePassword');
     this.renderUsersList();
     this.showToast('Şifreniz başarıyla güncellendi! ✅', 'success');
   }
+
   // --- EXPORT TO EXCEL / CSV ---
   exportToExcel() {
     if (!this.hasAllPermissions()) {
@@ -5757,54 +5758,6 @@ class SantiyeApp {
       this.showToast('Kullanıcı ve yetki yönetimi yalnızca tam yetkili yöneticilere açıktır.', 'warning');
       return;
     }
-    const tbody = document.getElementById('permMatrixBody');
-    if (!tbody) return;
-
-    const sections = [
-      { id: 'meetings', name: '📋 Toplantı To-Do & Kararlar', desc: 'Haftalık taahhütler ve sözler' },
-      { id: 'units', name: '🗺️ Bloklar & Test Matrisi', desc: 'Mekanik, Klima, MESA ve Elektrik testleri' },
-      { id: 'internal_plan', name: '📅 İnternal İş Planı', desc: 'İç saha ekibi operasyonel görevleri' },
-      { id: 'private_notes', name: '🔒 Özel Notlarım', desc: 'Yönetici özel not defteri' },
-      { id: 'admin', name: '⚙️ Yönetim & Toplu İşlemler', desc: 'Toplu onay, şifre ve bulut ayarları' }
-    ];
-
-    const roles = [
-      { key: 'admin', label: '🛡️ Yönetici (Ben)' },
-      { key: 'internal_team', label: '⚡ Üçay Elektrik Ekibi' },
-      { key: 'ana_firma', label: '🏢 MESA Ekibi' },
-      { key: 'viewer', label: '👁️ İzleyici' }
-    ];
-
-    tbody.innerHTML = sections.map(sec => {
-      let cells = `<td><strong>${sec.name}</strong><div style="font-size:0.75rem; color:#64748b;">${sec.desc}</div></td>`;
-      roles.forEach(r => {
-        let badge = '';
-        if (r.key === 'admin') {
-          badge = '<span class="perm-badge full">✓ Görür & Düzenler</span>';
-        } else if (r.key === 'internal_team') {
-          if (sec.id === 'private_notes' || sec.id === 'admin') {
-            badge = '<span class="perm-badge none">❌ Gizli (Erişim Yok)</span>';
-          } else {
-            badge = '<span class="perm-badge full">✓ Görür & Düzenler</span>';
-          }
-        } else if (r.key === 'ana_firma') {
-          if (sec.id === 'private_notes' || sec.id === 'internal_plan' || sec.id === 'admin') {
-            badge = '<span class="perm-badge none">❌ Gizli (Tamamen Gizli)</span>';
-          } else {
-            badge = '<span class="perm-badge view">👁️ Yalnızca Görüntüler</span>';
-          }
-        } else { // viewer
-          if (sec.id === 'private_notes' || sec.id === 'internal_plan' || sec.id === 'admin') {
-            badge = '<span class="perm-badge none">❌ Gizli (Erişim Yok)</span>';
-          } else {
-            badge = '<span class="perm-badge view">👁️ Yalnızca Görüntüler</span>';
-          }
-        }
-        cells += `<td>${badge}</td>`;
-      });
-      return `<tr>${cells}</tr>`;
-    }).join('');
-
     this.renderUsersList();
     this.openModal('modalPermissions');
   }

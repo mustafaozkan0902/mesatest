@@ -3581,6 +3581,7 @@ body {
           <span>İşlem & Onay Geçmişi</span>
           <span class="tab-count" id="logTabCount">0</span>
         </button>
+
       </nav>
 
       <!-- TAB 1: Matris -->
@@ -3819,39 +3820,39 @@ body {
       </div>
     </section>
 
-    <!-- TAB 5: İşlem & Onay Günlüğü (Audit Trail) -->
-
-      <!-- TAB 5: İşlem Geçmişi (Loglar) -->
+      <!-- TAB 5: İşlem & Onay Günlüğü (Yeni İşlemler Buraya Kaydedilir) -->
       <section id="view-logs" class="view-panel">
-      <div class="table-card">
-        <div style="padding: 1rem 1.25rem; border-bottom: 1px solid #e2e8f0; display:flex; justify-content:space-between; align-items:center;">
-          <div>
-            <h3 style="font-size: 1rem; font-weight: 700;">Şantiye İşlem & Onay Günlüğü</h3>
-            <span style="font-size: 0.8rem; color: #64748b;">Mekanik, Klima, MESA ve Elektrik Testi hareket kayıtları</span>
+        <div class="table-card">
+          <div style="padding: 1rem 1.25rem; border-bottom: 1px solid #e2e8f0; display:flex; justify-content:space-between; align-items:center;">
+            <div>
+              <h3 style="font-size: 1rem; font-weight: 700;">Şantiye İşlem & Onay Günlüğü</h3>
+              <span style="font-size: 0.8rem; color: #64748b;">Mekanik, Klima, MESA, Elektrik Testi ve Asma Tavan hareket kayıtları</span>
+            </div>
+            <button id="btnClearLogs" class="btn btn-danger btn-sm" onclick="app.clearAuditLogs()" style="display: none; padding: 0.25rem 0.65rem; font-size: 0.78rem;">
+              <span>🗑️</span>
+              <span>Geçmişi Temizle</span>
+            </button>
           </div>
-          <button id="btnClearLogs" class="btn btn-danger btn-sm" onclick="app.clearAuditLogs()" style="display: none; padding: 0.25rem 0.65rem; font-size: 0.78rem;">
-            <span>🗑️</span>
-            <span>Geçmişi Temizle</span>
-          </button>
+          <div class="data-table-wrapper">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Tarih / Saat</th>
+                  <th>Kullanıcı</th>
+                  <th>Blok / Kat</th>
+                  <th>İşlem</th>
+                  <th>Detay & Açıklama</th>
+                </tr>
+              </thead>
+              <tbody id="auditLogsBody">
+                <!-- Dynamically populated -->
+              </tbody>
+            </table>
+          </div>
         </div>
-        <div class="data-table-wrapper">
-          <table class="data-table">
-            <thead>
-              <tr>
-                <th>Tarih / Saat</th>
-                <th>Kullanıcı</th>
-                <th>Blok / Kat</th>
-                <th>İşlem</th>
-                <th>Detay & Açıklama</th>
-              </tr>
-            </thead>
-            <tbody id="auditLogsBody">
-              <!-- Dynamically populated -->
-            </tbody>
-          </table>
-        </div>
-      </div>
-    </section>
+      </section>
+
+    
 
     <!-- TAB 6: Toplantı Kararları & Gecikme Takip Sistemi -->
     </div>
