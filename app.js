@@ -6137,6 +6137,36 @@ class SantiyeApp {
     }).join('');
   }
 
+  isFullManagerOrAdmin(u) {
+    if (!u) return false;
+    const username = (u.username || '').toLowerCase().trim();
+    const id = (u.id || '').toLowerCase().trim();
+    if (username === 'admin' || username === 'yonetici' || id === 'u1') return true;
+
+    const role = (u.role || '').toLowerCase().trim();
+    if (role === 'admin' || role === 'yonetici') return true;
+
+    if (u.allPermissions === true || u.allPermissions === 'true') return true;
+    if (u.permissions && (u.permissions.all === true || u.permissions.all === 'true')) return true;
+
+    const stages = u.permissions?.stages || [];
+    if (Array.isArray(stages)) {
+      if (stages.includes('*') || stages.includes('all')) return true;
+      if (stages.length >= 6) return true;
+    }
+
+    const permittedNames = this.getPermittedStageNames(u);
+    if (permittedNames.some(p => p.toLowerCase().includes('tam yetki') || p.toLowerCase().includes('tüm yetki'))) return true;
+
+    const name = (u.name || '').toLowerCase();
+    const desc = (u.desc || '').toLowerCase();
+    if (name.includes('yönetici') || name.includes('admin') || name.includes('tam yetki')) return true;
+    if (desc.includes('tam yetkili') || desc.includes('yönetici')) return true;
+    if (username.includes('admin') || username.includes('yonetici')) return true;
+
+    return false;
+  }
+
   // --- ADMİNE ÖZEL KULLANICI & ŞİFRE LİSTESİ DIŞA AKTARMA (EXCEL / CSV) ---
   exportUsersListToExcel() {
     if (this.currentUser?.username !== 'admin') {
@@ -6144,12 +6174,8 @@ class SantiyeApp {
       return;
     }
 
-    // Tabloda yöneticiler olmayacak, yalnızca saha ekipleri yer alacak
-    const fieldUsers = (this.data?.users || []).filter(u => {
-      const isMasterAdmin = (u.username === 'admin' || u.id === 'u1');
-      const hasAll = isMasterAdmin || u.allPermissions || u.role === 'admin';
-      return !hasAll;
-    });
+    // Tabloda tam yetkililer veya yöneticiler KESİNLİKLE olmayacak, yalnızca kısmi yetkili saha ekipleri yer alacak
+    const fieldUsers = (this.data?.users || []).filter(u => !this.isFullManagerOrAdmin(u));
 
     if (fieldUsers.length === 0) {
       this.showToast('Tabloya aktarılacak saha personeli bulunamadı.', 'warning');
@@ -6199,9 +6225,9 @@ class SantiyeApp {
     const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
     const link = document.createElement('a');
     link.href = URL.createObjectURL(blob);
-    link.download = `MESA_Santiye_Saha_Ekipleri_Ilk_Sifreleri_${new Date().toISOString().split('T')[0]}.csv`;
+    link.download = `MESA_Saha_Ekipleri_Kullanici_Sifreleri_${new Date().toISOString().split('T')[0]}.csv`;
     link.click();
-    this.showToast('Saha ekipleri kullanıcı ve ilk şifre tablosu başarıyla indirildi. ✅ (Excel ile açabilirsiniz)', 'success');
+    this.showToast('Yalnızca saha ekiplerini içeren şifre tablosu başarıyla indirildi. ✅ (Yöneticiler hariç tutuldu)', 'success');
   }
 
   // --- E-POSTA İÇİN KULLANICI LİSTESİNİ KOPYALA ---
@@ -6211,11 +6237,8 @@ class SantiyeApp {
       return;
     }
 
-    const fieldUsers = (this.data?.users || []).filter(u => {
-      const isMasterAdmin = (u.username === 'admin' || u.id === 'u1');
-      const hasAll = isMasterAdmin || u.allPermissions || u.role === 'admin';
-      return !hasAll;
-    });
+    // Yöneticiler ve tam yetkililer KESİNLİKLE hariç tutulur
+    const fieldUsers = (this.data?.users || []).filter(u => !this.isFullManagerOrAdmin(u));
 
     if (fieldUsers.length === 0) return;
 
