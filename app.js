@@ -22,8 +22,8 @@ class SantiyeApp {
     this.adminToken = localStorage.getItem('santiye_admin_token') || null;
 
     if (this.currentUser) {
-      if (this.currentUser.role === 'admin') {
-        this.currentUser.name = 'Yönetici (Ben)';
+      if (this.currentUser.role === 'admin' || this.currentUser.username === 'admin') {
+        this.currentUser.name = 'Admin';
         this.currentUser.username = 'admin';
       } else if (this.currentUser.role === 'internal_team' && (this.currentUser.name?.includes('Saha') || !this.currentUser.name)) {
         this.currentUser.name = 'Üçay Elektrik Ekibi';
@@ -31,11 +31,11 @@ class SantiyeApp {
         this.currentUser.name = 'MESA Ekibi';
       }
       this.currentRole = this.currentUser.role || 'viewer';
-      this.isAdmin = (this.currentRole === 'admin');
+      this.isAdmin = (this.currentRole === 'admin' || this.currentUser.username === 'admin');
     } else if (this.adminToken) {
       this.currentRole = 'admin';
       this.isAdmin = true;
-      this.currentUser = { id: 'u1', name: 'Yönetici (Ben)', username: 'admin', role: 'admin' };
+      this.currentUser = { id: 'u1', name: 'Admin', username: 'admin', role: 'admin' };
     } else {
       // Default: Strictly viewer/read-only when not logged in
       this.currentRole = 'viewer';
@@ -253,11 +253,12 @@ class SantiyeApp {
       this.data.logs = [];
     }
     const defaultUsers = [
-      { id: 'u1', username: 'admin', name: 'Yönetici', role: 'admin', password: '12345', allPermissions: true, permissions: { all: true, stages: ['*'] }, desc: 'Tam yetkili sistem yöneticisi' },
+      { id: 'u1', username: 'admin', name: 'Admin', role: 'admin', password: '12345', allPermissions: true, permissions: { all: true, stages: ['*'] }, desc: 'Sistem yöneticisi' },
       { id: 'u2', username: 'elektrik_ekibi', name: 'Elektrik Test Ekibi', role: 'custom', password: 'saha', allPermissions: false, permissions: { all: false, stages: ['elektrikTest'] }, desc: 'Elektrik test ve devreye alma' },
       { id: 'u3', username: 'mekanik_ekibi', name: 'Mekanik Tesisat Ekibi', role: 'custom', password: 'saha', allPermissions: false, permissions: { all: false, stages: ['mekanik'] }, desc: 'Mekanik tesisat ve borulama' },
       { id: 'u4', username: 'klima_ekibi', name: 'VRF Klima Ekibi', role: 'custom', password: 'saha', allPermissions: false, permissions: { all: false, stages: ['klima'] }, desc: 'Klima ve havalandırma montajı' },
-      { id: 'u5', username: 'mesa_kontrol', name: 'MESA Kontrol Heyeti', role: 'custom', password: 'mesa', allPermissions: false, permissions: { all: false, stages: ['mesa'] }, desc: 'MESA teslim alma ve onay' }
+      { id: 'u5', username: 'mesa_kontrol', name: 'MESA Kontrol Heyeti', role: 'custom', password: 'mesa', allPermissions: false, permissions: { all: false, stages: ['mesa'] }, desc: 'MESA teslim alma ve onay' },
+      { id: 'u6', username: 'asma_tavan_ekibi', name: 'Asma Tavan Ekibi', role: 'custom', password: 'saha', allPermissions: false, permissions: { all: false, stages: ['asmaTavan'] }, desc: 'Asma tavan kapatma ve alçıpan' }
     ];
 
     if (!this.data.users || !Array.isArray(this.data.users) || this.data.users.length === 0) {
@@ -265,7 +266,7 @@ class SantiyeApp {
     } else {
       this.data.users.forEach(u => {
         if (u.id === 'u1' || u.username === 'admin') {
-          u.name = u.name || 'Yönetici';
+          u.name = 'Admin';
           u.username = 'admin';
           u.role = 'admin';
           u.allPermissions = true;
@@ -303,7 +304,7 @@ class SantiyeApp {
     if (this.data.privateNotes && Array.isArray(this.data.privateNotes)) {
       this.data.privateNotes.forEach(n => {
         if (n.author && n.author.includes('Proje')) {
-          n.author = 'Yönetici (Ben)';
+          n.author = 'Admin';
         }
       });
     }
@@ -398,7 +399,7 @@ class SantiyeApp {
 
     if (this.currentUser) {
       if (this.currentUser.username === 'admin' || this.currentUser.allPermissions) {
-        this.currentUser.name = this.currentUser.name || 'Yönetici';
+        this.currentUser.name = 'Admin';
         this.currentUser.allPermissions = true;
         this.currentUser.permissions = { all: true, stages: ['*'] };
         this.isAdmin = true;
@@ -409,7 +410,7 @@ class SantiyeApp {
     } else if (this.adminToken) {
       this.isAdmin = true;
       this.currentRole = 'admin';
-      this.currentUser = { id: 'u1', name: 'Yönetici', username: 'admin', role: 'admin', allPermissions: true, permissions: { all: true, stages: ['*'] } };
+      this.currentUser = { id: 'u1', name: 'Admin', username: 'admin', role: 'admin', allPermissions: true, permissions: { all: true, stages: ['*'] } };
     } else {
       // Giriş yapılmamışsa: KESİNLİKLE salt okunur izleme modu
       this.currentRole = 'viewer';
@@ -636,13 +637,15 @@ class SantiyeApp {
         roleBadge.innerHTML = '<span>👁️</span><span>Salt Okunur (Giriş Yapılmadı)</span>';
       } else if (hasAll) {
         roleBadge.className = 'role-badge admin';
-        const name = this.currentUser?.name || this.currentUser?.username || 'Yönetici';
-        roleBadge.innerHTML = `<span>🛡️</span><span><strong>${this.escapeHtml(name)}</strong> (Tam Yetkili Yönetici)</span>`;
+        let name = this.currentUser?.name || this.currentUser?.username || 'Admin';
+        name = name.replace(/\s*\([^)]*\)/g, '').trim();
+        roleBadge.innerHTML = `<span>🛡️</span><span><strong>${this.escapeHtml(name)}</strong></span>`;
       } else {
         roleBadge.className = 'role-badge internal';
-        const name = this.currentUser?.name || this.currentUser?.username || 'Kullanıcı';
-        const permNames = this.getPermittedStageNames().join(', ') || 'Salt Okunur';
-        roleBadge.innerHTML = `<span>👤</span><span><strong>${this.escapeHtml(name)}</strong> • Yetki: ${this.escapeHtml(permNames)}</span>`;
+        let name = this.currentUser?.name || this.currentUser?.username || 'Kullanıcı';
+        name = name.replace(/\s*\([^)]*\)/g, '').trim();
+        const permNames = this.getPermittedStageNames().join(', ') || 'Kısmi Yetkili';
+        roleBadge.innerHTML = `<span>👤</span><span><strong>${this.escapeHtml(name)}</strong> (Kısmi Yetkili: ${this.escapeHtml(permNames)})</span>`;
       }
     }
 
@@ -772,7 +775,7 @@ class SantiyeApp {
     if (isValid) {
       this.adminToken = this.adminToken || 'local-admin-token-' + Date.now();
       localStorage.setItem('santiye_admin_token', this.adminToken);
-      this.currentUser = { id: 'u1', name: 'Yönetici (Ben)', username: 'admin', role: 'admin' };
+      this.currentUser = { id: 'u1', name: 'Admin', username: 'admin', role: 'admin' };
       localStorage.setItem('santiye_user_session', JSON.stringify(this.currentUser));
       this.closeModal('modalAdminVerify');
       this.switchActiveRole('admin');
@@ -1555,10 +1558,11 @@ class SantiyeApp {
   // --- DİNAMİK AŞAMA / İMALAT YÖNETİMİ (EKLE, DÜZENLE, SİL) ---
   openNewStageModal() {
     if (!this.hasAllPermissions()) {
-      this.showToast('Özel imalat ekleme ve silme yetkisi yalnızca tam yetkili yöneticilere aittir.', 'warning');
+      this.showToast('Özel imalat ekleme ve silme yetkisi yalnızca yöneticilere aittir.', 'warning');
       return;
     }
-    this.renderCustomStagesList();
+    this.cancelEditStage(true);
+    this.renderCustomStagesListInModal();
     this.openModal('modalNewStage');
   }
 
@@ -1766,8 +1770,11 @@ class SantiyeApp {
     Object.values(this.data.units).forEach(u => {
       const isPrereqDone = prereq === 'none' ||
         (prereq === 'asmaTavan' && u.asmaTavan?.status === 'tamamlandi') ||
-        (prereq === 'elektrikTest' && u.elektrikTest?.status === 'tamamlandi') ||
         (prereq === 'mesa' && u.mesa?.status === 'onaylandi') ||
+        (prereq === 'mekanik2' && u.mekanik2?.status === 'tamamlandi') ||
+        (prereq === 'elektrikTest' && u.elektrikTest?.status === 'tamamlandi') ||
+        (prereq === 'klima' && u.klima?.status === 'tamamlandi') ||
+        (prereq === 'mekanik' && u.mekanik?.status === 'tamamlandi') ||
         (u[prereq]?.status === 'tamamlandi');
 
       u[stageId] = {
@@ -1787,7 +1794,7 @@ class SantiyeApp {
 
   async deleteCustomStage(stageId) {
     if (!this.requireLogin('İmalat silmek için lütfen yönetici girişi yapınız.')) return;
-    if (!this.isAdmin) {
+    if (!this.hasAllPermissions()) {
       this.showToast('İmalat silme yetkisi yalnızca yöneticilere aittir.', 'warning');
       return;
     }
@@ -3282,21 +3289,30 @@ class SantiyeApp {
     const users = this.data?.users || [];
 
     if (userSelect) {
-      let options = `<option value="">-- Kayıtlı Hesap Seçin (Opsiyonel) --</option>`;
+      let options = `<option value="">-- Kayıtlı Personel / Ekip Seçin --</option>`;
       users.forEach(u => {
-        let roleName = 'İzleyici';
-        if (u.role === 'admin') roleName = 'Yönetici';
-        else if (u.role === 'internal_team') roleName = 'Saha / Üçay';
-        else if (u.role === 'ana_firma') roleName = 'MESA Ekibi';
+        // Admin hesabı giriş ekranındaki seçeneklerde kesinlikle görünmez (gizlidir)
+        const isMasterAdmin = (u.username === 'admin' || u.id === 'u1' || u.role === 'admin' || u.allPermissions);
+        if (isMasterAdmin) return;
+
+        // Yetkili personeller: parantez içinde (Kısmi Yetkili) yazar
+        const permitted = this.getPermittedStageNames(u);
+        const roleLabel = permitted.length > 0 ? 'Kısmi Yetkili' : 'Salt Okunur';
         const uname = u.username || u.id;
-        options += `<option value="${this.escapeHtml(uname)}">${this.escapeHtml(u.name)} (@${this.escapeHtml(uname)}) [${roleName}]</option>`;
+        const cleanName = (u.name || '').replace(/\s*\([^)]*\)/g, '').trim();
+        options += `<option value="${this.escapeHtml(uname)}">${this.escapeHtml(cleanName)} (@${this.escapeHtml(uname)}) (${roleLabel})</option>`;
       });
       userSelect.innerHTML = options;
       userSelect.value = '';
     }
 
     if (usernameInput) {
-      usernameInput.value = this.currentUser?.username || '';
+      // Admin ise kullanıcı adını açıkta bırakma
+      if (this.currentUser?.username === 'admin') {
+        usernameInput.value = '';
+      } else {
+        usernameInput.value = this.currentUser?.username || '';
+      }
     }
 
     if (pwInput) {
@@ -3359,7 +3375,7 @@ class SantiyeApp {
     const users = this.data?.users || [];
     const adminUser = users.find(u => u.role === 'admin' || u.id === 'u1' || u.username === 'admin') || {
       id: 'u1',
-      name: 'Yönetici (Ben)',
+      name: 'Admin',
       username: 'admin',
       role: 'admin',
       password: this.data?.settings?.adminPassword || '12345'
@@ -3466,8 +3482,13 @@ class SantiyeApp {
     this.closeModal('modalLogin');
     this.updateRoleUI();
 
-    const permSummary = this.getPermittedStageNames(this.currentUser).join(', ') || 'Salt Okunur';
-    this.showToast(`Hoş geldiniz, ${loggedInUser.name}! (Yetki: ${permSummary}) ✅`, 'success');
+    const cleanDisplayName = (loggedInUser.name || '').replace(/\s*\([^)]*\)/g, '').trim();
+    if (isAll) {
+      this.showToast(`Hoş geldiniz, ${cleanDisplayName}! ✅`, 'success');
+    } else {
+      const permSummary = this.getPermittedStageNames(this.currentUser).join(', ') || 'Kısmi Yetkili';
+      this.showToast(`Hoş geldiniz, ${cleanDisplayName}! (Kısmi Yetkili: ${permSummary}) ✅`, 'success');
+    }
     this.renderAll();
   }
   logout() {
@@ -5252,7 +5273,7 @@ class SantiyeApp {
         content: content,
         createdAt: nowStr,
         updatedAt: nowStr,
-        author: 'Yönetici (Ben)'
+        author: 'Admin'
       };
       this.data.privateNotes.unshift(newNote);
     }
@@ -6038,16 +6059,17 @@ class SantiyeApp {
     userGrid.innerHTML = users.map(u => {
       const isMasterAdmin = (u.username === 'admin' || u.id === 'u1');
       const hasAll = isMasterAdmin || u.allPermissions || u.role === 'admin';
+      const cleanName = (u.name || '').replace(/\s*\([^)]*\)/g, '').trim();
 
       let permBadgesHtml = '';
       if (hasAll) {
-        permBadgesHtml = '<span class="badge" style="background:#fee2e2; color:#b91c1c; font-weight:700;">🛡️ Tüm Yetkiler (Tam Yetki)</span>';
+        permBadgesHtml = '<span class="badge" style="background:#fee2e2; color:#b91c1c; font-weight:700;">🛡️ Tam Yetki</span>';
       } else {
         const permitted = this.getPermittedStageNames(u);
         if (permitted.length === 0) {
-          permBadgesHtml = '<span class="badge" style="background:#f1f5f9; color:#64748b; font-weight:700;">👁️ Salt Okunur (Yetki Yok)</span>';
+          permBadgesHtml = '<span class="badge" style="background:#f1f5f9; color:#64748b; font-weight:700;">👁️ Salt Okunur</span>';
         } else {
-          permBadgesHtml = permitted.map(p => {
+          permBadgesHtml = '<span class="badge" style="background:#dbeafe; color:#1e40af; font-weight:700; font-size:0.75rem;">🔑 Kısmi Yetkili</span> ' + permitted.map(p => {
             let colorStyle = 'background:#e0f2fe; color:#0369a1;';
             if (p.includes('Mekanik')) colorStyle = 'background:#ffedd5; color:#c2410c;';
             else if (p.includes('Klima')) colorStyle = 'background:#ecfeff; color:#0891b2;';
@@ -6065,7 +6087,7 @@ class SantiyeApp {
             <div>
               <div style="font-weight:800; color:#0f172a; font-size:0.92rem; display:flex; align-items:center; gap:6px;">
                 <span>👤</span>
-                <span>${this.escapeHtml(u.name)}</span>
+                <span>${this.escapeHtml(cleanName)}</span>
               </div>
               <div style="font-size:0.76rem; color:#64748b; font-family:monospace; margin-top:2px;">
                 @${this.escapeHtml(u.username || u.id)}
@@ -6101,6 +6123,119 @@ class SantiyeApp {
         </div>
       `;
     }).join('');
+  }
+
+  // --- ADMİNE ÖZEL KULLANICI & ŞİFRE LİSTESİ DIŞA AKTARMA (EXCEL / CSV) ---
+  exportUsersListToExcel() {
+    if (!this.hasAllPermissions()) {
+      this.showToast('Kullanıcı şifre listesini indirme yetkisi yalnızca yöneticilere aittir.', 'warning');
+      return;
+    }
+
+    const users = this.data?.users || [];
+    if (users.length === 0) {
+      this.showToast('Kayıtlı kullanıcı bulunamadı.', 'warning');
+      return;
+    }
+
+    let csv = '\uFEFF'; // Excel Türkçe karakter uyumu için UTF-8 BOM
+    const headers = [
+      'Ad Soyad / Ekip Ünvanı',
+      'Kullanıcı Adı',
+      'Giriş Şifresi',
+      'Yetki Seviyesi',
+      'Yetkili Olduğu İmalatlar / Aşamalar',
+      'Açıklama / Görev',
+      'Giriş Bağlantısı (URL)'
+    ];
+
+    csv += headers.join(';') + '\n';
+
+    users.forEach(u => {
+      const isMasterAdmin = (u.username === 'admin' || u.id === 'u1');
+      const hasAll = isMasterAdmin || u.allPermissions || u.role === 'admin';
+      const cleanName = (u.name || '').replace(/\s*\([^)]*\)/g, '').trim();
+      const username = u.username || u.id;
+      const password = u.password || (hasAll ? (this.data?.settings?.adminPassword || '12345') : 'saha');
+      const roleLevel = hasAll ? 'Tam Yetki' : 'Kısmi Yetkili';
+      const permitted = this.getPermittedStageNames(u);
+      const permText = hasAll ? 'Tüm İmalatlar ve Sistem Yönetimi' : (permitted.length > 0 ? permitted.join(', ') : 'Salt Okunur (İzleme)');
+      const desc = u.desc || '';
+      const portalUrl = 'https://mesatest.netlify.app/';
+
+      const row = [
+        cleanName,
+        username,
+        password,
+        roleLevel,
+        permText,
+        desc,
+        portalUrl
+      ];
+
+      csv += row.map(v => `"${String(v).replace(/"/g, '""')}"`).join(';') + '\n';
+    });
+
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = `MESA_Santiye_Kullanici_Giris_Bilgileri_${new Date().toISOString().split('T')[0]}.csv`;
+    link.click();
+    this.showToast('Kullanıcı ve şifre tablosu başarıyla indirildi. ✅ (Excel ile açabilirsiniz)', 'success');
+  }
+
+  // --- E-POSTA İÇİN KULLANICI LİSTESİNİ KOPYALA ---
+  async copyUsersListForEmail() {
+    if (!this.hasAllPermissions()) {
+      this.showToast('Kullanıcı listesini kopyalama yetkisi yalnızca yöneticilere aittir.', 'warning');
+      return;
+    }
+
+    const users = this.data?.users || [];
+    if (users.length === 0) return;
+
+    let text = `MESA ŞANTİYE TEST VE İMALAT TAKİP SİSTEMİ - KULLANICI GİRİŞ BİLGİLERİ\n`;
+    text += `Giriş Portalı: https://mesatest.netlify.app/\n`;
+    text += `Tarih: ${new Date().toLocaleDateString('tr-TR')}\n\n`;
+    text += `Sayın İlgililer,\nŞantiye elektrik testi, mekanik, klima ve asma tavan süreçlerinin takibi için kullanıcı hesaplarınız tanımlanmıştır.\n`;
+    text += `Aşağıdaki giriş bilgileriniz ile sisteme giriş yaparak sorumlu olduğunuz katların imalat ve test durumlarını güncelleyebilirsiniz:\n\n`;
+    text += `----------------------------------------------------------------------------------------------------\n`;
+    text += `${'Ekip / Ad Soyad'.padEnd(28)} | ${'Kullanıcı Adı'.padEnd(16)} | ${'Şifre'.padEnd(12)} | Yetkili Aşamalar\n`;
+    text += `----------------------------------------------------------------------------------------------------\n`;
+
+    users.forEach(u => {
+      const isMasterAdmin = (u.username === 'admin' || u.id === 'u1');
+      const hasAll = isMasterAdmin || u.allPermissions || u.role === 'admin';
+      const cleanName = (u.name || '').replace(/\s*\([^)]*\)/g, '').trim();
+      const username = u.username || u.id;
+      const password = u.password || (hasAll ? (this.data?.settings?.adminPassword || '12345') : 'saha');
+      const permitted = this.getPermittedStageNames(u);
+      const permText = hasAll ? 'Tam Yetki (Tüm İmalatlar)' : (permitted.length > 0 ? `Kısmi Yetki (${permitted.join(', ')})` : 'Salt Okunur');
+
+      text += `${cleanName.padEnd(28)} | ${username.padEnd(16)} | ${password.padEnd(12)} | ${permText}\n`;
+    });
+
+    text += `----------------------------------------------------------------------------------------------------\n\n`;
+    text += `* Not: Sisteme giriş yaptıktan sonra sağ üst menüden kendi şifrenizi istediğiniz zaman değiştirebilirsiniz.\n`;
+    text += `* Ön Şart Akışı:\n`;
+    text += `  1. Mekanik + 2. Klima ➔ 3. Elektrik Testi [TEST BİTTİ] + 4. 2. Cil Mekanik [2. CİL BİTTİ] ➔ 5. MESA Onayı [ONAYLA] ➔ 6. Asma Tavan [KAPANDI]\n`;
+
+    try {
+      if (navigator?.clipboard?.writeText) {
+        await navigator.clipboard.writeText(text);
+      } else {
+        throw new Error('Clipboard API not supported');
+      }
+      this.showToast('📋 Kullanıcı giriş tablosu e-posta için panoya kopyalandı! Mailinize doğrudan yapıştırabilirsiniz.', 'success');
+    } catch(err) {
+      const ta = document.createElement('textarea');
+      ta.value = text;
+      document.body.appendChild(ta);
+      ta.select();
+      document.execCommand('copy');
+      document.body.removeChild(ta);
+      this.showToast('📋 Kullanıcı giriş tablosu panoya kopyalandı!', 'success');
+    }
   }
 
   openNewUserModal() {

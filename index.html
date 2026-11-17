@@ -4527,7 +4527,7 @@ body {
       <div class="modal-body">
         <div class="form-group" style="margin-bottom: 0.85rem;">
           <label class="form-label" for="loginUsernameInput">Kullanıcı Adı:</label>
-          <input type="text" id="loginUsernameInput" class="form-control" placeholder="Kullanıcı adınızı yazınız (örn: admin)" autocomplete="username" autofocus onkeydown="if(event.key==='Enter') document.getElementById('loginPasswordInput')?.focus()">
+          <input type="text" id="loginUsernameInput" class="form-control" placeholder="Kullanıcı adınızı yazınız" autocomplete="username" autofocus onkeydown="if(event.key==='Enter') document.getElementById('loginPasswordInput')?.focus()">
           <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 0.4rem;">
             <span style="font-size: 0.72rem; color: #64748b;">veya kayıtlı hesaptan seçin:</span>
             <select id="loginUserSelect" class="form-select" onchange="app.onLoginUserSelectChange()" style="width: auto; padding: 2px 8px; font-size: 0.72rem; height: auto; border-radius: 4px; max-width: 220px;">
@@ -5132,8 +5132,18 @@ body {
           </button>
         </div>
 
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem; flex-wrap: wrap; gap: 0.5rem;">
           <h3 style="font-size: 0.95rem; font-weight: 700; color: #0f172a; margin: 0;">Kayıtlı Kullanıcı Hesapları & Yetkileri</h3>
+          <div style="display: flex; gap: 0.45rem; flex-wrap: wrap;">
+            <button class="btn btn-outline btn-sm" onclick="app.exportUsersListToExcel()" style="font-weight: 700; background: #ffffff; border-color: #0284c7; color: #0369a1; padding: 0.3rem 0.65rem;" title="Kullanıcıları, şifreleri ve yetkilerini Excel/CSV olarak indir (E-posta için hazır)">
+              <span>📥</span>
+              <span>Kullanıcı & Şifre Tablosunu İndir</span>
+            </button>
+            <button class="btn btn-outline btn-sm" onclick="app.copyUsersListForEmail()" style="font-weight: 700; background: #ffffff; border-color: #64748b; color: #334155; padding: 0.3rem 0.65rem;" title="Kullanıcı giriş bilgilerini e-posta metnine yapıştırmak için panoya kopyala">
+              <span>📋</span>
+              <span>Mail İçin Kopyala</span>
+            </button>
+          </div>
         </div>
         <div class="users-list-grid" id="usersListGrid">
           <!-- Dynamically populated -->
@@ -5748,6 +5758,15 @@ body {
             <div>
               <div style="font-weight: 700; font-size: 0.85rem; color: #0f172a;">Kullanıcı & Yetki Yönetimi</div>
               <div style="font-size: 0.72rem; color: #64748b;">Saha ekipleri ve imalat bazlı yetkilendirme</div>
+            </div>
+          </button>
+
+          <!-- 5b. Kullanıcı & Şifre Tablosunu İndir (Yönetici) -->
+          <button class="settings-tile admin-tile" id="tileUserPasswordsExcel" onclick="app.closeModal('modalSettingsCenter'); app.exportUsersListToExcel();">
+            <div class="settings-tile-icon" style="background: #e0f2fe; color: #0284c7;">📥</div>
+            <div>
+              <div style="font-weight: 700; font-size: 0.85rem; color: #0f172a;">Kullanıcı & Şifre Tablosu İndir</div>
+              <div style="font-size: 0.72rem; color: #64748b;">Mail atmak için hazır kullanıcı adı, şifre ve yetki listesi</div>
             </div>
           </button>
 
