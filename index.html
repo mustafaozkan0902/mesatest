@@ -5134,8 +5134,8 @@ body {
 
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem; flex-wrap: wrap; gap: 0.5rem;">
           <h3 style="font-size: 0.95rem; font-weight: 700; color: #0f172a; margin: 0;">Kayıtlı Kullanıcı Hesapları & Yetkileri</h3>
-          <div style="display: flex; gap: 0.45rem; flex-wrap: wrap;">
-            <button class="btn btn-outline btn-sm" onclick="app.exportUsersListToExcel()" style="font-weight: 700; background: #ffffff; border-color: #0284c7; color: #0369a1; padding: 0.3rem 0.65rem;" title="Kullanıcıları, şifreleri ve yetkilerini Excel/CSV olarak indir (E-posta için hazır)">
+          <div id="adminOnlyPasswordExportWrap" style="display: none; gap: 0.45rem; flex-wrap: wrap;">
+            <button class="btn btn-outline btn-sm" onclick="app.exportUsersListToExcel()" style="font-weight: 700; background: #ffffff; border-color: #0284c7; color: #0369a1; padding: 0.3rem 0.65rem;" title="Saha ekiplerinin ilk varsayılan şifrelerini Excel tablosu olarak indir (Mail için hazır)">
               <span>📥</span>
               <span>Kullanıcı & Şifre Tablosunu İndir</span>
             </button>
@@ -5761,14 +5761,6 @@ body {
             </div>
           </button>
 
-          <!-- 5b. Kullanıcı & Şifre Tablosunu İndir (Yönetici) -->
-          <button class="settings-tile admin-tile" id="tileUserPasswordsExcel" onclick="app.closeModal('modalSettingsCenter'); app.exportUsersListToExcel();">
-            <div class="settings-tile-icon" style="background: #e0f2fe; color: #0284c7;">📥</div>
-            <div>
-              <div style="font-weight: 700; font-size: 0.85rem; color: #0f172a;">Kullanıcı & Şifre Tablosu İndir</div>
-              <div style="font-size: 0.72rem; color: #64748b;">Mail atmak için hazır kullanıcı adı, şifre ve yetki listesi</div>
-            </div>
-          </button>
 
           <!-- 6. Veri Yedekleme / Yükleme (Yönetici) -->
           <button class="settings-tile admin-tile" id="tileBackup" onclick="app.closeModal('modalSettingsCenter'); app.openBackupModal();">

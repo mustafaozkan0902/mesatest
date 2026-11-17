@@ -290,6 +290,12 @@ class SantiyeApp {
             u.permissions = { all: false, stages: [] };
           }
         }
+        if (!u.initialPassword) {
+          u.initialPassword = (u.id === 'u5' || u.username === 'mesa_kontrol') ? 'mesa' : 'saha';
+        }
+        if (u.passwordChanged === undefined) {
+          u.passwordChanged = !!(u.password && u.password !== u.initialPassword);
+        }
       });
       if (!this.data.users.some(u => u.username === 'admin' || u.id === 'u1')) {
         this.data.users.unshift(defaultUsers[0]);
@@ -3601,6 +3607,7 @@ class SantiyeApp {
 
     // Update password strictly on targetUser
     targetUser.password = newPw;
+    targetUser.passwordChanged = true;
     if (isMasterAdmin) {
       targetUser.role = 'admin';
       targetUser.allPermissions = true;
@@ -6047,6 +6054,11 @@ class SantiyeApp {
       this.showToast('Kullanıcı ve yetki yönetimi yalnızca tam yetkili yöneticilere açıktır.', 'warning');
       return;
     }
+    const isStrictAdmin = (this.currentUser?.username === 'admin');
+    const exportWrap = document.getElementById('adminOnlyPasswordExportWrap');
+    if (exportWrap) {
+      exportWrap.style.display = isStrictAdmin ? 'flex' : 'none';
+    }
     this.renderUsersList();
     this.openModal('modalPermissions');
   }
@@ -6127,47 +6139,55 @@ class SantiyeApp {
 
   // --- ADMİNE ÖZEL KULLANICI & ŞİFRE LİSTESİ DIŞA AKTARMA (EXCEL / CSV) ---
   exportUsersListToExcel() {
-    if (!this.hasAllPermissions()) {
-      this.showToast('Kullanıcı şifre listesini indirme yetkisi yalnızca yöneticilere aittir.', 'warning');
+    if (this.currentUser?.username !== 'admin') {
+      this.showToast('Kullanıcı şifre tablosunu indirme yetkisi yalnızca ana sistem yöneticisine (Admin) aittir.', 'warning');
       return;
     }
 
-    const users = this.data?.users || [];
-    if (users.length === 0) {
-      this.showToast('Kayıtlı kullanıcı bulunamadı.', 'warning');
+    // Tabloda yöneticiler olmayacak, yalnızca saha ekipleri yer alacak
+    const fieldUsers = (this.data?.users || []).filter(u => {
+      const isMasterAdmin = (u.username === 'admin' || u.id === 'u1');
+      const hasAll = isMasterAdmin || u.allPermissions || u.role === 'admin';
+      return !hasAll;
+    });
+
+    if (fieldUsers.length === 0) {
+      this.showToast('Tabloya aktarılacak saha personeli bulunamadı.', 'warning');
       return;
     }
 
     let csv = '\uFEFF'; // Excel Türkçe karakter uyumu için UTF-8 BOM
     const headers = [
-      'Ad Soyad / Ekip Ünvanı',
+      'Ekip / Personel Adı',
       'Kullanıcı Adı',
-      'Giriş Şifresi',
+      'Varsayılan İlk Şifre',
       'Yetki Seviyesi',
       'Yetkili Olduğu İmalatlar / Aşamalar',
       'Açıklama / Görev',
-      'Giriş Bağlantısı (URL)'
+      'Giriş Portalı Bağlantısı'
     ];
 
     csv += headers.join(';') + '\n';
 
-    users.forEach(u => {
-      const isMasterAdmin = (u.username === 'admin' || u.id === 'u1');
-      const hasAll = isMasterAdmin || u.allPermissions || u.role === 'admin';
+    fieldUsers.forEach(u => {
       const cleanName = (u.name || '').replace(/\s*\([^)]*\)/g, '').trim();
       const username = u.username || u.id;
-      const password = u.password || (hasAll ? (this.data?.settings?.adminPassword || '12345') : 'saha');
-      const roleLevel = hasAll ? 'Tam Yetki' : 'Kısmi Yetkili';
+      
+      // Şifresini değiştirenlerin yeni şifresi admin dahil KESİNLİKLE gizlenir
+      const defaultPw = u.initialPassword || (u.id === 'u5' || u.username === 'mesa_kontrol' ? 'mesa' : 'saha');
+      const isChanged = !!(u.passwordChanged || (u.password && u.password !== defaultPw));
+      const passwordValue = isChanged ? '****** (Kullanıcı Tarafından Değiştirildi - Gizli)' : defaultPw;
+
       const permitted = this.getPermittedStageNames(u);
-      const permText = hasAll ? 'Tüm İmalatlar ve Sistem Yönetimi' : (permitted.length > 0 ? permitted.join(', ') : 'Salt Okunur (İzleme)');
+      const permText = permitted.length > 0 ? permitted.join(', ') : 'Salt Okunur (İzleme)';
       const desc = u.desc || '';
       const portalUrl = 'https://mesatest.netlify.app/';
 
       const row = [
         cleanName,
         username,
-        password,
-        roleLevel,
+        passwordValue,
+        'Kısmi Yetkili',
         permText,
         desc,
         portalUrl
@@ -6179,44 +6199,50 @@ class SantiyeApp {
     const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
     const link = document.createElement('a');
     link.href = URL.createObjectURL(blob);
-    link.download = `MESA_Santiye_Kullanici_Giris_Bilgileri_${new Date().toISOString().split('T')[0]}.csv`;
+    link.download = `MESA_Santiye_Saha_Ekipleri_Ilk_Sifreleri_${new Date().toISOString().split('T')[0]}.csv`;
     link.click();
-    this.showToast('Kullanıcı ve şifre tablosu başarıyla indirildi. ✅ (Excel ile açabilirsiniz)', 'success');
+    this.showToast('Saha ekipleri kullanıcı ve ilk şifre tablosu başarıyla indirildi. ✅ (Excel ile açabilirsiniz)', 'success');
   }
 
   // --- E-POSTA İÇİN KULLANICI LİSTESİNİ KOPYALA ---
   async copyUsersListForEmail() {
-    if (!this.hasAllPermissions()) {
-      this.showToast('Kullanıcı listesini kopyalama yetkisi yalnızca yöneticilere aittir.', 'warning');
+    if (this.currentUser?.username !== 'admin') {
+      this.showToast('Kullanıcı listesini kopyalama yetkisi yalnızca ana sistem yöneticisine (Admin) aittir.', 'warning');
       return;
     }
 
-    const users = this.data?.users || [];
-    if (users.length === 0) return;
-
-    let text = `MESA ŞANTİYE TEST VE İMALAT TAKİP SİSTEMİ - KULLANICI GİRİŞ BİLGİLERİ\n`;
-    text += `Giriş Portalı: https://mesatest.netlify.app/\n`;
-    text += `Tarih: ${new Date().toLocaleDateString('tr-TR')}\n\n`;
-    text += `Sayın İlgililer,\nŞantiye elektrik testi, mekanik, klima ve asma tavan süreçlerinin takibi için kullanıcı hesaplarınız tanımlanmıştır.\n`;
-    text += `Aşağıdaki giriş bilgileriniz ile sisteme giriş yaparak sorumlu olduğunuz katların imalat ve test durumlarını güncelleyebilirsiniz:\n\n`;
-    text += `----------------------------------------------------------------------------------------------------\n`;
-    text += `${'Ekip / Ad Soyad'.padEnd(28)} | ${'Kullanıcı Adı'.padEnd(16)} | ${'Şifre'.padEnd(12)} | Yetkili Aşamalar\n`;
-    text += `----------------------------------------------------------------------------------------------------\n`;
-
-    users.forEach(u => {
+    const fieldUsers = (this.data?.users || []).filter(u => {
       const isMasterAdmin = (u.username === 'admin' || u.id === 'u1');
       const hasAll = isMasterAdmin || u.allPermissions || u.role === 'admin';
+      return !hasAll;
+    });
+
+    if (fieldUsers.length === 0) return;
+
+    let text = `MESA ŞANTİYE TEST VE İMALAT TAKİP SİSTEMİ - SAHA EKİPLERİ GİRİŞ BİLGİLERİ\n`;
+    text += `Giriş Portalı: https://mesatest.netlify.app/\n`;
+    text += `Tarih: ${new Date().toLocaleDateString('tr-TR')}\n\n`;
+    text += `Sayın İlgililer,\nŞantiye elektrik testi, mekanik, klima ve asma tavan imalat süreçlerinin takibi için kullanıcı hesaplarınız tanımlanmıştır.\n`;
+    text += `Aşağıdaki kullanıcı adı ve varsayılan ilk giriş şifreleriniz ile sisteme giriş yaparak sorumlu olduğunuz katların durumlarını güncelleyebilirsiniz:\n\n`;
+    text += `----------------------------------------------------------------------------------------------------\n`;
+    text += `${'Ekip / Personel Adı'.padEnd(28)} | ${'Kullanıcı Adı'.padEnd(16)} | ${'İlk Şifre'.padEnd(12)} | Yetkili Aşamalar\n`;
+    text += `----------------------------------------------------------------------------------------------------\n`;
+
+    fieldUsers.forEach(u => {
       const cleanName = (u.name || '').replace(/\s*\([^)]*\)/g, '').trim();
       const username = u.username || u.id;
-      const password = u.password || (hasAll ? (this.data?.settings?.adminPassword || '12345') : 'saha');
-      const permitted = this.getPermittedStageNames(u);
-      const permText = hasAll ? 'Tam Yetki (Tüm İmalatlar)' : (permitted.length > 0 ? `Kısmi Yetki (${permitted.join(', ')})` : 'Salt Okunur');
+      const defaultPw = u.initialPassword || (u.id === 'u5' || u.username === 'mesa_kontrol' ? 'mesa' : 'saha');
+      const isChanged = !!(u.passwordChanged || (u.password && u.password !== defaultPw));
+      const passwordValue = isChanged ? '****** (Değiştirildi)' : defaultPw;
 
-      text += `${cleanName.padEnd(28)} | ${username.padEnd(16)} | ${password.padEnd(12)} | ${permText}\n`;
+      const permitted = this.getPermittedStageNames(u);
+      const permText = permitted.length > 0 ? `Kısmi Yetki (${permitted.join(', ')})` : 'Salt Okunur';
+
+      text += `${cleanName.padEnd(28)} | ${username.padEnd(16)} | ${passwordValue.padEnd(12)} | ${permText}\n`;
     });
 
     text += `----------------------------------------------------------------------------------------------------\n\n`;
-    text += `* Not: Sisteme giriş yaptıktan sonra sağ üst menüden kendi şifrenizi istediğiniz zaman değiştirebilirsiniz.\n`;
+    text += `* Not: Güvenliğiniz için sisteme ilk girişinizden sonra sağ üst köşedeki menüden şifrenizi istediğiniz zaman değiştirebilirsiniz. Değiştirilen yeni şifreler sistem yöneticisi dahil hiç kimse tarafından görülemez.\n`;
     text += `* Ön Şart Akışı:\n`;
     text += `  1. Mekanik + 2. Klima ➔ 3. Elektrik Testi [TEST BİTTİ] + 4. 2. Cil Mekanik [2. CİL BİTTİ] ➔ 5. MESA Onayı [ONAYLA] ➔ 6. Asma Tavan [KAPANDI]\n`;
 
@@ -6226,7 +6252,7 @@ class SantiyeApp {
       } else {
         throw new Error('Clipboard API not supported');
       }
-      this.showToast('📋 Kullanıcı giriş tablosu e-posta için panoya kopyalandı! Mailinize doğrudan yapıştırabilirsiniz.', 'success');
+      this.showToast('📋 Saha ekipleri giriş tablosu e-posta için panoya kopyalandı! Mailinize doğrudan yapıştırabilirsiniz.', 'success');
     } catch(err) {
       const ta = document.createElement('textarea');
       ta.value = text;
@@ -6234,7 +6260,7 @@ class SantiyeApp {
       ta.select();
       document.execCommand('copy');
       document.body.removeChild(ta);
-      this.showToast('📋 Kullanıcı giriş tablosu panoya kopyalandı!', 'success');
+      this.showToast('📋 Saha ekipleri giriş tablosu panoya kopyalandı!', 'success');
     }
   }
 
@@ -6308,6 +6334,8 @@ class SantiyeApp {
       },
       role: isAllPerms ? 'admin' : 'custom',
       password: password,
+      initialPassword: password,
+      passwordChanged: false,
       desc: desc || (isAllPerms ? 'Tam yetkili kullanıcı' : `${selectedStages.join(', ')} yetkilisi`)
     };
 
@@ -6455,6 +6483,8 @@ class SantiyeApp {
     }
 
     user.password = newPassword;
+    user.initialPassword = newPassword;
+    user.passwordChanged = false;
     if (user.role === 'admin' || user.id === 'u1' || user.username === 'admin') {
       if (!this.data.settings) this.data.settings = {};
       this.data.settings.adminPassword = newPassword;
